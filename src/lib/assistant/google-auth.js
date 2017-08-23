@@ -31,7 +31,7 @@ exports.auth = (req, res) => {
   const state = req.query.state
   console.log('--> google-auth /auth\n')
   console.log(`    req url: ${req.url}`)
-  // --> verify client id matches the one in google console (will add id to env later)
+  // --> verify client id matches the one in google console
 
   // --> create user and save to db
   const userId = shortid.generate()
