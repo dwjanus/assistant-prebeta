@@ -1,7 +1,7 @@
 {
-  "name": "samanage-assistant",
+  "name": "assistant-prebeta",
   "version": "1.0.0",
-  "description": "Google Assistant integration for Samanage",
+  "description": "prebeta Google Assistant integration for Samanage",
   "main": "index.js",
   "scripts": {
     "lint": "eslint source",
