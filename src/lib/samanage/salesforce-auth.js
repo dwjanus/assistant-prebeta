@@ -64,6 +64,7 @@ exports.oauthCallback = (req, res) => {
 
     storage.users.get(userId, (error, user) => {
       if (err) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
+      console.log(`--> got user: ${user.id}\n    ${util.inspect(user)}`)
       user.sf = sfTokens
       storage.users.save(user)
       console.log(`    stored updated user data:\n${util.inspect(user)}`)
