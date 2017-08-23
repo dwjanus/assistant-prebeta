@@ -63,7 +63,7 @@ exports.oauthCallback = (req, res) => {
       }
     }
 
-    users(userId, (user) => {
+    return users(userId, (user) => {
       console.log(`--> retrieving user: ${userId}`)
       console.log(`--> got user: ${util.inspect(user)}`)
       user.sf = sfTokens
