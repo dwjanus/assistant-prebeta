@@ -28,10 +28,11 @@ export default ((app, user) => {
   samanage(user.id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
       console.log('--> promisedAction')
-      if (context[0].name === 'comments') {
-        console.log('    comments context recieved > asking with list now...')
-        app.askWithList('Do you want to respond?', app.buildList('Comments').addItems(result))
-      } else app.ask(result)
+      // if (context[0].name === 'comments') {
+      //   console.log('    comments context recieved > asking with list now...')
+      //   app.askWithList('Do you want to respond?', app.buildList('Comments').addItems(result))
+      // } else
+      app.ask(result)
     })
   })
   .catch((err) => {
