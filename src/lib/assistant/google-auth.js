@@ -57,8 +57,7 @@ exports.auth = (req, res) => {
 
   saveUser(newUser, () => {
     console.log(`--> saved new user: ${util.inspect(newUser)}`)
-  }).then(() => {
-    saveCodes(newCode, () => {
+    return saveCodes(newCode, () => {
       console.log(`--> saved auth code: ${util.inspect(newCode)}`)
     })
     .then(() => {
