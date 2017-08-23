@@ -47,8 +47,7 @@ exports.oauthCallback = (req, res) => {
 
   conn.authorize(code, (err, userInfo) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
-    console.log(`--> authorizing for user ${userInfo.id}`)
-    console.log(`    User info: ${util.inspect(userInfo)}`)
+    console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
 
     // for final security layer we can encrypt these tokens
     sfTokens = {
@@ -63,8 +62,9 @@ exports.oauthCallback = (req, res) => {
     }
 
     storage.users.get(userId, (error, user) => {
+      console.log(`--> retrieving user: ${userId}`)
       if (err) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
-      console.log(`--> got user: ${user.id}\n    ${util.inspect(user)}`)
+      console.log(`--> got user: ${util.inspect(user)}`)
       user.sf = sfTokens
       storage.users.save(user)
       console.log(`    stored updated user data:\n${util.inspect(user)}`)

@@ -54,7 +54,7 @@ exports.auth = (req, res) => {
 
   storage.codes.save(newCode)
   storage.users.save(newUser)
-  console.log(`--> saved new user: ${userId}`)
+  console.log(`--> saved new user: ${util.inspect(newUser)}`)
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
 
   // --> send our request back out to salesforce for auth
