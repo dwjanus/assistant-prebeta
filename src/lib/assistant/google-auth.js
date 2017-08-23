@@ -43,7 +43,7 @@ exports.auth = (req, res) => {
     id: code,
     type: 'auth_code',
     userId,
-    clientId: 'samanage',
+    clientId: config('GOOGLE_ID'),
     expiresAt
   }
 
@@ -95,7 +95,7 @@ exports.token = (req, res) => {
         id: accessToken,
         type: 'access',
         userId: auth.userId,
-        clientId: 'samanage',
+        clientId: config('GOOGLE_ID'),
         expiresAt
       }
 
@@ -103,7 +103,7 @@ exports.token = (req, res) => {
         id: refreshToken,
         type: 'refresh',
         userId: auth.userId,
-        clientId: 'samanage',
+        clientId: config('GOOGLE_ID'),
         expiresAt: null
       }
 
@@ -132,7 +132,7 @@ exports.token = (req, res) => {
         id: accessToken,
         type: 'access',
         userId: refresh.userId,
-        clientId: 'samanage',
+        clientId: config('GOOGLE_ID'),
         expiresAt
       }
 

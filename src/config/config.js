@@ -10,6 +10,7 @@ const config = {
   MONGODB_URI: process.env.MONGODB_URI,
   SF_ID: process.env.SF_ID,
   SF_SECRET: process.env.SF_SECRET,
+  GOOGLE_ID: process.env.GOOGLE_ID
 }
 
 export default (key) => {
