@@ -1,0 +1,18 @@
+{
+  "name": "Samanage Assistant",
+  "description": "Samanage assistant integration that helps keep you updated on your incidents",
+  "repository": "https://github.com/SAManage/samanage-assistant",
+  "logo": "https://s3-media2.fl.yelpcdn.com/bphoto/N4Xl3iEv5Xb0OUiqlEX9EQ/ls.jpg",
+  "success_url": "/",
+  "env": {
+    "HEROKU_APP_NAME": {
+      "required": true
+    },
+    "WEBHOOK_URL": {
+      "description": "Api.ai webhook url",
+      "required": false
+    },
+    "NODE_ENV": "DEBUG"
+  },
+  "image": "heroku/nodejs"
+}
