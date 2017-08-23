@@ -55,12 +55,10 @@ exports.auth = (req, res) => {
     redir
   }
 
-  saveUser(newUser, () => {
+  return saveUser(newUser, () => {
     console.log(`--> saved new user: ${util.inspect(newUser)}`)
     return saveCodes(newCode, () => {
       console.log(`--> saved auth code: ${util.inspect(newCode)}`)
-    })
-    .then(() => {
       // --> send our request back out to salesforce for auth
       res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
     })
