@@ -37,7 +37,7 @@ exports.auth = (req, res) => {
   const userId = shortid.generate()
   const code = crypto.randomBytes(16).toString('base64')
   const expiresAt = expiration('set')
-  const redir = `https://oauth-redirect.googleusercontent.com/r/sammy-4a6ae?code=${code}&state=${state}`
+  const redir = `https://oauth-redirect.googleusercontent.com/r/assistant-prebeta?code=${code}&state=${state}`
 
   const newCode = {
     id: code,
