@@ -63,7 +63,8 @@ exports.oauthCallback = (req, res) => {
       }
     }
 
-    return users(userId, (user) => {
+    storage.users.get(userId, (error, user) => {
+      if (error) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
       console.log(`--> retrieving user: ${userId}`)
       console.log(`--> got user: ${util.inspect(user)}`)
       user.sf = sfTokens
@@ -71,12 +72,7 @@ exports.oauthCallback = (req, res) => {
       console.log(`    stored updated user data:\n${util.inspect(user)}`)
       console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
       console.log(`    redirecting to: ${user.redir}`)
-      return user.redir
-    }).then((url) => {
-      res.redirect(url)
-    })
-    .catch((error) => {
-      console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
+      res.redirect(user.redir)
     })
   })
 }
