@@ -31,7 +31,7 @@ exports.oauthCallback = (req, res) => {
   const userId = req.query.state
   const code = req.query.code
   const conn = new jsforce.Connection({ oauth2 })
-  console.log(`--> salesforce-auth /authorize\n    userId: ${userId}\n`)
+  console.log(`--> (oauth callback) salesforce-auth /authorize\n    userId: ${userId}\n`)
   // console.log(`    connection:\n${util.inspect(conn)}`)
 
   conn.on('refresh', (newToken, refres) => {
@@ -65,9 +65,10 @@ exports.oauthCallback = (req, res) => {
     storage.users.get(userId, (error, user) => {
       if (err) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
       user.sf = sfTokens
-      console.log(`    storing updated user data:\n${util.inspect(user)}`)
       storage.users.save(user)
+      console.log(`    stored updated user data:\n${util.inspect(user)}`)
       console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
+      console.log(`    redirecting to: ${user.redir}`)
       res.redirect(user.redir)
     })
   })
