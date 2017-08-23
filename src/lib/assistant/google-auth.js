@@ -3,8 +3,11 @@ import config from '../../config/config.js'
 import mongo from '../../config/db.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
+import Promise from 'bluebird'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const saveUser = Promise.promisify(storage.users.save)
+const saveCodes = Promise.promisify(storage.codes.save)
 
 function expiration (getset) {
   const date = new Date()
@@ -52,13 +55,20 @@ exports.auth = (req, res) => {
     redir
   }
 
-  storage.codes.save(newCode)
-  storage.users.save(newUser)
-  console.log(`--> saved new user: ${util.inspect(newUser)}`)
-  console.log(`--> saved auth code: ${util.inspect(newCode)}`)
-
-  // --> send our request back out to salesforce for auth
-  res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+  saveUser(newUser, () => {
+    console.log(`--> saved new user: ${util.inspect(newUser)}`)
+  }).then(() => {
+    saveCodes(newCode, () => {
+      console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+    })
+    .then(() => {
+      // --> send our request back out to salesforce for auth
+      res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+    })
+    .catch((err) => {
+      console.log(`!!! ERROR saving new user/code: ${err}`)
+    })
+  })
 }
 
 exports.token = (req, res) => {
