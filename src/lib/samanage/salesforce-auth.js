@@ -2,8 +2,10 @@ import util from 'util'
 import jsforce from 'jsforce'
 import config from '../../config/config.js'
 import mongo from '../../config/db.js'
+import Promise from 'bluebird'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const users = Promise.promisify(storage.users.get)
 
 // ************************************** //
 // Establish connection to Salesforce API //
@@ -61,16 +63,20 @@ exports.oauthCallback = (req, res) => {
       }
     }
 
-    storage.users.get(userId, (error, user) => {
+    users(userId, (user) => {
       console.log(`--> retrieving user: ${userId}`)
-      if (err) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
       console.log(`--> got user: ${util.inspect(user)}`)
       user.sf = sfTokens
       storage.users.save(user)
       console.log(`    stored updated user data:\n${util.inspect(user)}`)
       console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
       console.log(`    redirecting to: ${user.redir}`)
-      res.redirect(user.redir)
+      return user.redir
+    }).then((url) => {
+      res.redirect(url)
+    })
+    .catch((error) => {
+      console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
     })
   })
 }
