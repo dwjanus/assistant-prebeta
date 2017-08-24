@@ -45,7 +45,7 @@ function getStorage (db, zone) {
         id: data.id
       }, data, {
         upsert: true,
-        returnNewDocument: true
+        returnOriginal: false
       }, cb)
     },
     all (cb) {
