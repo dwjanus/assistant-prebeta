@@ -75,27 +75,33 @@ exports.token = (req, res) => {
   // const secret = req.query.secret // we will check this later
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body:\n${util.inspect(req.body)}\n`)
+  console.log(`    req body: ${util.inspect(req.body)}\n`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log('    grant type was AUTH')
+    console.log('    grant type ==> AUTH')
     storage.codes.get(code, (err, auth) => {
+      console.log(`--> auth:\n${util.inspect(auth)}`)
+
       if (err || !auth) {
         console.log(`    Error in auth storage: ${err}`)
         res.sendStatus(500)
       }
-      if ((currentTime > auth.expiresAt) || (req.body.client_id !== auth.clientId)) {
-        console.log('\n--! discrepency registered between expirations/client ids:')
-        console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
-        console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
+
+      if (currentTime > auth.expires_at) {
+        console.log('\n--! discrepency registered between expiration times:')
+        console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expires_at}`)
+        // res.sendStatus(500)
       }
 
-      console.log(`    found code: ${auth}`)
+      if (req.body.client_id !== auth.client_id) {
+        console.log('\n--! discrepency registered between expiration times:')
+        console.log(`    req: ${req.body.client_id}  -  auth: ${auth.client_id}`)
+        // res.sendStatus(500)
+      }
 
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
-      console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
       const expiresAt = expiration('setaccess')
       const access = {
         id: accessToken,
@@ -122,6 +128,8 @@ exports.token = (req, res) => {
         refresh_token: refreshToken,
         expires_in: 3600
       }
+
+      console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
       res.json(response).end()
     })
   }
