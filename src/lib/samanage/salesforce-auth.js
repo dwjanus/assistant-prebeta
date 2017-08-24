@@ -43,27 +43,22 @@ exports.oauthCallback = (req, res) => {
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
 
     // for final security layer we can encrypt these tokens
-    sfTokens = {
-      id: userInfo.id,
-      org: userInfo.organizationId,
-      tokens:
-      {
-        sfInstanceUrl: conn.instanceUrl,
-        sfAccessToken: conn.accessToken,
-        sfRefreshToken: conn.refreshToken
+    const user = {
+      id: userId,
+      sf: {
+        id: userInfo.id,
+        org: userInfo.organizationId,
+        tokens:
+        {
+          sfInstanceUrl: conn.instanceUrl,
+          sfAccessToken: conn.accessToken,
+          sfRefreshToken: conn.refreshToken
+        }
       }
     }
 
-    storage.users.get(userId, (error, user) => {
-      if (error) console.log(`!!!ERROR obtaining user: ${userId} -- ${error}`)
-      console.log(`--> retrieving user: ${userId}`)
-      console.log(`--> got user: ${util.inspect(user)}`)
-      user.sf = sfTokens
-      storage.users.save(user)
-      console.log(`    stored updated user data:\n${util.inspect(user)}`)
-      console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
-      console.log(`    redirecting to: ${user.redir}`)
-    })
+    console.log(`    stored updated user data:\n${util.inspect(user)}`)
+    storage.users.save(user)
 
     client.get(userId, (error, redir) => {
       if (error) console.log(`MEM_CACHE ERROR: ${error}`)

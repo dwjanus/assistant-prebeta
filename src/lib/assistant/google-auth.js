@@ -53,20 +53,15 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  const newUser = {
-    id: userId,
-    sf: {}
-  }
-
   storage.codes.save(newCode)
-  storage.users.save(newUser)
 
-  console.log(`--> saved new user: ${util.inspect(newUser)}`)
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+  console.log(`--> caching redirect url: ${redir}`)
 
   client.set(userId, redir, { expires: 600 }, (err, val) => {
     if (err) console.log(`!!! MEM CACHE ERROR: ${err}`)
-    console.log(`--> redirect cached!\n   key: ${userId}\n   val: ${val}`)
+    console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
+
     // --> send our request out to salesforce for auth
     res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
   })
