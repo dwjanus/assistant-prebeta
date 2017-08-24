@@ -12,7 +12,6 @@ module.exports = (config) => {
   }
 
   const db = monk(config.mongoUri)
-  db.options = { castIds: false }
 
   db.catch((err) => {
     throw new Error(err)
@@ -36,7 +35,6 @@ module.exports = (config) => {
  */
 function getStorage (db, zone) {
   const table = db.get(zone)
-  table.createIndex('id', { unique: true })
 
   return {
     get (id, cb) {
