@@ -12,7 +12,7 @@ module.exports = (config) => {
   }
 
   const db = monk(config.mongoUri)
-  db.options = { castIds: false }
+  db.options = { safe: true, castIds: false }
 
   db.catch((err) => {
     throw new Error(err)
