@@ -53,17 +53,19 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  storage.codes.save(newCode)
+  storage.codes.save(newCode, (err, saved) => {
+    if (err) console.log(`Storage save error for new code: ${err}`)
+    console.log(`Saved Storage object:\n${util.inspect(saved)}`)
+    console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+    console.log(`--> caching redirect url: ${redir}`)
 
-  console.log(`--> saved auth code: ${util.inspect(newCode)}`)
-  console.log(`--> caching redirect url: ${redir}`)
+    client.set(userId, redir, { expires: 600 }, (error, val) => {
+      if (err) console.log(`!!! MEM CACHE ERROR: ${error}`)
+      console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
 
-  client.set(userId, redir, { expires: 600 }, (err, val) => {
-    if (err) console.log(`!!! MEM CACHE ERROR: ${err}`)
-    console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
-
-    // --> send our request out to salesforce for auth
-    res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+      // --> send our request out to salesforce for auth
+      res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+    })
   })
 }
 
@@ -75,11 +77,12 @@ exports.token = (req, res) => {
   // const secret = req.query.secret // we will check this later
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body: ${util.inspect(req.body)}\n`)
+  console.log(`    req body: ${util.inspect(req.body)}\n${util.inspect(req)}`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log('    grant type ==> AUTH')
+    console.log(`    grant type ==> AUTH -- code: ${code}`)
+
     storage.codes.get(code, (err, auth) => {
       console.log(`--> auth:\n${util.inspect(auth)}`)
 
@@ -88,15 +91,15 @@ exports.token = (req, res) => {
         res.sendStatus(500)
       }
 
-      if (currentTime > auth.expires_at) {
+      if (currentTime > auth.expiresAt) {
         console.log('\n--! discrepency registered between expiration times:')
         console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expires_at}`)
         // res.sendStatus(500)
       }
 
-      if (req.body.client_id !== auth.client_id) {
+      if (req.body.client_id !== auth.clientId) {
         console.log('\n--! discrepency registered between expiration times:')
-        console.log(`    req: ${req.body.client_id}  -  auth: ${auth.client_id}`)
+        console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
         // res.sendStatus(500)
       }
 
@@ -119,8 +122,6 @@ exports.token = (req, res) => {
         expiresAt: null
       }
 
-      storage.codes.save(access)
-      storage.codes.save(refresh)
 
       const response = {
         token_type: 'bearer',
@@ -128,6 +129,9 @@ exports.token = (req, res) => {
         refresh_token: refreshToken,
         expires_in: 3600
       }
+
+      storage.codes.save(access)
+      storage.codes.save(refresh)
 
       console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
       res.json(response).end()

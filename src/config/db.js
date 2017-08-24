@@ -12,6 +12,11 @@ module.exports = (config) => {
   }
 
   const db = monk(config.mongoUri)
+
+  db.catch((err) => {
+    throw new Error(err)
+  })
+
   const storage = {};
 
   ['users', 'codes'].forEach((zone) => {
@@ -40,11 +45,14 @@ function getStorage (db, zone) {
         id: data.id
       }, data, {
         upsert: true,
-        new: true
+        returnNewDocument: true
       }, cb)
     },
     all (cb) {
       table.find({}, cb)
+    },
+    find (data, cb) {
+      return table.find(data, cb)
     }
   }
 }
