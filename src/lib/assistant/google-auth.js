@@ -56,16 +56,17 @@ exports.auth = (req, res) => {
   storage.codes.save(newCode, (err, saved) => {
     if (err) console.log(`Storage save error for new code: ${err}`)
     console.log(`--> saved auth code: ${util.inspect(saved)}`)
-    console.log(`--> caching redirect url: ${redir}`)
-
-    client.set(userId, redir, { expires: 600 }, (error, val) => {
-      if (err) console.log(`!!! MEM CACHE ERROR: ${error}`)
-      console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
-
-      // --> send our request out to salesforce for auth
-      res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
-    })
   })
+
+  console.log(`--> caching redirect url: ${redir}`)
+
+  client.set(userId, redir, { expires: 600 }, (error, val) => {
+    if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
+    console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
+  })
+
+  // --> send our request out to salesforce for auth
+  res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
 }
 
 exports.token = (req, res) => {
