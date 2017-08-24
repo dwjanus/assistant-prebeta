@@ -40,11 +40,11 @@ app.post('/actions', (request, response) => {
   if (request.body.sessionId) ApiAiConstructor = { request, response, sessionId: request.body.sessionId }
   const assistant = new ApiAiApp(ApiAiConstructor)
   const currentUser = assistant.getUser()
-  const currentToken = currentUser.accessToken
+  const currentToken = currentUser.access_token
   console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
   console.log(`    user data from assistant:\n${util.inspect(currentUser)}\n`)
   codes(currentToken).then((access) => {
-    console.log(`    found user: ${access.userId}`)
+    console.log(`    found user: ${util.inspect(access)}`)
     return access.userId
   })
   .then((userId) => {

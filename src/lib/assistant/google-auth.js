@@ -55,8 +55,7 @@ exports.auth = (req, res) => {
 
   storage.codes.save(newCode, (err, saved) => {
     if (err) console.log(`Storage save error for new code: ${err}`)
-    console.log(`Saved Storage object:\n${util.inspect(saved)}`)
-    console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+    console.log(`--> saved auth code: ${util.inspect(saved)}`)
     console.log(`--> caching redirect url: ${redir}`)
 
     client.set(userId, redir, { expires: 600 }, (error, val) => {
@@ -106,6 +105,7 @@ exports.token = (req, res) => {
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
       const expiresAt = expiration('setaccess')
+
       const access = {
         id: accessToken,
         type: 'access',
@@ -113,6 +113,11 @@ exports.token = (req, res) => {
         clientId: config('GOOGLE_ID'),
         expiresAt
       }
+
+      storage.codes.save(access, (error, saved) => {
+        if (error) console.log(`Storage save error for new access token: ${error}`)
+        console.log(`--> saved access token: ${util.inspect(saved)}`)
+      })
 
       const refresh = {
         id: refreshToken,
@@ -122,6 +127,10 @@ exports.token = (req, res) => {
         expiresAt: null
       }
 
+      storage.codes.save(refresh, (error, saved) => {
+        if (error) console.log(`Storage save error for new refresh token: ${error}`)
+        console.log(`--> saved refresh token: ${util.inspect(saved)}`)
+      })
 
       const response = {
         token_type: 'bearer',
@@ -129,9 +138,6 @@ exports.token = (req, res) => {
         refresh_token: refreshToken,
         expires_in: 3600
       }
-
-      storage.codes.save(access)
-      storage.codes.save(refresh)
 
       console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
       res.json(response).end()
