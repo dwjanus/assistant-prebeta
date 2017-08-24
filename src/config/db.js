@@ -36,7 +36,7 @@ module.exports = (config) => {
  */
 function getStorage (db, zone) {
   const table = db.get(zone)
-  table.ensureIndex('id', { unique: true })
+  table.createIndex('id', { unique: true })
 
   return {
     get (id, cb) {
