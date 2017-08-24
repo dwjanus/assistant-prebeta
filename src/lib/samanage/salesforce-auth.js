@@ -18,12 +18,11 @@ const oauth2 = new jsforce.OAuth2({
 
 exports.login = (req, res) => {
   console.log('[salesforce-auth] ** Starting up salesforce-auth.login now **')
-  console.log(`[salesforce-auth] ** req params: ${util.inspect(req.param)}`)
   console.log(`[salesforce-auth] ** req url: ${util.inspect(req.url)}`)
-  let redir = oauth2.getAuthorizationUrl({ scope: 'api id web refresh_token' })
-  redir += `&state=${req.params.userId}`
-  console.log(`[salesforce-auth] ** generated our salesforce auth url: ${redir}`)
-  res.redirect(redir)
+  let redirect = oauth2.getAuthorizationUrl({ scope: 'api id web refresh_token' })
+  redirect += `&state=${req.params.userId}`
+  console.log(`[salesforce-auth] ** generated our salesforce auth url: ${redirect}`)
+  res.redirect(redirect)
 }
 
 exports.oauthCallback = (req, res) => {
@@ -32,18 +31,6 @@ exports.oauthCallback = (req, res) => {
   const code = req.query.code
   const conn = new jsforce.Connection({ oauth2 })
   console.log(`--> (oauth callback) salesforce-auth /authorize\n    userId: ${userId}\n`)
-  // console.log(`    connection:\n${util.inspect(conn)}`)
-
-  conn.on('refresh', (newToken, refres) => {
-    console.log(`--> salesforce-auth got a refresh event from Salesforce!\n    new token: ${newToken}\n`)
-    console.log(`    response:\n${util.inspect(refres)}`)
-    sfTokens.sfAccessToken = newToken
-    storage.users.get(userId, (storeErr, user) => {
-      if (storeErr) console.log(`!!! ERROR obtaining user: ${userId} -- ${storeErr}`)
-      user.sf.tokens = sfTokens
-      storage.users.save(user)
-    })
-  })
 
   conn.authorize(code, (err, userInfo) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
@@ -71,6 +58,17 @@ exports.oauthCallback = (req, res) => {
       console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
       console.log(`    redirecting to: ${user.redir}`)
       res.redirect(user.redir)
+    })
+  })
+
+  conn.on('refresh', (newToken, refres) => {
+    console.log(`--> salesforce-auth got a refresh event from Salesforce!\n    new token: ${newToken}\n`)
+    console.log(`    response:\n${util.inspect(refres)}`)
+    sfTokens.sfAccessToken = newToken
+    storage.users.get(userId, (storeErr, user) => {
+      if (storeErr) console.log(`!!! ERROR obtaining user: ${userId} -- ${storeErr}`)
+      user.sf.tokens = sfTokens
+      storage.users.save(user)
     })
   })
 }

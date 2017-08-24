@@ -49,12 +49,13 @@ exports.auth = (req, res) => {
 
   const newUser = {
     id: userId,
-    redir
+    redir,
+    sf: {}
   }
 
   storage.codes.save(newCode)
-  storage.users.save(newUser)
   console.log(`--> saved new user: ${util.inspect(newUser)}`)
+  storage.users.save(newUser)
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
 
   // --> send our request out to salesforce for auth
