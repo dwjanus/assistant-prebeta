@@ -82,7 +82,7 @@ exports.token = (req, res) => {
   if (grant === 'authorization_code') {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
-    storage.codes.find(code, (err, auth) => {
+    storage.codes.get(code, (err, auth) => {
       console.log(`--> auth:\n${util.inspect(auth)}`)
 
       if (err || !auth) {
