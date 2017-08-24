@@ -2,10 +2,8 @@ import util from 'util'
 import jsforce from 'jsforce'
 import config from '../../config/config.js'
 import mongo from '../../config/db.js'
-import Promise from 'bluebird'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
-const users = Promise.promisify(storage.users.get)
 
 // ************************************** //
 // Establish connection to Salesforce API //

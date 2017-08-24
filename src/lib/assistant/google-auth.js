@@ -28,12 +28,12 @@ function expiration (getset) {
 }
 
 exports.auth = (req, res) => {
-  const state = req.query.state
   console.log('--> google-auth /auth\n')
   console.log(`    req url: ${req.url}`)
   // --> verify client id matches the one in google console
 
   // --> create user and save to db
+  const state = req.query.state
   const userId = shortid.generate()
   const code = crypto.randomBytes(16).toString('base64')
   const expiresAt = expiration('set')
@@ -57,7 +57,7 @@ exports.auth = (req, res) => {
   console.log(`--> saved new user: ${util.inspect(newUser)}`)
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
 
-  // --> send our request back out to salesforce for auth
+  // --> send our request out to salesforce for auth
   res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
 }
 
