@@ -21,7 +21,6 @@ module.exports = (config) => {
   const storage = {};
 
   ['users', 'codes'].forEach((zone) => {
-    storage[zone].index('id')
     storage[zone] = getStorage(db, zone)
   })
 
@@ -37,6 +36,7 @@ module.exports = (config) => {
  */
 function getStorage (db, zone) {
   const table = db.get(zone)
+  table.ensureIndex('id', { unique: true })
 
   return {
     get (id, cb) {
