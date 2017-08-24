@@ -4,10 +4,10 @@ import mongo from '../../config/db.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
 import Promise from 'bluebird'
+import request from 'request'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
-const saveUser = Promise.promisify(storage.users.save)
-const saveCode = Promise.promisify(storage.codes.save)
+const get = Promise.promisify(request.get)
 
 function expiration (getset) {
   const date = new Date()
@@ -56,17 +56,26 @@ exports.auth = (req, res) => {
     sf: {}
   }
 
-  Promise.join(saveUser(newUser), saveCode(newCode), () => {
-    console.log(`--> saved new user: ${util.inspect(newUser)}`)
-    console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+  storage.codes.save(newCode)
+  console.log(`--> saved new user: ${util.inspect(newUser)}`)
+  storage.users.save(newUser)
+  console.log(`--> saved auth code: ${util.inspect(newCode)}`)
+
+  const options = {
+    path: `login/${userId}`
+  }
+
+  get('https://assistant-prebeta.herokuapp.com/', options).then((response, body) => {
+    console.log(`--> Response from get:\n${util.inspect(response)}`)
+    console.log(`--> Body from get:\n${util.inspect(body)}`)
   })
   .then(() => {
-    return res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+    // --> send our request out to salesforce for auth
+    res.redirect(`${redir}`)
   })
-  .catch((err) => {
-    console.log(err)
+  .catch((error) => {
+    console.log(`Error: ${error}`)
   })
-  // --> send our request out to salesforce for auth
 }
 
 exports.token = (req, res) => {
