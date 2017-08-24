@@ -77,7 +77,7 @@ exports.token = (req, res) => {
   // const secret = req.query.secret // we will check this later
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body: ${util.inspect(req.body)}\n${util.inspect(req)}`)
+  console.log(`    req body: ${util.inspect(req.body)}\n`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
@@ -98,7 +98,7 @@ exports.token = (req, res) => {
       }
 
       if (req.body.client_id !== auth.clientId) {
-        console.log('\n--! discrepency registered between expiration times:')
+        console.log('\n--! discrepency registered between client Ids:')
         console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
         // res.sendStatus(500)
       }
