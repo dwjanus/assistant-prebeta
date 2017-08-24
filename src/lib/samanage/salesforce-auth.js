@@ -2,8 +2,14 @@ import util from 'util'
 import jsforce from 'jsforce'
 import config from '../../config/config.js'
 import mongo from '../../config/db.js'
+import memjs from 'memjs'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const client = memjs.Client.create(config('CACHE_SV'),
+  {
+    username: config('CACHE_UN'),
+    password: config('CACHE_PW')
+  })
 
 // ************************************** //
 // Establish connection to Salesforce API //
@@ -57,7 +63,11 @@ exports.oauthCallback = (req, res) => {
       console.log(`    stored updated user data:\n${util.inspect(user)}`)
       console.log(`    connected to sf instance: ${conn.instanceUrl}\n`)
       console.log(`    redirecting to: ${user.redir}`)
-      res.redirect(user.redir)
+    })
+
+    client.get(userId, (error, redir) => {
+      if (error) console.log(`MEM_CACHE ERROR: ${err}`)
+      res.redirect(redir)
     })
   })
 

@@ -10,7 +10,10 @@ const config = {
   MONGODB_URI: process.env.MONGODB_URI,
   SF_ID: process.env.SF_ID,
   SF_SECRET: process.env.SF_SECRET,
-  GOOGLE_ID: process.env.GOOGLE_ID
+  GOOGLE_ID: process.env.GOOGLE_ID,
+  CACHE_UN: process.env.MEMCACHEDCLOUD_USERNAME,
+  CACHE_PW: process.env.MEMCACHEDCLOUD_PASSWORD,
+  CACHE_SV: process.env.MEMCACHEDCLOUD_SERVERS
 }
 
 export default (key) => {

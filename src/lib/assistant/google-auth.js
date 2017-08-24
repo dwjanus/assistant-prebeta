@@ -3,11 +3,14 @@ import config from '../../config/config.js'
 import mongo from '../../config/db.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
-import Promise from 'bluebird'
-import request from 'request'
+import memjs from 'memjs'
 
 const storage = mongo({ mongoUri: config('MONGODB_URI') })
-const get = Promise.promisify(request.get)
+const client = memjs.Client.create(config('CACHE_SV'),
+  {
+    username: config('CACHE_UN'),
+    password: config('CACHE_PW')
+  })
 
 function expiration (getset) {
   const date = new Date()
@@ -52,30 +55,18 @@ exports.auth = (req, res) => {
 
   const newUser = {
     id: userId,
-    redir,
     sf: {}
   }
 
   storage.codes.save(newCode)
-  console.log(`--> saved new user: ${util.inspect(newUser)}`)
   storage.users.save(newUser)
+  client.set(userId, redir)
+
+  console.log(`--> saved new user: ${util.inspect(newUser)}`)
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
 
-  const options = {
-    path: `login/${userId}`
-  }
-
-  get('https://assistant-prebeta.herokuapp.com/', options).then((response, body) => {
-    console.log(`--> Response from get:\n${util.inspect(response)}`)
-    console.log(`--> Body from get:\n${util.inspect(body)}`)
-  })
-  .then(() => {
-    // --> send our request out to salesforce for auth
-    res.redirect(`${redir}`)
-  })
-  .catch((error) => {
-    console.log(`Error: ${error}`)
-  })
+  // --> send our request out to salesforce for auth
+  res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
 }
 
 exports.token = (req, res) => {
