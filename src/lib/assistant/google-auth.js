@@ -53,7 +53,7 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  storage.codes.insert(newCode)
+  storage.codes.save(newCode)
 
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
   console.log(`--> caching redirect url: ${redir}`)
@@ -92,7 +92,7 @@ exports.token = (req, res) => {
 
       if (currentTime > auth.expiresAt) {
         console.log('\n--! discrepency registered between expiration times:')
-        console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expires_at}`)
+        console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
         // res.sendStatus(500)
       }
 
@@ -122,7 +122,7 @@ exports.token = (req, res) => {
         expiresAt: null
       }
 
-      storage.codes.insert(access)
+      storage.codes.save(access)
       console.log(`--> saved access token: ${util.inspect(access)}`)
 
       storage.codes.save(refresh)

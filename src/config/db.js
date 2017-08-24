@@ -12,7 +12,7 @@ module.exports = (config) => {
   }
 
   const db = monk(config.mongoUri)
-  db.options = { safe: true, castIds: false }
+  db.options = { castIds: false }
 
   db.catch((err) => {
     throw new Error(err)
@@ -21,6 +21,7 @@ module.exports = (config) => {
   const storage = {};
 
   ['users', 'codes'].forEach((zone) => {
+    storage[zone].index('id')
     storage[zone] = getStorage(db, zone)
   })
 
@@ -48,9 +49,6 @@ function getStorage (db, zone) {
         upsert: true,
         returnNewDocument: true
       }, cb)
-    },
-    insert (data, cb) {
-      table.insert(data, { castIds: false }, cb)
     },
     all (cb) {
       table.find({}, cb)
