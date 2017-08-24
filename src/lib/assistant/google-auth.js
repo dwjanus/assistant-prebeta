@@ -53,11 +53,9 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  storage.codes.save(newCode, (err, saved) => {
-    if (err) console.log(`Storage save error for new code: ${err}`)
-    console.log(`--> saved auth code: ${util.inspect(saved)}`)
-  })
+  storage.codes.save(newCode)
 
+  console.log(`--> saved auth code: ${util.inspect(newCode)}`)
   console.log(`--> caching redirect url: ${redir}`)
 
   client.set(userId, redir, { expires: 600 }, (error, val) => {
@@ -75,6 +73,7 @@ exports.token = (req, res) => {
   const code = req.body.code
   const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
+
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
   console.log(`    req body: ${util.inspect(req.body)}\n`)
