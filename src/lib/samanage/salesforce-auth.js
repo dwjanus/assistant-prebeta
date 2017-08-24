@@ -66,7 +66,7 @@ exports.oauthCallback = (req, res) => {
     })
 
     client.get(userId, (error, redir) => {
-      if (error) console.log(`MEM_CACHE ERROR: ${err}`)
+      if (error) console.log(`MEM_CACHE ERROR: ${error}`)
       res.redirect(redir)
     })
   })
