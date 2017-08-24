@@ -49,6 +49,9 @@ function getStorage (db, zone) {
         returnNewDocument: true
       }, cb)
     },
+    insert (data, cb) {
+      table.insert(data, { castIds: false }, cb)
+    },
     all (cb) {
       table.find({}, cb)
     },

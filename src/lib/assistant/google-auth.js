@@ -53,7 +53,7 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  storage.codes.save(newCode)
+  storage.codes.insert(newCode)
 
   console.log(`--> saved auth code: ${util.inspect(newCode)}`)
   console.log(`--> caching redirect url: ${redir}`)
@@ -114,11 +114,6 @@ exports.token = (req, res) => {
         expiresAt
       }
 
-      storage.codes.save(access, (error, saved) => {
-        if (error) console.log(`Storage save error for new access token: ${error}`)
-        console.log(`--> saved access token: ${util.inspect(saved)}`)
-      })
-
       const refresh = {
         id: refreshToken,
         type: 'refresh',
@@ -127,10 +122,11 @@ exports.token = (req, res) => {
         expiresAt: null
       }
 
-      storage.codes.save(refresh, (error, saved) => {
-        if (error) console.log(`Storage save error for new refresh token: ${error}`)
-        console.log(`--> saved refresh token: ${util.inspect(saved)}`)
-      })
+      storage.codes.insert(access)
+      console.log(`--> saved access token: ${util.inspect(access)}`)
+
+      storage.codes.save(refresh)
+      console.log(`--> saved refresh token: ${util.inspect(refresh)}`)
 
       const response = {
         token_type: 'bearer',
