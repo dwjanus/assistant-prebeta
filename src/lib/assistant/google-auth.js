@@ -53,14 +53,20 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  storage.codes.save(newCode)
+  // storage.codes.save(newCode)
 
-  console.log(`--> saved auth code: ${util.inspect(newCode)}`)
   console.log(`--> caching redirect url: ${redir}`)
 
   client.set(userId, redir, { expires: 600 }, (error, val) => {
     if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
     console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
+  })
+
+  console.log(`--> caching auth code: ${util.inspect(newCode)}`)
+
+  client.set(code, newCode, { expires: 600 }, (error, val) => {
+    if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
+    console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
   })
 
   // --> send our request out to salesforce for auth
@@ -82,7 +88,7 @@ exports.token = (req, res) => {
   if (grant === 'authorization_code') {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
-    storage.codes.get(code, (err, auth) => {
+    client.get(code, (err, auth) => {
       console.log(`--> auth:\n${util.inspect(auth)}`)
 
       if (err || !auth) {
