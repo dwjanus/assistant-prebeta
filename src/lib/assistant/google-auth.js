@@ -91,7 +91,7 @@ exports.token = (req, res) => {
     client.get(code, (err, auth) => {
       console.log(`--> auth: ${util.inspect(auth)}`)
       const buf = Buffer.from(auth, 'base64') // pretty sure its this
-      const buf2 = Buffer.from(auth, 'utf-8')
+      const buf2 = Buffer.from(auth, 'utf8')
       const buf3 = Buffer.from(auth, 'ascii')
       console.log('--> Buffer decodings:')
       console.log(`    buf: ${buf.toString()}`)
