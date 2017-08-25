@@ -89,8 +89,19 @@ exports.token = (req, res) => {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
     client.get(code, (err, auth) => {
-      auth = auth.toString('base64')
       console.log(`--> auth: ${util.inspect(auth)}`)
+      const buf = Buffer.from(auth, 'base64') // pretty sure its this
+      const buf2 = Buffer.from(auth, 'utf-8')
+      const buf3 = Buffer.from(auth, 'ascii')
+      console.log('--> Buffer decodings:')
+      console.log(`    buf: ${buf.toString()}`)
+      console.log(`    buf2: ${buf2.toString()}`)
+      console.log(`    buf3: ${buf3.toString()}\n`)
+      console.log('--> Buffer decodings (alternate syntax):')
+      console.log(`    buf: ${buf.toString('base64')}`)
+      console.log(`    buf2: ${buf2.toString('base64')}`)
+      console.log(`    buf3: ${buf3.toString('base64')}\n`)
+
 
       if (err || !auth) {
         console.log(`    Error in auth storage: ${err}`)
