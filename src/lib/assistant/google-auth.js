@@ -64,7 +64,7 @@ exports.auth = (req, res) => {
 
   console.log(`--> caching auth code: ${util.inspect(newCode)}`)
 
-  client.set(code, userId.toString('base64'), { expires: 600 }, (error, val) => {
+  client.set(code, userId, { expires: 600 }, (error, val) => {
     if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
     console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
   })
@@ -89,7 +89,8 @@ exports.token = (req, res) => {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
     client.get(code, (err, auth) => {
-      console.log(`--> auth:\n${util.inspect(auth)}`)
+      auth = auth.toString('base64')
+      console.log(`--> auth: ${util.inspect(auth)}`)
 
       if (err || !auth) {
         console.log(`    Error in auth storage: ${err}`)
