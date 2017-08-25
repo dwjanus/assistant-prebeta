@@ -88,23 +88,14 @@ exports.token = (req, res) => {
   if (grant === 'authorization_code') {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
-    client.get(code, (err, auth) => {
-      console.log(`--> auth: ${util.inspect(auth)}`)
-      const buf = Buffer.from(auth, 'base64') // pretty sure its this
-      const buf2 = Buffer.from(auth, 'utf8')
-      const buf3 = Buffer.from(auth, 'ascii')
-      console.log('--> Buffer decodings:')
-      console.log(`    buf: ${buf.toString()}`)
-      console.log(`    buf2: ${buf2.toString()}`)
-      console.log(`    buf3: ${buf3.toString()}\n`)
-      console.log('--> Buffer decodings (alternate syntax):')
-      console.log(`    buf: ${buf.toString('base64')}`)
-      console.log(`    buf2: ${buf2.toString('base64')}`)
-      console.log(`    buf3: ${buf3.toString('base64')}\n`)
+    client.get(code, (err, value, key) => {
+      console.log('Auth Code retrieved from cache:')
+      console.log(`--> key: ${util.inspect(key.toString())}`)
+      console.log(`--> value: ${util.inspect(value.toString())}`)
 
 
-      if (err || !auth) {
-        console.log(`    Error in auth storage: ${err}`)
+      if (err || !value) {
+        console.log(`    Error in auth code storage: ${err}`)
         res.sendStatus(500)
       }
 
@@ -127,7 +118,7 @@ exports.token = (req, res) => {
       const access = {
         id: accessToken,
         type: 'access',
-        userId: auth,
+        userId: value.toString(),
         clientId: config('GOOGLE_ID'),
         expiresAt
       }
@@ -135,7 +126,7 @@ exports.token = (req, res) => {
       const refresh = {
         id: refreshToken,
         type: 'refresh',
-        userId: auth,
+        userId: value.toString(),
         clientId: config('GOOGLE_ID'),
         expiresAt: null
       }
