@@ -64,7 +64,7 @@ exports.auth = (req, res) => {
 
   console.log(`--> caching auth code: ${util.inspect(newCode)}`)
 
-  client.set(code, newCode, { expires: 600 }, (error, val) => {
+  client.set(code, userId, { expires: 600 }, (error, val) => {
     if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
     console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
   })
@@ -77,7 +77,7 @@ exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
   const code = req.body.code
-  const currentTime = expiration('get')
+  // const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
 
   console.log('--> google-auth /token')
@@ -96,17 +96,17 @@ exports.token = (req, res) => {
         res.sendStatus(500)
       }
 
-      if (currentTime > auth.expiresAt) {
-        console.log('\n--! discrepency registered between expiration times:')
-        console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
-        // res.sendStatus(500)
-      }
+      // if (currentTime > auth.expiresAt) {
+      //   console.log('\n--! discrepency registered between expiration times:')
+      //   console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
+      //   // res.sendStatus(500)
+      // }
 
-      if (req.body.client_id !== auth.clientId) {
-        console.log('\n--! discrepency registered between client Ids:')
-        console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
-        // res.sendStatus(500)
-      }
+      // if (req.body.client_id !== auth.clientId) {
+      //   console.log('\n--! discrepency registered between client Ids:')
+      //   console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
+      //   // res.sendStatus(500)
+      // }
 
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
@@ -115,7 +115,7 @@ exports.token = (req, res) => {
       const access = {
         id: accessToken,
         type: 'access',
-        userId: auth.userId,
+        userId: auth,
         clientId: config('GOOGLE_ID'),
         expiresAt
       }
@@ -123,7 +123,7 @@ exports.token = (req, res) => {
       const refresh = {
         id: refreshToken,
         type: 'refresh',
-        userId: auth.userId,
+        userId: auth,
         clientId: config('GOOGLE_ID'),
         expiresAt: null
       }
