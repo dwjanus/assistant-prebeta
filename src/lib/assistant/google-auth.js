@@ -64,7 +64,7 @@ exports.auth = (req, res) => {
 
   console.log(`--> caching auth code: ${util.inspect(newCode)}`)
 
-  client.set(code, userId.toString(), { expires: 600 }, (error, val) => {
+  client.set(code, userId.toString('base64'), { expires: 600 }, (error, val) => {
     if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
     console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
   })
