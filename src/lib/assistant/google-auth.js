@@ -152,11 +152,11 @@ exports.token = (req, res) => {
 
     connection.connect((error) => {
       if (error) console.log(`JAWS DB connection Error!\n${error}`)
-      connection.query(`SELECT user_id FROM codes WHERE code_id = ${req.body.refresh_token} AND type = 'refresh'`, (selError, result1) => {
+      connection.query(`SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`, (selError, result1) => {
         if (selError) console.log(`Error in DB SELECT: ${selError}`)
         else console.log(`--> retrieved user_id from refresh code: ${result1}`)
 
-        connection.query(`UPDATE codes SET code_id = ${accessToken}, expires_at = ${expiresAt} WHERE user_id = ${result1[0].user_id}
+        connection.query(`UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${result1[0].user_id}'
           AND type = 'access'`, (upError, result2) => {
           if (upError) console.log(`Error in DB UPDATE: ${upError}`)
           else console.log(`--> saved user info: ${result2}`)
