@@ -44,10 +44,11 @@ exports.oauthCallback = (req, res) => {
     connection.connect((error) => {
       if (error) console.log(`JAWS DB connection Error!\n${error}`)
       connection.query('INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
-        `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.accessToken}', '${conn.refreshToken}')`, (insError, result) => {
-        if (insError) console.log(`Error storing user info: ${insError}`)
-        else console.log(`--> saved user info: ${result}`)
-      })
+        `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`,
+        (insError, result) => {
+          if (insError) console.log(`Error storing user info - ${insError}`)
+          else console.log(`--> saved user info: ${result}`)
+        })
     })
 
     // connection.end()
