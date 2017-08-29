@@ -50,7 +50,7 @@ exports.oauthCallback = (req, res) => {
       })
     })
 
-    connection.end()
+    // connection.end()
     client.get(userId, (error, redir) => {
       if (error) console.log(`MEM_CACHE ERROR: ${error}`)
       res.redirect(redir)
@@ -69,6 +69,6 @@ exports.oauthCallback = (req, res) => {
       })
     })
 
-    connection.end()
+    // connection.end()
   })
 }

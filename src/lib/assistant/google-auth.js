@@ -130,7 +130,7 @@ exports.token = (req, res) => {
         })
       })
 
-      connection.end()
+      // connection.end()
 
       const response = {
         token_type: 'bearer',
@@ -164,7 +164,7 @@ exports.token = (req, res) => {
       })
     })
 
-    connection.end()
+    // connection.end()
 
     const response = {
       token_type: 'bearer',
