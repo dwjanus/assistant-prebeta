@@ -117,14 +117,14 @@ exports.token = (req, res) => {
 
       connection.connect((error) => {
         if (error) console.log(`JAWS DB connection Error!\n${error}`)
-        connection.query(`INSERT INTO codes (code_id, type, user_id, client_id, expires_at)
-          VALUES (${accessToken}, 'access', ${value.toString()}, 'samanage', ${expiresAt})`, (insError, result) => {
+        connection.query('INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+          `VALUES ('${accessToken}', 'access', '${value.toString()}', 'samanage', '${expiresAt}')`, (insError, result) => {
           if (insError) console.log(`Error storing access tokens: ${insError}`)
           console.log(`--> saved access token: ${result}`)
         })
 
-        connection.query(`INSERT INTO codes (code_id, type, user_id, client_id)
-          VALUES (${refreshToken}, 'refresh', ${value.toString()}, 'samanage')`, (insError, result) => {
+        connection.query('INSERT INTO codes (code_id, type, user_id, client_id) ' +
+          `VALUES ('${refreshToken}', 'refresh', '${value.toString()}', 'samanage')`, (insError, result) => {
           if (insError) console.log(`Error storing refresh tokens: ${insError}`)
           console.log(`--> saved refresh token: ${result}`)
         })
