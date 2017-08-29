@@ -90,8 +90,8 @@ exports.token = (req, res) => {
 
     client.get(code, (err, value, key) => {
       console.log('Auth Code retrieved from cache:')
-      console.log(`--> key: ${util.inspect(key.toString())}`)
-      console.log(`--> value: ${util.inspect(value.toString())}`)
+      console.log(`--> key: ${key.toString()}`)
+      console.log(`--> value: ${value.toString()}`)
 
 
       if (err || !value) {
