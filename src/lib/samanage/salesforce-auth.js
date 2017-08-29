@@ -1,10 +1,10 @@
 import util from 'util'
 import jsforce from 'jsforce'
 import config from '../../config/config.js'
-import mongo from '../../config/db.js'
 import memjs from 'memjs'
+import mysql from 'mysql'
 
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const connection = mysql.createConnection(config('JAWSDB_URL'))
 const client = memjs.Client.create(config('CACHE_SV'),
   {
     username: config('CACHE_UN'),
@@ -32,7 +32,6 @@ exports.login = (req, res) => {
 }
 
 exports.oauthCallback = (req, res) => {
-  let sfTokens
   const userId = req.query.state
   const code = req.query.code
   const conn = new jsforce.Connection({ oauth2 })
@@ -42,24 +41,16 @@ exports.oauthCallback = (req, res) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
 
-    // for final security layer we can encrypt these tokens
-    const user = {
-      id: userId,
-      sf: {
-        id: userInfo.id,
-        org: userInfo.organizationId,
-        tokens:
-        {
-          sfInstanceUrl: conn.instanceUrl,
-          sfAccessToken: conn.accessToken,
-          sfRefreshToken: conn.refreshToken
-        }
-      }
-    }
+    connection.connect((error) => {
+      if (error) console.log(`JAWS DB connection Error!\n${error}`)
+      connection.query(`INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh)
+        VALUES (${userId}, ${userInfo.id}, ${userInfo.organizationId}, ${conn.accessToken}, ${conn.refreshToken})`, (insError, result) => {
+        if (insError) console.log(`Error storing user info: ${insError}`)
+        else console.log(`--> saved user info: ${result}`)
+      })
+    })
 
-    console.log(`    stored updated user data:\n${util.inspect(user)}`)
-    storage.users.save(user)
-
+    connection.end()
     client.get(userId, (error, redir) => {
       if (error) console.log(`MEM_CACHE ERROR: ${error}`)
       res.redirect(redir)
@@ -69,11 +60,15 @@ exports.oauthCallback = (req, res) => {
   conn.on('refresh', (newToken, refres) => {
     console.log(`--> salesforce-auth got a refresh event from Salesforce!\n    new token: ${newToken}\n`)
     console.log(`    response:\n${util.inspect(refres)}`)
-    sfTokens.sfAccessToken = newToken
-    storage.users.get(userId, (storeErr, user) => {
-      if (storeErr) console.log(`!!! ERROR obtaining user: ${userId} -- ${storeErr}`)
-      user.sf.tokens = sfTokens
-      storage.users.save(user)
+
+    connection.connect((error) => {
+      if (error) console.log(`JAWS DB connection Error!\n${error}`)
+      connection.query(`UPDATE users SET access = ${newToken} WHERE user_id = ${userId}`, (upError, result) => {
+        if (upError) console.log(`Error updating user token: ${upError}`)
+        else console.log(`--> updated user info: ${result}`)
+      })
     })
+
+    connection.end()
   })
 }

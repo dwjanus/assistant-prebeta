@@ -1,11 +1,11 @@
 import util from 'util'
 import config from '../../config/config.js'
-import mongo from '../../config/db.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
 import memjs from 'memjs'
+import mysql from 'mysql'
 
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const connection = mysql.createConnection(config('JAWSDB_URL'))
 const client = memjs.Client.create(config('CACHE_SV'),
   {
     username: config('CACHE_UN'),
@@ -115,27 +115,22 @@ exports.token = (req, res) => {
       const refreshToken = crypto.randomBytes(16).toString('base64')
       const expiresAt = expiration('setaccess')
 
-      const access = {
-        id: accessToken,
-        type: 'access',
-        userId: value.toString(),
-        clientId: config('GOOGLE_ID'),
-        expiresAt
-      }
+      connection.connect((error) => {
+        if (error) console.log(`JAWS DB connection Error!\n${error}`)
+        connection.query(`INSERT INTO codes (code_id, type, user_id, client_id, expires_at)
+          VALUES (${accessToken}, 'access', ${value.toString()}, 'samanage', ${expiresAt})`, (insError, result) => {
+          if (insError) console.log(`Error storing access tokens: ${insError}`)
+          console.log(`--> saved access token: ${result}`)
+        })
 
-      const refresh = {
-        id: refreshToken,
-        type: 'refresh',
-        userId: value.toString(),
-        clientId: config('GOOGLE_ID'),
-        expiresAt: null
-      }
+        connection.query(`INSERT INTO codes (code_id, type, user_id, client_id)
+          VALUES (${refreshToken}, 'refresh', ${value.toString()}, 'samanage')`, (insError, result) => {
+          if (insError) console.log(`Error storing refresh tokens: ${insError}`)
+          console.log(`--> saved refresh token: ${result}`)
+        })
+      })
 
-      storage.codes.save(access)
-      console.log(`--> saved access token: ${util.inspect(access)}`)
-
-      storage.codes.save(refresh)
-      console.log(`--> saved refresh token: ${util.inspect(refresh)}`)
+      connection.end()
 
       const response = {
         token_type: 'bearer',
@@ -151,29 +146,33 @@ exports.token = (req, res) => {
 
   if (grant === 'refresh_token') {
     console.log('--> Refresh Token recieved')
-    storage.codes.get(req.body.refresh_token, (err, refresh) => {
-      console.log(`    refresh code retrieved:\n${util.inspect(refresh)}`)
-      if (err) res.send(err)
-      // need to verify everything here
-      const accessToken = crypto.randomBytes(16).toString('base64')
-      const expiresAt = expiration('setaccess')
-      const access = {
-        id: accessToken,
-        type: 'access',
-        userId: refresh.userId,
-        clientId: config('GOOGLE_ID'),
-        expiresAt
-      }
 
-      storage.codes.save(access)
+    const accessToken = crypto.randomBytes(16).toString('base64')
+    const expiresAt = expiration('setaccess')
 
-      const response = {
-        token_type: 'bearer',
-        access_token: accessToken,
-        expires_in: 3600
-      }
-      console.log(`    sending response object back:\n${util.inspect(response)}`)
-      res.json(response).end()
+    connection.connect((error) => {
+      if (error) console.log(`JAWS DB connection Error!\n${error}`)
+      connection.query(`SELECT user_id FROM codes WHERE code_id = ${req.body.refresh_token} AND type = 'refresh'`, (selError, result1) => {
+        if (selError) console.log(`Error in DB SELECT: ${selError}`)
+        else console.log(`--> retrieved user_id from refresh code: ${result1}`)
+
+        connection.query(`UPDATE codes SET code_id = ${accessToken}, expires_at = ${expiresAt} WHERE user_id = ${result1[0].user_id}
+          AND type = 'access'`, (upError, result2) => {
+          if (upError) console.log(`Error in DB UPDATE: ${upError}`)
+          else console.log(`--> saved user info: ${result2}`)
+        })
+      })
     })
+
+    connection.end()
+
+    const response = {
+      token_type: 'bearer',
+      access_token: accessToken,
+      expires_in: 3600
+    }
+
+    console.log(`    sending response object back:\n${util.inspect(response)}`)
+    res.json(response).end()
   }
 }

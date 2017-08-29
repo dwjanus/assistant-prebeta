@@ -5,15 +5,19 @@ import path from 'path'
 import config from './config/config.js'
 import sfauth from './lib/samanage/salesforce-auth.js'
 import gauth from './lib/assistant/google-auth.js'
-import mongo from './config/db.js'
+import mysql from 'mysql'
 import Promise from 'bluebird'
 import samanageAssistant from './lib/assistant/ebu-assistant-handler.js'
 
 const app = express()
 const ApiAiApp = require('actions-on-google').ApiAiAssistant
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
-const codes = Promise.promisify(storage.codes.get)
-const users = Promise.promisify(storage.users.get)
+const connection = mysql.createConnection(config('JAWSDB_URL'))
+connection.connect((err) => {
+  if (!err) console.log('Database is connected...')
+  else console.log('Error connecting database...')
+})
+const query = Promise.promisify(connection.query)
+
 const port = process.env.port || process.env.PORT || config('PORT') || 8080
 if (!port) {
   console.log('Error: Port not specified in environment')
@@ -43,16 +47,15 @@ app.post('/actions', (request, response) => {
   const currentToken = currentUser.access_token
   console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
   console.log(`    user data from assistant:\n${util.inspect(currentUser)}\n`)
-  codes(currentToken).then((access) => {
-    console.log(`    found user: ${util.inspect(access)}`)
-    return access.userId
+
+  query(`SELECT user_id from codes WHERE ${currentToken} = code_id AND type = 'access'`).then((result) => {
+    console.log(`    result: ${util.inspect(result)}`)
+    return result[0].user_id
   })
   .then((userId) => {
-    users(userId).then((user) => {
-      console.log(`    ${user.id} retrieved`)
-      // --> this is where we would check the token
-      samanageAssistant(assistant, user)
-    })
+    console.log(`--> starting up Assistant for user: ${userId}`)
+    // --> this is where we would check the token
+    samanageAssistant(assistant, userId)
   })
 })
 
