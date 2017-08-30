@@ -82,8 +82,8 @@ exports.token = (req, res) => {
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type = AUTH --> code: ${code}`)
-    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
+    console.log(`    grant type = AUTH --> code: ${code.toString()}`)
+    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code.toString()}'`
 
     return query(codeQryStr).then((result) => {
       console.log(`auth code retrieved from db: ${util.inspect(result)}`)
@@ -151,7 +151,7 @@ exports.token = (req, res) => {
     const expiresAt = expiration('setaccess')
     const selectQry = `SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`
 
-    return query(selectQry, (selectResult) => {
+    return query(selectQry).then((selectResult) => {
       console.log(`--> retrieved user_id from refresh code: ${util.inspect(selectResult)}`)
       return selectResult[0].user_id
     })
