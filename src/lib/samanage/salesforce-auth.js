@@ -47,11 +47,10 @@ exports.oauthCallback = (req, res) => {
         `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`,
         (insError, result) => {
           if (insError) console.log(`Error storing user info - ${insError}`)
-          else console.log(`--> saved user info: ${result}`)
+          else console.log(`--> saved user info: ${util.inspect(result)}`)
         })
     })
 
-    // connection.end()
     client.get(userId, (error, redir) => {
       if (error) console.log(`MEM_CACHE ERROR: ${error}`)
       res.redirect(redir)
@@ -66,10 +65,8 @@ exports.oauthCallback = (req, res) => {
       if (error) console.log(`JAWS DB connection Error!\n${error}`)
       connection.query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${userId}'`, (upError, result) => {
         if (upError) console.log(`Error updating user token: ${upError}`)
-        else console.log(`--> updated user info: ${result}`)
+        else console.log(`--> updated user info: ${util.inspect(result)}`)
       })
     })
-
-    // connection.end()
   })
 }

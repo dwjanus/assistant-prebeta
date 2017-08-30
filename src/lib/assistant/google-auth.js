@@ -53,8 +53,6 @@ exports.auth = (req, res) => {
     expiresAt
   }
 
-  // storage.codes.save(newCode)
-
   console.log(`--> caching redirect url: ${redir}`)
 
   client.set(userId, redir, { expires: 600 }, (error, val) => {
@@ -88,11 +86,9 @@ exports.token = (req, res) => {
   if (grant === 'authorization_code') {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
 
-    client.get(code, (err, value, key) => {
-      console.log('Auth Code retrieved from cache:')
-      console.log(`--> key: ${key.toString()}`)
-      console.log(`--> value: ${value.toString()}`)
 
+    client.get(code, (err, value) => {
+      console.log(`Auth Code retrieved from cache: ${value.toString()}`)
 
       if (err || !value) {
         console.log(`    Error in auth code storage: ${err}`)
@@ -120,17 +116,15 @@ exports.token = (req, res) => {
         connection.query('INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
           `VALUES ('${accessToken}', 'access', '${value.toString()}', 'samanage', '${expiresAt}')`, (insError, result) => {
           if (insError) console.log(`Error storing access tokens: ${insError}`)
-          console.log(`--> saved access token: ${result}`)
+          console.log(`--> saved access token: ${util.inspect(result)}`)
         })
 
         connection.query('INSERT INTO codes (code_id, type, user_id, client_id) ' +
           `VALUES ('${refreshToken}', 'refresh', '${value.toString()}', 'samanage')`, (insError, result) => {
           if (insError) console.log(`Error storing refresh tokens: ${insError}`)
-          console.log(`--> saved refresh token: ${result}`)
+          console.log(`--> saved refresh token: ${util.inspect(result)}`)
         })
       })
-
-      // connection.end()
 
       const response = {
         token_type: 'bearer',
@@ -154,17 +148,15 @@ exports.token = (req, res) => {
       if (error) console.log(`JAWS DB connection Error!\n${error}`)
       connection.query(`SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`, (selError, result1) => {
         if (selError) console.log(`Error in DB SELECT: ${selError}`)
-        else console.log(`--> retrieved user_id from refresh code: ${result1}`)
+        else console.log(`--> retrieved user_id from refresh code: ${util.inspect(result1)}`)
 
         connection.query(`UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${result1[0].user_id}'
           AND type = 'access'`, (upError, result2) => {
           if (upError) console.log(`Error in DB UPDATE: ${upError}`)
-          else console.log(`--> saved user info: ${result2}`)
+          else console.log(`--> saved user info: ${util.inspect(result2)}`)
         })
       })
     })
-
-    // connection.end()
 
     const response = {
       token_type: 'bearer',
