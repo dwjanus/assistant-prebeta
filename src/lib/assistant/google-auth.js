@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import shortid from 'shortid'
 import memjs from 'memjs'
 import db from '../../config/db.js'
+import Promise from 'bluebird'
 
 // const connection = db.getSqlConnection
 const query = db.querySql
