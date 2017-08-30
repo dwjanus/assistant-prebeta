@@ -60,7 +60,7 @@ export default ((userId) => {
 
     const getUser = `SELECT * from users WHERE user_id = '${userId}'`
     query(getUser).then((userRow) => {
-      console.log(`Got User:\n${util.inspect(userRow)}`)
+      console.log(`\nsalesforce] user found!\n${util.inspect(userRow)}`)
       return userRow[0]
     })
     .then((user) => {
@@ -69,7 +69,6 @@ export default ((userId) => {
         return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
       }
 
-      console.log('    [salesforce] user found!')
       let conn = new jsforce.Connection({
         oauth2,
         instanceUrl: user.url,
