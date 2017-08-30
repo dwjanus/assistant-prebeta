@@ -3,9 +3,10 @@ import config from '../../config/config.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
 import memjs from 'memjs'
-import mysql from 'mysql'
+import db from '../../config/db.js'
 
-const connection = mysql.createConnection(config('JAWSDB_URL'))
+// const connection = db.getSqlConnection
+const query = db.querySql
 const client = memjs.Client.create(config('CACHE_SV'),
   {
     username: config('CACHE_UN'),
@@ -60,15 +61,29 @@ exports.auth = (req, res) => {
     console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
   })
 
-  console.log(`--> caching auth code: ${util.inspect(newCode)}`)
+  console.log(`--> saving auth code: ${util.inspect(newCode)}`)
 
-  client.set(code, userId, { expires: 600 }, (error, val) => {
-    if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
-    console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
+  // connection((error) => {
+  //   if (error) console.log(`JAWS DB connection Error!\n${error}`)
+  //   connection.query('INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+  //     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`, (insError, result) => {
+  //     if (insError) console.log(`Error storing access tokens: ${insError}`)
+  //     console.log(`--> saved access token: ${util.inspect(result)}`)
+  //   })
+  // })
+
+  const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+    `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
+
+  return query(insertQry).then((result) => {
+    console.log(`--> saved auth code: ${util.inspect(result)}`)
+
+    // --> send our request out to salesforce for auth
+    return res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
   })
-
-  // --> send our request out to salesforce for auth
-  res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
+  .catch((insError) => {
+    console.log(`--> Error storing auth code <--\n${insError}`)
+  })
 }
 
 exports.token = (req, res) => {
@@ -85,16 +100,17 @@ exports.token = (req, res) => {
   // --> retrieve auth record
   if (grant === 'authorization_code') {
     console.log(`    grant type ==> AUTH -- code: ${code}`)
+    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
 
-
-    client.get(code, (err, value) => {
-      console.log(`Auth Code retrieved from cache: ${value.toString()}`)
-
-      if (err || !value) {
-        console.log(`    Error in auth code storage: ${err}`)
+    return query(codeQryStr).then((result) => {
+      console.log(`Auth Code retrieved from db: ${util.inspect(result)}`)
+      if (!result) {
         res.sendStatus(500)
+        return Promise.reject('    Failure: No rows found from query')
       }
-
+      return result[0].user_id
+    })
+    .then((userId) => {
       // if (currentTime > auth.expiresAt) {
       //   console.log('\n--! discrepency registered between expiration times:')
       //   console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
@@ -110,31 +126,33 @@ exports.token = (req, res) => {
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
       const expiresAt = expiration('setaccess')
+      const accessQryStr = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+      `VALUES ('${accessToken}', 'access', '${userId}', 'samanage', '${expiresAt}')`
+      const refreshQryStr = 'INSERT INTO codes (code_id, type, user_id, client_id) ' +
+      `VALUES ('${refreshToken}', 'refresh', '${userId}', 'samanage')`
 
-      connection.connect((error) => {
-        if (error) console.log(`JAWS DB connection Error!\n${error}`)
-        connection.query('INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
-          `VALUES ('${accessToken}', 'access', '${value.toString()}', 'samanage', '${expiresAt}')`, (insError, result) => {
-          if (insError) console.log(`Error storing access tokens: ${insError}`)
-          console.log(`--> saved access token: ${util.inspect(result)}`)
-        })
-
-        connection.query('INSERT INTO codes (code_id, type, user_id, client_id) ' +
-          `VALUES ('${refreshToken}', 'refresh', '${value.toString()}', 'samanage')`, (insError, result) => {
-          if (insError) console.log(`Error storing refresh tokens: ${insError}`)
-          console.log(`--> saved refresh token: ${util.inspect(result)}`)
-        })
+      Promise.join(query(accessQryStr), query(refreshQryStr), (result1, result2) => {
+        console.log(`--> saved access token: ${util.inspect(result1)}`)
+        console.log(`--> saved refresh token: ${util.inspect(result2)}`)
       })
+      .then(() => {
+        const response = {
+          token_type: 'bearer',
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_in: 3600
+        }
 
-      const response = {
-        token_type: 'bearer',
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        expires_in: 3600
-      }
-
-      console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
-      res.json(response).end()
+        console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
+        return res.json(response).end()
+      })
+      .catch((insError) => {
+        console.log(`--> Error storing access tokens <--\n${insError}`)
+      })
+    })
+    .catch((err) => {
+      console.log(`--> Error in auth code storage <--\n${err}`)
+      return res.sendStatus(500)
     })
   }
 
@@ -142,29 +160,37 @@ exports.token = (req, res) => {
     console.log('--> Refresh Token recieved')
 
     const accessToken = crypto.randomBytes(16).toString('base64')
-    const expiresAt = expiration('setaccess')
-
-    connection.connect((error) => {
-      if (error) console.log(`JAWS DB connection Error!\n${error}`)
-      connection.query(`SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`, (selError, result1) => {
-        if (selError) console.log(`Error in DB SELECT: ${selError}`)
-        else console.log(`--> retrieved user_id from refresh code: ${util.inspect(result1)}`)
-
-        connection.query(`UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${result1[0].user_id}'
-          AND type = 'access'`, (upError, result2) => {
-          if (upError) console.log(`Error in DB UPDATE: ${upError}`)
-          else console.log(`--> saved user info: ${util.inspect(result2)}`)
-        })
-      })
-    })
-
     const response = {
       token_type: 'bearer',
       access_token: accessToken,
       expires_in: 3600
     }
+    const expiresAt = expiration('setaccess')
+    const selectQry = `SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`
 
-    console.log(`    sending response object back:\n${util.inspect(response)}`)
-    res.json(response).end()
+    return query(selectQry, (selectResult) => {
+      console.log(`--> retrieved user_id from refresh code: ${util.inspect(selectResult)}`)
+      return selectResult[0].user_id
+    })
+    .then((userId) => {
+      const updateQry = `UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${userId}'
+        AND type = 'access'`
+
+      return query(updateQry, (upError, result2) => {
+        console.log(`--> saved user info: ${util.inspect(result2)}`)
+      })
+      .then(() => {
+        console.log(`    sending response object back:\n${util.inspect(response)}`)
+        return res.json(response).end()
+      })
+      .catch((upError) => {
+        console.log(`Error in DB UPDATE: ${upError}`)
+      })
+    })
+    .catch((selError) => {
+      console.log(`Error in DB SELECT: ${selError}`)
+    })
   }
+
+  return res.sendStatus(500)
 }

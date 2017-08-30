@@ -2,9 +2,11 @@ import util from 'util'
 import jsforce from 'jsforce'
 import config from '../../config/config.js'
 import memjs from 'memjs'
-import mysql from 'mysql'
+import db from '../../config/db.js'
+// import mysql from 'mysql'
 
-const connection = mysql.createConnection(config('JAWSDB_URL'))
+// const connection = mysql.createConnection(config('JAWSDB_URL'))
+const query = db.querySql
 const client = memjs.Client.create(config('CACHE_SV'),
   {
     username: config('CACHE_UN'),
@@ -41,19 +43,29 @@ exports.oauthCallback = (req, res) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
 
-    connection.connect((error) => {
-      if (error) console.log(`JAWS DB connection Error!\n${error}`)
-      connection.query('INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
-        `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`,
-        (insError, result) => {
-          if (insError) console.log(`Error storing user info - ${insError}`)
-          else console.log(`--> saved user info: ${util.inspect(result)}`)
-        })
-    })
+    // connection.connect((error) => {
+    //   if (error) console.log(`JAWS DB connection Error!\n${error}`)
+    //   connection.query('INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
+    //     `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`,
+    //     (insError, result) => {
+    //       if (insError) console.log(`Error storing user info - ${insError}`)
+    //       else console.log(`--> saved user info: ${util.inspect(result)}`)
+    //     })
+    // })
 
-    client.get(userId, (error, redir) => {
-      if (error) console.log(`MEM_CACHE ERROR: ${error}`)
-      res.redirect(redir)
+    const insertStr = 'INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
+      `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`
+
+    return query(insertStr).then((result) => {
+      console.log(`--> saved user info: ${util.inspect(result)}`)
+
+      client.get(userId, (error, redir) => {
+        if (error) console.log(`MEM_CACHE ERROR: ${error}`)
+        return res.redirect(redir)
+      })
+    })
+    .catch((insError) => {
+      console.log(`Error storing user info - ${insError}`)
     })
   })
 
@@ -61,12 +73,13 @@ exports.oauthCallback = (req, res) => {
     console.log(`--> salesforce-auth got a refresh event from Salesforce!\n    new token: ${newToken}\n`)
     console.log(`    response:\n${util.inspect(refres)}`)
 
-    connection.connect((error) => {
-      if (error) console.log(`JAWS DB connection Error!\n${error}`)
-      connection.query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${userId}'`, (upError, result) => {
-        if (upError) console.log(`Error updating user token: ${upError}`)
-        else console.log(`--> updated user info: ${util.inspect(result)}`)
-      })
+    const updateQry = `UPDATE users SET access = '${newToken}' WHERE user_id = '${userId}'`
+
+    return query(updateQry).then((result) => {
+      console.log(`--> updated user info: ${util.inspect(result)}`)
+    })
+    .catch((upError) => {
+      console.log(`Error updating user token: ${upError}`)
     })
   })
 }

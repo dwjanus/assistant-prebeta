@@ -5,18 +5,20 @@ import path from 'path'
 import config from './config/config.js'
 import sfauth from './lib/samanage/salesforce-auth.js'
 import gauth from './lib/assistant/google-auth.js'
-import mysql from 'mysql'
-import Promise from 'bluebird'
+// import mysql from 'mysql'
+// import Promise from 'bluebird'
+import db from './config/db.js'
 import samanageAssistant from './lib/assistant/ebu-assistant-handler.js'
 
 const app = express()
+const query = db.querySql
 const ApiAiApp = require('actions-on-google').ApiAiAssistant
-const connection = mysql.createConnection(config('JAWSDB_URL'))
-connection.connect((err) => {
-  if (!err) console.log('Database is connected...')
-  else console.log('Error connecting database...')
-})
-const query = Promise.promisify(connection.query)
+// const connection = mysql.createConnection(config('JAWSDB_URL'))
+// connection.connect((err) => {
+//   if (!err) console.log('Database is connected...')
+//   else console.log('Error connecting database...')
+// })
+// const query = Promise.promisify(connection.query)
 
 const port = process.env.port || process.env.PORT || config('PORT') || 8080
 if (!port) {
@@ -48,7 +50,7 @@ app.post('/actions', (request, response) => {
   console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
   console.log(`    user data from assistant:\n${util.inspect(currentUser)}\n`)
 
-  query(`SELECT user_id from codes WHERE ${currentToken} = code_id AND type = 'access'`).then((result) => {
+  query(`SELECT user_id from codes WHERE code_id = ${currentToken} AND type = 'access'`).then((result) => {
     console.log(`    result: ${util.inspect(result)}`)
     return result[0].user_id
   })

@@ -1,58 +1,29 @@
-import monk from 'monk'
+import mysql from 'mysql'
+import Promise from 'bluebird'
+import config from './config.js'
 
-/**
- * custom version of botkit-storage-mongo - MongoDB driver for Botkit
- *
- * @param  {Object} config Must contain a mongoUri property
- * @return {Object} A storage object conforming to the Botkit storage interface
- */
-module.exports = (config) => {
-  if (!config || !config.mongoUri) {
-    throw new Error('Need to provide mongo address.')
-  }
+Promise.promisifyAll(mysql)
+Promise.promisifyAll(require('mysql/lib/Connection').prototype)
+Promise.promisifyAll(require('mysql/lib/Pool').prototype)
 
-  const db = monk(config.mongoUri)
+const pool = mysql.createPool(config('JAWSDB_URL'))
 
-  db.catch((err) => {
-    throw new Error(err)
+function getSqlConnection () {
+  return pool.getConnectionAsync().disposer((connection) => {
+    console.log('Releasing connection back to pool')
+    connection.release()
   })
-
-  const storage = {};
-
-  ['users', 'codes'].forEach((zone) => {
-    storage[zone] = getStorage(db, zone)
-  })
-
-  return storage
 }
 
-/**
- * Creates a storage object for a given "zone", i.e, teams, channels, or users
- *
- * @param {Object} db A reference to the MongoDB instance
- * @param {String} zone The table to query in the database
- * @returns {{get: get, save: save, all: all}}
- */
-function getStorage (db, zone) {
-  const table = db.get(zone)
+function querySql (query, params) {
+  return Promise.using(getSqlConnection(), (connection) => {
+    console.log('Got connection from pool')
+    if (typeof params !== 'undefined') return connection.queryAsync(query, params)
+    return connection.queryAsync(query)
+  })
+}
 
-  return {
-    get (id, cb) {
-      table.findOne({ id }, cb)
-    },
-    save (data, cb) {
-      table.findOneAndUpdate({
-        id: data.id
-      }, data, {
-        upsert: true,
-        returnOriginal: false
-      }, cb)
-    },
-    all (cb) {
-      table.find({}, cb)
-    },
-    find (data, cb) {
-      return table.find(data, cb)
-    }
-  }
+module.exports = {
+  getSqlConnection,
+  querySql
 }
