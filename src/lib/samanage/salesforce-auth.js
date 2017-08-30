@@ -3,9 +3,7 @@ import jsforce from 'jsforce'
 import config from '../../config/config.js'
 import memjs from 'memjs'
 import db from '../../config/db.js'
-// import mysql from 'mysql'
 
-// const connection = mysql.createConnection(config('JAWSDB_URL'))
 const query = db.querySql
 const client = memjs.Client.create(config('CACHE_SV'),
   {
@@ -42,16 +40,6 @@ exports.oauthCallback = (req, res) => {
   conn.authorize(code, (err, userInfo) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
-
-    // connection.connect((error) => {
-    //   if (error) console.log(`JAWS DB connection Error!\n${error}`)
-    //   connection.query('INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
-    //     `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`,
-    //     (insError, result) => {
-    //       if (insError) console.log(`Error storing user info - ${insError}`)
-    //       else console.log(`--> saved user info: ${util.inspect(result)}`)
-    //     })
-    // })
 
     const insertStr = 'INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
       `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`

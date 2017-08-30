@@ -5,21 +5,12 @@ import path from 'path'
 import config from './config/config.js'
 import sfauth from './lib/samanage/salesforce-auth.js'
 import gauth from './lib/assistant/google-auth.js'
-// import mysql from 'mysql'
-// import Promise from 'bluebird'
 import db from './config/db.js'
 import samanageAssistant from './lib/assistant/ebu-assistant-handler.js'
 
 const app = express()
 const query = db.querySql
 const ApiAiApp = require('actions-on-google').ApiAiAssistant
-// const connection = mysql.createConnection(config('JAWSDB_URL'))
-// connection.connect((err) => {
-//   if (!err) console.log('Database is connected...')
-//   else console.log('Error connecting database...')
-// })
-// const query = Promise.promisify(connection.query)
-
 const port = process.env.port || process.env.PORT || config('PORT') || 8080
 if (!port) {
   console.log('Error: Port not specified in environment')
@@ -57,8 +48,9 @@ app.post('/actions', (request, response) => {
   .then((userId) => {
     console.log(`--> starting up Assistant for user: ${userId}`)
     query(`SELECT * from users WHERE user_id = '${userId}'`).then((user) => {
+      console.log(`--> user retrieved:\n${util.inspect(user)}`)
       // --> this is where we would check the token
-      samanageAssistant(assistant, user)
+      samanageAssistant(assistant, user[0])
     })
   })
 })
