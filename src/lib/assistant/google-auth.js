@@ -56,7 +56,7 @@ exports.auth = (req, res) => {
   console.log(`--> saving auth code: ${code}`)
 
   const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
-    `VALUES ('${code.toString()}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
+    `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
 
   return query(insertQry).then((result) => {
     console.log(`--> auth code saved: ${result}`)
