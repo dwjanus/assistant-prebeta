@@ -6,7 +6,6 @@ import memjs from 'memjs'
 import db from '../../config/db.js'
 import Promise from 'bluebird'
 
-// const connection = db.getSqlConnection
 const query = db.querySql
 const client = memjs.Client.create(config('CACHE_SV'),
   {
@@ -47,14 +46,6 @@ exports.auth = (req, res) => {
   const expiresAt = expiration('set')
   const redir = `https://oauth-redirect.googleusercontent.com/r/assistant-prebeta?code=${code}&state=${state}`
 
-  const newCode = {
-    id: code,
-    type: 'auth_code',
-    userId,
-    clientId: config('GOOGLE_ID'),
-    expiresAt
-  }
-
   console.log(`--> caching redirect url: ${redir}`)
 
   client.set(userId, redir, { expires: 600 }, (error, val) => {
@@ -62,22 +53,13 @@ exports.auth = (req, res) => {
     console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
   })
 
-  console.log(`--> saving auth code: ${util.inspect(newCode)}`)
-
-  // connection((error) => {
-  //   if (error) console.log(`JAWS DB connection Error!\n${error}`)
-  //   connection.query('INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
-  //     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`, (insError, result) => {
-  //     if (insError) console.log(`Error storing access tokens: ${insError}`)
-  //     console.log(`--> saved access token: ${util.inspect(result)}`)
-  //   })
-  // })
+  console.log(`--> saving auth code: ${code}`)
 
   const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
 
   return query(insertQry).then((result) => {
-    console.log(`--> saved auth code: ${util.inspect(result)}`)
+    console.log(`--> auth code saved: ${result}`)
 
     // --> send our request out to salesforce for auth
     return res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
@@ -100,11 +82,11 @@ exports.token = (req, res) => {
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type ==> AUTH -- code: ${code}`)
+    console.log(`    grant type = AUTH --> code: ${code}`)
     const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
 
     return query(codeQryStr).then((result) => {
-      console.log(`Auth Code retrieved from db: ${util.inspect(result)}`)
+      console.log(`auth code retrieved from db: ${util.inspect(result)}`)
       if (!result) {
         res.sendStatus(500)
         return Promise.reject('    Failure: No rows found from query')
@@ -133,8 +115,8 @@ exports.token = (req, res) => {
       `VALUES ('${refreshToken}', 'refresh', '${userId}', 'samanage')`
 
       Promise.join(query(accessQryStr), query(refreshQryStr), (result1, result2) => {
-        console.log(`--> saved access token: ${util.inspect(result1)}`)
-        console.log(`--> saved refresh token: ${util.inspect(result2)}`)
+        console.log(`--> saved access token: ${result1}`)
+        console.log(`--> saved refresh token: ${result2}`)
       })
       .then(() => {
         const response = {
@@ -148,11 +130,11 @@ exports.token = (req, res) => {
         return res.json(response).end()
       })
       .catch((insError) => {
-        console.log(`--> Error storing access tokens <--\n${insError}`)
+        console.log(`--> Error storing access/refresh tokens <--\n${insError}`)
       })
     })
     .catch((err) => {
-      console.log(`--> Error in auth code storage <--\n${err}`)
+      console.log(`--> Error retrieving auth code from storage <--\n${err}`)
       return res.sendStatus(500)
     })
   }
@@ -177,21 +159,17 @@ exports.token = (req, res) => {
       const updateQry = `UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${userId}'
         AND type = 'access'`
 
-      return query(updateQry, (upError, result2) => {
-        console.log(`--> saved user info: ${util.inspect(result2)}`)
-      })
-      .then(() => {
+      return query(updateQry).then((result2) => {
+        console.log(`--> saved user info: ${result2}`)
         console.log(`    sending response object back:\n${util.inspect(response)}`)
         return res.json(response).end()
       })
       .catch((upError) => {
-        console.log(`Error in DB UPDATE: ${upError}`)
+        console.log(`--> Error in DB UPDATE <--\n${upError}`)
       })
     })
     .catch((selError) => {
-      console.log(`Error in DB SELECT: ${selError}`)
+      console.log(`--> Error in DB SELECT<--\n${selError}`)
     })
   }
-
-  return res.sendStatus(500)
 }
