@@ -100,7 +100,7 @@ export default ((userId) => {
             // query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then(return resolve(retrieveSfObj(conn)))
             // return resolve(retrieveSfObj(conn))
 
-            query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
+            return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
               console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
               return resolve(retrieveSfObj(conn))
             })
