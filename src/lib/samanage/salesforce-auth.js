@@ -42,7 +42,7 @@ exports.oauthCallback = (req, res) => {
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
 
     const insertStr = 'INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
-      `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${userInfo.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`
+      `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`
 
     return query(insertStr).then((result) => {
       console.log(`--> saved user info: ${result}`)

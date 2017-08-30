@@ -69,7 +69,7 @@ export default ((userId) => {
         return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
       }
 
-      let conn = new jsforce.Connection({
+      let conn = jsforce.Connection({
         oauth2,
         instanceUrl: user.url,
         accessToken: user.access,
