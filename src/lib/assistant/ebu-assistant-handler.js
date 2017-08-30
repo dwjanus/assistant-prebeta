@@ -37,5 +37,6 @@ export default ((app, user) => {
   })
   .catch((err) => {
     console.log(err)
+    if (err.text) app.tell(err.text)
   })
 })

@@ -105,19 +105,18 @@ export default ((userId) => {
               console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
               return resolve(retrieveSfObj(conn))
             })
-            .catch((upError) => {
-              return reject(upError)
-            })
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
-            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://samanage-assistant.herokuapp.com/login/${userId}` })
+            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
           })
         }
+
+        return resolve(retrieveSfObj(conn))
       })
-      .catch((err) => {
-        return reject({ text: err })
-      })
+    })
+    .catch((err) => {
+      return reject({ text: err })
     })
   })
 })
