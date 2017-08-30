@@ -41,7 +41,7 @@ app.get('/login/:userId', sfauth.login)
 app.get('/authorize', sfauth.oauthCallback)
 
 app.post('/actions', (request, response) => {
-  console.log('--> /actions Webhook Received')
+  console.log('\n--> /actions Webhook Received\n')
   let ApiAiConstructor = { request, response }
   if (request.body.sessionId) ApiAiConstructor = { request, response, sessionId: request.body.sessionId }
   const assistant = new ApiAiApp(ApiAiConstructor)
@@ -56,8 +56,10 @@ app.post('/actions', (request, response) => {
   })
   .then((userId) => {
     console.log(`--> starting up Assistant for user: ${userId}`)
-    // --> this is where we would check the token
-    samanageAssistant(assistant, userId)
+    query(`SELECT * from users WHERE user_id = '${userId}'`).then((user) => {
+      // --> this is where we would check the token
+      samanageAssistant(assistant, user)
+    })
   })
 })
 
