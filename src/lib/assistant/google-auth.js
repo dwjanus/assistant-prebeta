@@ -82,8 +82,8 @@ exports.token = (req, res) => {
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type = AUTH --> code: ${code}`)
-    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
+    console.log(`    grant type = AUTH --> code: ${code.toString('base64')}`)
+    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code.toString('base64')}'`
 
     return query(codeQryStr).then((result) => {
       console.log(`auth code retrieved from db: ${util.inspect(result)}`)
