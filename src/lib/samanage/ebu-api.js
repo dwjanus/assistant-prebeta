@@ -76,8 +76,6 @@ export default ((userId) => {
         refreshToken: user.refresh
       })
 
-      console.log(`Connection object:\n${util.inspect(conn)}`)
-
       conn.on('refresh', (newToken, res) => {
         console.log(`--> got a refresh event from Salesforce!\n    new token: ${newToken}`)
         return query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${user.user_id}'`).then((result) => {
@@ -85,8 +83,6 @@ export default ((userId) => {
           return resolve(retrieveSfObj(conn))
         })
       })
-
-      // return resolve(retrieveSfObj(conn))
 
       return conn.identity((iderr, res) => {
         console.log('    identifying sf connection...')
@@ -101,14 +97,14 @@ export default ((userId) => {
               accessToken: ret.access_token
             })
 
-            // can also try this to get rid of callback linter error
-            // query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then(return resolve(retrieveSfObj(conn)))
-            // return resolve(retrieveSfObj(conn))
+            const updateStr = `UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`
+            console.log(`--> updating user: ${user.user_id} with new access token`)
+            return query(updateStr).then(resolve(retrieveSfObj(conn)))
 
-            return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
-              console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
-              return resolve(retrieveSfObj(conn))
-            })
+            // return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
+            //   console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
+            //   return resolve(retrieveSfObj(conn))
+            // })
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)

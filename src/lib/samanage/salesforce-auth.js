@@ -40,8 +40,6 @@ exports.oauthCallback = (req, res) => {
   conn.authorize(code, (err, userInfo) => {
     if (err) res.status(500).send(`!!! AUTH ERROR: ${err}`)
     console.log(`--> authorizing for user: ${util.inspect(userInfo)}`)
-    console.log(`--> access: ${conn.accessToken} // ${conn.accessToken.toString('base64')}`)
-    console.log(`--> refresh: ${conn.refreshToken} // ${conn.refreshToken.toString('base64')}`)
 
     const insertStr = 'INSERT INTO users (user_id, sf_id, sf_org, url, access, refresh) ' +
       `VALUES ('${userId}', '${userInfo.id}', '${userInfo.organizationId}', '${conn.instanceUrl}', '${conn.accessToken}', '${conn.refreshToken}')`
