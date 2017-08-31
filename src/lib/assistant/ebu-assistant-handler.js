@@ -26,6 +26,7 @@ export default ((app, user) => {
   const promisedAction = Promise.promisify(action)
   console.log(`    context: ${util.inspect(context)}`)
   samanage(user.user_id).then((ebu) => {
+    console.log('--> got ebu object back')
     promisedAction({ app, ebu, user }).then((result) => {
       console.log('--> promisedAction')
       // if (context[0].name === 'comments') {

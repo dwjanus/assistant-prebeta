@@ -76,18 +76,23 @@ export default ((userId) => {
         refreshToken: user.refresh
       })
 
+      console.log(`Connection object:\n${util.inspect(conn)}`)
+
       conn.on('refresh', (newToken, res) => {
         console.log(`--> got a refresh event from Salesforce!\n    new token: ${newToken}`)
-        query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${user.user_id}'`).then((result) => {
+        return query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${user.user_id}'`).then((result) => {
           console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
           return resolve(retrieveSfObj(conn))
         })
       })
 
+      // return resolve(retrieveSfObj(conn))
+
       return conn.identity((iderr, res) => {
-        console.log('    identifying sf connection')
+        console.log('    identifying sf connection...')
+
         if (iderr || !res || res === 'undefined' || undefined) {
-          if (iderr) console.log(`!!! Connection Error: ${iderr}`)
+          if (iderr) console.log(`!!! Connection Error !!!\n${util.inspect(res)}`)
           else console.log('--! connection undefined !---')
           return oauth2.refreshToken(user.refresh).then((ret) => {
             console.log(`--> forcing oauth refresh\n${util.inspect(ret)}`)
