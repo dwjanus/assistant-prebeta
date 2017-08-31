@@ -20,7 +20,7 @@ if (!port) {
 app.set('port', port)
 app.use(express.static(path.join(__dirname, '../public')))
 app.use(bodyParser.json({ type: 'application/json', limit: '50mb' }))
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb', parameterLimit: 50000 }))
+// app.use(bodyParser.urlencoded({ extended: true, limit: '50mb', parameterLimit: 50000 }))
 
 app.get('/', (request, response) => {
   response.sendFile('index.html')
