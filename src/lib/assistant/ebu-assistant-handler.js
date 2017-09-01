@@ -36,12 +36,13 @@ const welcome = (args, cb) => {
   return cb(null, text)
 }
 
+
 const knowledge = (args, cb) => {
   console.log('--> inside knowledge case')
 
   const ebu = args.ebu
   const app = args.app
-  const subject = app.getArgument('Subject')
+  const subject = app.getArgument('subject')
   const text = 'Got some articles for you fam'
 
   return ebu.knowledge(subject).then((articles) => {
@@ -51,8 +52,8 @@ const knowledge = (args, cb) => {
   .catch(err => cb(err, null))
 }
 
-const actionMap = new Map()
 
+const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, welcome)
 // eventually make contextual intent of knowledge rout to same function and pull subject from
 // context provided in conversation
