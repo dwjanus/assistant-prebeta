@@ -297,9 +297,18 @@ function retrieveSfObj (conn) {
         .find({ Id: id })
         .execute((err, records) => {
           if (err || !records) reject(err || 'no records found')
+          console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
-            Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`
+            Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`,
+            MobilePhone: records[0].MobilePhone,
+            CompanyName: records[0].CompanyName,
+            Department: records[0].Department,
+            Email: records[0].Email,
+            PortalRole: records[0].PortalRole,
+            IsPortalEnabled: records[0].IsPortalEnabled,
+            SamanageESD_FullName__c: records[0].SamanageESD_FullName__c,
+            SamanageESD_RoleName__c: records[0].SamanageESD_RoleName__c
           }
           return resolve(user)
         })
