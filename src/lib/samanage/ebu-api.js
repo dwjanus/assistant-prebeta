@@ -123,6 +123,26 @@ export default ((userId) => {
 
 function retrieveSfObj (conn) {
   return {
+    knowledge (text) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
+        const articles = []
+        const search = _.replace(text, '-', ' ')
+        console.log(`--> search string: ${search}`)
+        return conn.search(`FIND {${search}} IN All Fields RETURNING Knowledge_2__kav (Id, UrlName, Title, Summary,
+          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body__c WHERE PublishStatus = 'online' AND Language = 'en_US'
+          AND IsLatestVersion = true)`,
+        (err, res) => {
+          if (err) return reject(err)
+          for (const r of res.searchRecords) {
+            r.title_link = `${conn.instanceUrl}/${r.UrlName}`
+            articles.push(r)
+          }
+          return resolve(articles)
+        })
+      })
+    },
+
     singleObject (options, callback) {
       console.log(`--> [salesforce] singleObject\n    options:\n${util.inspect(options)}`)
       const response = []
@@ -297,7 +317,7 @@ function retrieveSfObj (conn) {
         .find({ Id: id })
         .execute((err, records) => {
           if (err || !records) reject(err || 'no records found')
-          console.log(`--> got user:\n${util.inspect(records[0])}`)
+          // console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
             Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`,

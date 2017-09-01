@@ -58,12 +58,7 @@ exports.auth = (req, res) => {
   const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
 
-  return query(insertQry).then((result) => {
-    console.log(`--> auth code saved: ${result}`)
-
-    // --> send our request out to salesforce for auth
-    return res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
-  })
+  return query(insertQry).then(() => res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`))
   .catch((insError) => {
     console.log(`--> Error storing auth code <--\n${insError}`)
   })
@@ -73,8 +68,12 @@ exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
   const code = req.body.code
-  // const currentTime = expiration('get')
+  const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
+  const response = {
+    token_type: 'bearer',
+    expires_in: 3600
+  }
 
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
@@ -89,23 +88,24 @@ exports.token = (req, res) => {
       console.log(`auth code retrieved from db: ${util.inspect(result)}`)
       if (!result) {
         res.sendStatus(500)
-        return Promise.reject('    Failure: No rows found from query')
+        return Promise.reject('    Failure: No rows found')
       }
+
+      if (currentTime > result[0].expires_at) {
+        console.log('\n--! discrepency registered between expiration times !--')
+        console.log(`       > currentTime: ${currentTime}  -  expiresAt: ${result[0].expires_at}`)
+        // res.sendStatus(500)
+      }
+
+      if (req.body.client_id !== result[0].client_id) {
+        console.log('\n--! discrepency registered between client Ids !--')
+        console.log(`       > req: ${req.body.client_id}  -  auth: ${result[0].client_id}`)
+        // res.sendStatus(500)
+      }
+
       return result[0].user_id
     })
     .then((userId) => {
-      // if (currentTime > auth.expiresAt) {
-      //   console.log('\n--! discrepency registered between expiration times:')
-      //   console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
-      //   // res.sendStatus(500)
-      // }
-
-      // if (req.body.client_id !== auth.clientId) {
-      //   console.log('\n--! discrepency registered between client Ids:')
-      //   console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
-      //   // res.sendStatus(500)
-      // }
-
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
       const expiresAt = expiration('setaccess')
@@ -114,17 +114,12 @@ exports.token = (req, res) => {
       const refreshQryStr = 'INSERT INTO codes (code_id, type, user_id, client_id) ' +
       `VALUES ('${refreshToken}', 'refresh', '${userId}', 'samanage')`
 
-      Promise.join(query(accessQryStr), query(refreshQryStr), (result1, result2) => {
-        console.log(`--> saved access token: ${result1}`)
-        console.log(`--> saved refresh token: ${result2}`)
+      Promise.join(query(accessQryStr), query(refreshQryStr), () => {
+        console.log('--> saved access token\n--> saved refresh token')
       })
       .then(() => {
-        const response = {
-          token_type: 'bearer',
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_in: 3600
-        }
+        response.access_token = accessToken
+        response.refresh_token = refreshToken
 
         console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
         return res.json(response).end()
@@ -143,11 +138,7 @@ exports.token = (req, res) => {
     console.log('--> Refresh Token recieved')
 
     const accessToken = crypto.randomBytes(16).toString('base64')
-    const response = {
-      token_type: 'bearer',
-      access_token: accessToken,
-      expires_in: 3600
-    }
+    response.access_token = accessToken
     const expiresAt = expiration('setaccess')
     const selectQry = `SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`
 
@@ -159,9 +150,9 @@ exports.token = (req, res) => {
       const updateQry = `UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${userId}'
         AND type = 'access'`
 
-      return query(updateQry).then((result2) => {
-        console.log(`--> saved user info: ${result2}`)
-        console.log(`    sending response object back:\n${util.inspect(response)}`)
+      return query(updateQry).then(() => {
+        console.log('--> saved user info')
+        console.log('--> sending response object back')
         return res.json(response).end()
       })
       .catch((upError) => {

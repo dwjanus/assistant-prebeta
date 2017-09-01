@@ -7,8 +7,9 @@ const query = db.querySql
 
 // consts for intent map
 const GOOGLE_ASSISTANT_WELCOME = 'input.welcome'
+const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 
-const welcomeIntent = (args, cb) => {
+const welcome = (args, cb) => {
   console.log('--> inside welcome case')
 
   const user = args.user
@@ -35,9 +36,27 @@ const welcomeIntent = (args, cb) => {
   return cb(null, text)
 }
 
+const knowledge = (args, cb) => {
+  console.log('--> inside knowledge case')
+
+  const ebu = args.ebu
+  const app = args.app
+  const subject = app.getArgument('Subject')
+  const text = 'Got some articles for you fam'
+
+  return ebu.knowledge(subject).then((articles) => {
+    console.log(`--> articles retrieved:\n${util.inspect(articles)}`)
+    return cb(null, text)
+  })
+  .catch(err => cb(err, null))
+}
+
 const actionMap = new Map()
 
-actionMap.set(GOOGLE_ASSISTANT_WELCOME, welcomeIntent)
+actionMap.set(GOOGLE_ASSISTANT_WELCOME, welcome)
+// eventually make contextual intent of knowledge rout to same function and pull subject from
+// context provided in conversation
+actionMap.set(KNOWLEDGE_NO_CONTEXT, knowledge)
 
 export default ((app, user) => {
   console.log(`--> ebu assistant handler started for user: ${user.user_id}`)
@@ -46,10 +65,8 @@ export default ((app, user) => {
   const promisedAction = Promise.promisify(action)
   console.log(`    context: ${util.inspect(context)}`)
   samanage(user.user_id).then((ebu) => {
-    console.log('--> got ebu object back')
-
     promisedAction({ app, ebu, user }).then((result) => {
-      console.log('--> promisedAction')
+      console.log('--> fulfilling promisedAction')
       // if (context[0].name === 'comments') {
       //   console.log('    comments context recieved > asking with list now...')
       //   app.askWithList('Do you want to respond?', app.buildList('Comments').addItems(result))
@@ -57,8 +74,5 @@ export default ((app, user) => {
       app.ask(result)
     })
   })
-  .catch((err) => {
-    console.log(err)
-    if (err.text) app.tell(err.text)
-  })
+  .catch(err => console.log(err))
 })
