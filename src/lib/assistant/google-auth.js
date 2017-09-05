@@ -68,6 +68,7 @@ exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
   const code = req.body.code
+  const decoded = decordURIComponent(req.body.code)
   const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
   const response = {
@@ -77,12 +78,12 @@ exports.token = (req, res) => {
 
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body: ${util.inspect(req.body)}\n`)
+  console.log(`    req body: ${util.inspect(req.body)}\n    req:\n${util.inspect(req)}`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type = AUTH --> code: ${code.toString('base64')}`)
-    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code.toString('base64')}'`
+    console.log(`    grant type = AUTH\n--> code: ${code}\n--> decoded: ${decoded}`)
+    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
 
     return query(codeQryStr).then((result) => {
       console.log(`auth code retrieved from db: ${util.inspect(result)}`)
