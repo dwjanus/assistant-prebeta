@@ -67,8 +67,7 @@ exports.auth = (req, res) => {
 exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
-  const code = req.body.code
-  const decoded = decodeURIComponent(req.body.code)
+  let code = req.body.code
   const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
   const response = {
@@ -78,11 +77,15 @@ exports.token = (req, res) => {
 
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body: ${util.inspect(req.body)}\n    req:\n${util.inspect(req)}`)
+  console.log(`    req body: ${util.inspect(req.body)}}`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type = AUTH\n--> code: ${code}\n--> decoded: ${decoded}`)
+    console.log(`    grant type = AUTH\n--> code: ${code}`)
+    if (/\s/.test(code)) {
+      code = code.replace(/\s/g, '+')
+      console.log(`    whitespace detected\n--> new code: ${code}`)
+    }
     const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
 
     return query(codeQryStr).then((result) => {
