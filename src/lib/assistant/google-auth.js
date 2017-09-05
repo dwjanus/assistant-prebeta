@@ -68,7 +68,7 @@ exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
   const code = req.body.code
-  const decoded = decordURIComponent(req.body.code)
+  const decoded = decodeURIComponent(req.body.code)
   const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
   const response = {
