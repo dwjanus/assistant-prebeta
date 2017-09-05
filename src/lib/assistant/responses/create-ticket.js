@@ -1,4 +1,5 @@
 import db from '../../../config/db.js'
+import util from 'util'
 
 const query = db.querySql
 
@@ -16,7 +17,6 @@ exports.createTicket_knowledge = (args, cb) => {
 
 exports.createTicket_details = (args, cb) => {
   console.log('--> inside createTicket -- details')
-
   const user = args.user
   const ebu = args.ebu
   const app = args.app
@@ -32,6 +32,8 @@ exports.createTicket_details = (args, cb) => {
 
   if (priority) options.Priority = priority
   if (description) options.Descriptions = description
+
+  console.log(`${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
 
   return ebu.createIncident(options).then((newCaseId) => {
     console.log(`--> newCaseId: ${newCaseId}`)
