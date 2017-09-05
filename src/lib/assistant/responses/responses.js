@@ -1,5 +1,5 @@
-import welcome from './welcome.js'
-import knowledge from './knowledge.js'
+import { welcome } from './welcome.js'
+import { knowledge } from './knowledge.js'
 import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
