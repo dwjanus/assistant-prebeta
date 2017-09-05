@@ -25,6 +25,7 @@ export default ((app, user) => {
   console.log(`--> ebu assistant handler started for user: ${user.user_id}`)
   const context = app.getContexts()
   const action = actionMap.get(app.getIntent())
+  console.log(`--> got action:\n${util.inspect(action)}`)
   const promisedAction = Promise.promisify(action)
   console.log(`    context: ${util.inspect(context)}`)
   samanage(user.user_id).then((ebu) => {
