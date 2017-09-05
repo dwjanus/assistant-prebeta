@@ -143,6 +143,19 @@ function retrieveSfObj (conn) {
       })
     },
 
+    createIncident (options) {
+      console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
+      return new Promise((resolve, reject) => {
+        options.RecordTypeId = record('Incident')
+
+        conn.sobject('Case').create(options, (error, ret) => {
+          if (error || !ret.success) return reject(error)
+          console.log(`--> success! Created records id: ${ret.id}`)
+          return resolve(ret.id)
+        })
+      })
+    },
+
     singleObject (options, callback) {
       console.log(`--> [salesforce] singleObject\n    options:\n${util.inspect(options)}`)
       const response = []
