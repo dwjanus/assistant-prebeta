@@ -144,9 +144,9 @@ function retrieveSfObj (conn) {
     },
 
     createIncident (options) {
-      console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
       return new Promise((resolve, reject) => {
-        options.RecordTypeId = record('Incident')
+        options.RecordTypeId = record('id', 'Incident')
+        console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
 
         conn.sobject('Case').create(options, (error, ret) => {
           if (error || !ret.success) return reject(error)
