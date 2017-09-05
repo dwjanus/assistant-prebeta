@@ -10,7 +10,7 @@ exports.knowledge = (args, cb) => {
 
   return ebu.knowledge(subject).then((articles) => {
     console.log(`--> articles retrieved:\n${util.inspect(articles)}`)
-    if (articles.length() === 0) text = 'I was unable to find any relavent articles in the knowledge base, would like me to submit a ticket?'
+    if (articles.length === 0) text = 'I was unable to find any relavent articles in the knowledge base, would like me to submit a ticket?'
     // if (surface is phone && articles.length() > 0) return processList(articles).then((list) => cb(null, list))
     return cb(null, text)
   })
