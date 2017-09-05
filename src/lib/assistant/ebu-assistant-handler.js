@@ -9,6 +9,7 @@ const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CONFIG_SMS_START = 'config.sms-start'
+const CONFIG_SMS_NUMBER = 'config.sms-number'
 
 // eventually make contextual intent of knowledge rout to same function and pull subject from
 // context provided in conversation
@@ -18,6 +19,7 @@ actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
+actionMap.set(CONFIG_SMS_NUMBER, responses.configSMS_number)
 
 export default ((app, user) => {
   console.log(`--> ebu assistant handler started for user: ${user.user_id}`)

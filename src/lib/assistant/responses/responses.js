@@ -8,5 +8,6 @@ module.exports = {
   knowledge,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
-  configSMS_start: configSMS.configSMS_start
+  configSMS_start: configSMS.configSMS_start,
+  configSMS_number: configSMS.configSMS_number
 }
