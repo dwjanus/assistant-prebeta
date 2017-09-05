@@ -25,7 +25,7 @@ exports.createTicket_details = (args, cb) => {
   const priority = app.getArgument('Priority')
   const options = {
     Subject: subject,
-    SamanageESD_RequesterUser__c: user.sf_id,
+    SamanageESD__RequesterUser__c: user.sf_id,
     Origin: 'Samanage Assistant'
   }
   let text = 'Excellent, I am submitting your ticket now - '

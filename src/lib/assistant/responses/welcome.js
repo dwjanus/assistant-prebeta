@@ -16,7 +16,7 @@ exports.welcome = (args, cb) => {
       const updateUserQry = `UPDATE users SET Name = '${userInfo.Name}', Photo = '${userInfo.Photo}',
         MobilePhone = '${userInfo.MobilePhone}', CompanyName = '${userInfo.CompanyName}', Department = '${userInfo.Department}',
         Email = '${userInfo.Email}', PortalRole = '${userInfo.PortalRole}', IsPortalEnabled = '${userInfo.IsPortalEnabled}',
-        SamanageESD_FullName__c = '${userInfo.SamanageESD_FullName__c}', SamanageESD_RoleName__c = '${userInfo.SamanageESD_RoleName__c}'
+        SamanageESD__FullName__c = '${userInfo.SamanageESD__FullName__c}', SamanageESD__RoleName__c = '${userInfo.SamanageESD__RoleName__c}'
         WHERE user_id = '${user.user_id}'`
       return updateUserQry
     })
