@@ -21,10 +21,10 @@ exports.welcome = (args, cb) => {
       return updateUserQry
     })
     .then(updateUserQry => query(updateUserQry))
-    .then(() => cb(null, text, args.app))
-    .catch(err => cb(err, null, args.app))
+    .then(() => cb(null, text))
+    .catch(err => cb(err, null))
   }
 
   console.log('All user field info appears in db')
-  return cb(null, text, args.app)
+  return cb(null, text)
 }

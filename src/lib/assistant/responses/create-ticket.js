@@ -12,7 +12,7 @@ exports.createTicket_knowledge = (args, cb) => {
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
 
-  return cb(null, text, app)
+  return cb(null, text)
 }
 
 exports.createTicket_details = (args, cb) => {
@@ -43,19 +43,19 @@ exports.createTicket_details = (args, cb) => {
 
     if (!user.receiveSMS) {
       text += 'You have no option set for SMS updates, would you like to receive text notifactions on your tickets?'
-      app.setContext('newticket-notifysms') // may have to return cb(null, { text, app })
-      return query(updateUserQry).then(() => cb(null, text, app))
+      app.setContext('newticket-notifysms')
+      return query(updateUserQry).then(() => cb(null, text))
     } else if (user.receiveSMS === true || 'true') {
       text += `notifications via SMS will be sent to ${user.MobilePhone}`
       // send newCase to twilio handler for sms...
       // .then(() => twilioNotify(newCase).then)
-      return query(updateUserQry).then(() => cb(null, text, app))
+      return query(updateUserQry).then(() => cb(null, text))
     }
 
     text += `You can view the details of your new incident at ${newCase.link}`
-    return query(updateUserQry).then(() => cb(null, text, app))
+    return query(updateUserQry).then(() => cb(null, text))
   })
   .catch((err) => {
-    cb(err, null, app)
+    cb(err, null)
   })
 }
