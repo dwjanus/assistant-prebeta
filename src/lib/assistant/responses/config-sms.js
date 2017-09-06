@@ -14,14 +14,14 @@ exports.configSMS_start = (args, cb) => {
     text += 'But first, what is your mobile number?'
   }
 
-  return cb(null, text)
+  return cb(null, text, args.app)
 }
 
 exports.configSMS_reject = (args, cb) => {
   console.log('--> inside configSMS -- reject')
 
   const text = 'No worries, feel free let me know if you would like to change this setting in the future.'
-  return cb(null, text)
+  return cb(null, text, args.app)
 }
 
 exports.configSMS_number_confirmed = (args, cb) => {
@@ -31,8 +31,8 @@ exports.configSMS_number_confirmed = (args, cb) => {
   const updateUserQry = `UPDATE users SET receiveSMS = 'true' WHERE user_id = '${user.user_id}'`
   const text = `Right on, updates will be sent to ${user.MobilePhone}`
 
-  return query(updateUserQry).then(() => cb(null, text))
-  .catch(err => cb(err, null))
+  return query(updateUserQry).then(() => cb(null, text, args.app))
+  .catch(err => cb(err, null, args.app))
 }
 
 exports.configSMS_number_incorrect = (args, cb) => {
@@ -46,6 +46,6 @@ exports.configSMS_number_incorrect = (args, cb) => {
 
   console.log(`   got phone number from arguments: ${phoneNumber}`)
 
-  return query(updateUserQry).then(() => cb(null, text))
-  .catch(err => cb(err, null))
+  return query(updateUserQry).then(() => cb(null, text, app))
+  .catch(err => cb(err, null, app))
 }

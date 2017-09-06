@@ -12,7 +12,7 @@ exports.createTicket_knowledge = (args, cb) => {
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
 
-  return cb(null, text)
+  return cb(null, text, app)
 }
 
 exports.createTicket_details = (args, cb) => {
@@ -38,24 +38,24 @@ exports.createTicket_details = (args, cb) => {
   console.log(`context argument: ${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
 
   return ebu.createIncident(options).then((newCase) => {
-    console.log(`--> created new case ${newCase.Id}`)
-    const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCase.Id}' WHERE user_id = '${user.user_id}'`
+    console.log(`--> created new case ${newCase.id}`)
+    const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCase.id}' WHERE user_id = '${user.user_id}'`
 
     if (!user.receiveSMS) {
       text += 'You have no option set for SMS updates, would you like to receive text notifactions on your tickets?'
-      app.setContext('newticket-notifysms') // may have to return cb(null, { text app })
-      return query(updateUserQry).then(() => cb(null, text))
+      app.setContext('newticket-notifysms') // may have to return cb(null, { text, app })
+      return query(updateUserQry).then(() => cb(null, text, app))
     } else if (user.receiveSMS === true || 'true') {
       text += `notifications via SMS will be sent to ${user.MobilePhone}`
       // send newCase to twilio handler for sms...
       // .then(() => twilioNotify(newCase).then)
-      return query(updateUserQry).then(() => cb(null, text))
+      return query(updateUserQry).then(() => cb(null, text, app))
     }
 
     text += `You can view the details of your new incident at ${newCase.link}`
-    return query(updateUserQry).then(() => cb(null, text))
+    return query(updateUserQry).then(() => cb(null, text, app))
   })
   .catch((err) => {
-    cb(err, null)
+    cb(err, null, app)
   })
 }

@@ -32,9 +32,9 @@ export default ((app, user) => {
   const promisedAction = Promise.promisify(action)
   console.log(`    context: ${util.inspect(context)}`)
   samanage(user.user_id).then((ebu) => {
-    promisedAction({ app, ebu, user }).then((result) => {
+    promisedAction({ app, ebu, user }).then((text, apiapp) => {
       console.log('--> fulfilling promisedAction')
-      app.ask(result)
+      apiapp.ask(text)
     })
   })
   .catch(err => console.log(err))

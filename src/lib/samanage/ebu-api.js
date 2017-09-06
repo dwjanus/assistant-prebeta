@@ -151,12 +151,13 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case').create(options, (err, ret) => {
           if (err || !ret.success) return reject(err)
-          console.log(`--> success! Created records id: ${ret.id}`)
+          console.log(`--> success! Created records id: ${ret.id}\n${util.inspect(ret)}`)
           request = ret
           request.link = `${conn.instanceUrl}/${ret.id}`
-          conn.sobject('Case').retrieve(ret.id, (reterr, res) => {
+          return conn.sobject('Case').retrieve(ret.id, (reterr, res) => {
             if (reterr) return reject(reterr)
             request.CaseNumber = res.CaseNumber
+            console.log(`--> got new case back:\n${util.inspect(request)}`)
             return resolve(request)
           })
         })
