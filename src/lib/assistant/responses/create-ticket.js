@@ -23,6 +23,7 @@ exports.createTicket_details = (args, cb) => {
   const subject = app.getArgument('Subject')
   const description = app.getArgument('Description')
   const priority = app.getArgument('Priority')
+  const returnType = app.getArgument('returnType')
   const options = {
     Subject: subject,
     SamanageESD__RequesterUser__c: user.sf_id,
@@ -33,7 +34,8 @@ exports.createTicket_details = (args, cb) => {
   if (priority) options.Priority = priority
   if (description) options.Descriptions = description
 
-  console.log(`${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
+  console.log(`returnTye:\n${util.inspect(returnType)}`)
+  console.log(`context argument:\n${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
 
   return ebu.createIncident(options).then((newCaseId) => {
     console.log(`--> newCaseId: ${newCaseId}`)
