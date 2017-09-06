@@ -6,7 +6,7 @@ exports.configSMS_start = (args, cb) => {
   console.log('--> inside configSMS -- start')
 
   const user = args.user
-  let text = 'Gladly! '
+  let text = ''
   if (user.MobilePhone) {
     text += `I have your mobile number listed as ${user.MobilePhone}, is this correct? If not ` +
       'simply tell me the right number in your response.'
