@@ -34,22 +34,24 @@ exports.createTicket_details = (args, cb) => {
   if (priority) options.Priority = priority
   if (description) options.Descriptions = description
 
-  console.log(`returnTye:\n${util.inspect(returnType)}`)
-  console.log(`context argument:\n${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
+  console.log(`returnType:\n${util.inspect(returnType)}`)
+  console.log(`context argument: ${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
 
   return ebu.createIncident(options).then((newCaseId) => {
     console.log(`--> newCaseId: ${newCaseId}`)
     const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCaseId}' WHERE user_id = '${user.user_id}'`
 
     if (!user.receiveSMS) {
-      text += 'you have no options set for SMS, if you would like to receive ' +
-      'text notifications on your incidents simply say so.'
+      text += 'you have no options set for SMS updates, would you like to receive notifactions on your tickets via text message?'
+      app.setContext('newticket-notifysms') // may have to return cb(null, { text app })
     }
-    if (user.receiveSMS === false) text += 'you will be notified of updates via email.'
-    else {
-      // send newCaseId to twilio handler for sms
-      text += 'you will receive updates via SMS and email'
+
+    if (user.receiveSMS === true || 'true') {
+      text += `notifications via SMS will be sent to ${user.MobilePhone}`
+      // .then(() => twilioNotify(newCaseId).then)send newCaseId to twilio handler for sms
+      return query(updateUserQry).then(() => cb(null, text))
     }
+
     return query(updateUserQry).then(() => cb(null, text))
   })
   .catch((err) => {

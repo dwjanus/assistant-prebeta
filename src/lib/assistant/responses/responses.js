@@ -9,5 +9,7 @@ module.exports = {
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   configSMS_start: configSMS.configSMS_start,
-  configSMS_number: configSMS.configSMS_number
+  configSMS_reject: configSMS.configSMS_reject,
+  configSMS_number_confirmed: configSMS.configSMS_number_confirmed,
+  configSMS_number_incorrect: configSMS.configSMS_number_incorrect
 }

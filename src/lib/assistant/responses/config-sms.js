@@ -17,24 +17,35 @@ exports.configSMS_start = (args, cb) => {
   return cb(null, text)
 }
 
-exports.configSMS_number = (args, cb) => {
-  console.log('--> inside configSMS -- number')
+exports.configSMS_reject = (args, cb) => {
+  console.log('--> inside configSMS -- reject')
+
+  const text = 'No worries, feel free let me know if you would like to change this setting in the future.'
+  return cb(null, text)
+}
+
+exports.configSMS_number_confirmed = (args, cb) => {
+  console.log('--> inside configSMS -- number_confirmed')
+
+  const user = args.user
+  const updateUserQry = `UPDATE users SET receiveSMS = 'true' WHERE user_id = '${user.user_id}'`
+  const text = `Right on, updates will be sent to ${user.MobilePhone}`
+
+  return query(updateUserQry).then(() => cb(null, text))
+  .catch(err => cb(err, null))
+}
+
+exports.configSMS_number_incorrect = (args, cb) => {
+  console.log('--> inside configSMS -- number_incorrect')
 
   const user = args.user
   const app = args.app
-  const yesno = app.getArgument('yes-no')
+  const phoneNumber = app.getArgument('phone-number')
+  const updateUserQry = `UPDATE users SET MobilePhone = '${phoneNumber}' WHERE user_id = '${user.user_id}'`
+  const text = `I am saving your phone number as ${phoneNumber}, that cool with you?`
 
-  let phoneNumber = app.getArgument('MobilePhone')
-  console.log(`   got phone number: ${phoneNumber}`)
-  let updateUserQry = 'UPDATE users SET receiveSMS = \'true\''
+  console.log(`   got phone number from arguments: ${phoneNumber}`)
 
-  if (phoneNumber || yesno !== 'yes') updateUserQry += `, MobilePhone = '${phoneNumber}'`
-  else phoneNumber = user.MobilePhone
-  console.log(`   phone number: ${phoneNumber}`)
-  updateUserQry += ` WHERE user_id = '${user.user_id}'`
-
-  const text = `Right on, updates will be sent to ${phoneNumber}`
-
-  query(updateUserQry).then(() => cb(null, text)) // here we would call the twilio function
+  return query(updateUserQry).then(() => cb(null, text))
   .catch(err => cb(err, null))
 }
