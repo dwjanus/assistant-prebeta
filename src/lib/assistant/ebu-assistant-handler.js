@@ -27,13 +27,15 @@ actionMap.set(CONFIG_SMS_NUMBER_INCORRECT, responses.configSMS_number_incorrect)
 
 export default ((app, user) => {
   console.log(`--> ebu assistant handler started for user: ${user.user_id}`)
-  const context = app.getContexts()
+  const context = app.getContext()
+  const intent = app.getIntent()
+  console.log(`    current context: ${util.inspect(context)}`)
+  console.log(`    current intent: ${util.inspect(intent)}`)
   const action = actionMap.get(app.getIntent())
   const promisedAction = Promise.promisify(action)
-  console.log(`    context: ${util.inspect(context)}`)
+
   samanage(user.user_id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
-      console.log('--> fulfilling promisedAction')
       app.ask(result)
     })
   })

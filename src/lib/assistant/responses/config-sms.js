@@ -31,8 +31,7 @@ exports.configSMS_number_confirmed = (args, cb) => {
   const updateUserQry = `UPDATE users SET receiveSMS = 'true' WHERE user_id = '${user.user_id}'`
   const text = `Right on, updates will be sent to ${user.MobilePhone}`
 
-  return query(updateUserQry).then(() => cb(null, text))
-  .catch(err => cb(err, null))
+  return query(updateUserQry).then(() => cb(null, text)).catch(err => cb(err, null))
 }
 
 exports.configSMS_number_incorrect = (args, cb) => {
@@ -46,6 +45,5 @@ exports.configSMS_number_incorrect = (args, cb) => {
 
   console.log(`   got phone number from arguments: ${phoneNumber}`)
 
-  return query(updateUserQry).then(() => cb(null, text))
-  .catch(err => cb(err, null))
+  return query(updateUserQry).then(() => cb(null, text)).catch(err => cb(err, null))
 }

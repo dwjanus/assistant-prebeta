@@ -33,22 +33,20 @@ app.get('/authorize', sfauth.oauthCallback)
 
 app.post('/actions', (request, response) => {
   console.log('\n--> /actions Webhook Received\n')
+
   let ApiAiConstructor = { request, response }
   if (request.body.sessionId) ApiAiConstructor = { request, response, sessionId: request.body.sessionId }
   const assistant = new ApiAiApp(ApiAiConstructor)
   const currentUser = assistant.getUser()
   const currentToken = currentUser.access_token
+  const userQry = `SELECT user_id from codes WHERE code_id = '${currentToken}' AND type = 'access'`
+
   // console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
   console.log(`    user:\n${util.inspect(currentUser)}\n`)
 
-  query(`SELECT user_id from codes WHERE code_id = '${currentToken}' AND type = 'access'`).then((result) => {
-    console.log(`    result: ${util.inspect(result)}`)
-    return result[0].user_id
-  })
-  .then((userId) => {
+  query(userQry).then(result => result[0].user_id).then((userId) => {
     console.log(`--> starting up Assistant for user: ${userId}`)
     query(`SELECT * from users WHERE user_id = '${userId}'`).then((user) => {
-      console.log(`--> user retrieved:\n${util.inspect(user)}`)
       // --> this is where we would check the token
       samanageAssistant(assistant, user[0])
     })
