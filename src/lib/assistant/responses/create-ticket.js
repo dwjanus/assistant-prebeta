@@ -23,13 +23,13 @@ exports.createTicket_details = (args, cb) => {
   const subject = app.getArgument('Subject')
   const description = app.getArgument('Description')
   const priority = app.getArgument('Priority')
-  const returnType = app.getArgument('returnType')
+  const returnType = app.getArgument('return-type')
   const options = {
     Subject: subject,
     SamanageESD__RequesterUser__c: user.sf_id,
     Origin: 'Samanage Assistant'
   }
-  let text = 'Excellent, I am submitting your ticket now - '
+  let text = 'Excellent, I am submitting your ticket now. '
 
   if (priority) options.Priority = priority
   if (description) options.Descriptions = description
@@ -37,21 +37,22 @@ exports.createTicket_details = (args, cb) => {
   console.log(`returnType:\n${util.inspect(returnType)}`)
   console.log(`context argument: ${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
 
-  return ebu.createIncident(options).then((newCaseId) => {
-    console.log(`--> newCaseId: ${newCaseId}`)
-    const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCaseId}' WHERE user_id = '${user.user_id}'`
+  return ebu.createIncident(options).then((newCase) => {
+    console.log(`--> created new case ${newCase.Id}`)
+    const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCase.Id}' WHERE user_id = '${user.user_id}'`
 
     if (!user.receiveSMS) {
-      text += 'you have no options set for SMS updates, would you like to receive notifactions on your tickets via text message?'
+      text += 'You have no option set for SMS updates, would you like to receive text notifactions on your tickets?'
       app.setContext('newticket-notifysms') // may have to return cb(null, { text app })
-    }
-
-    if (user.receiveSMS === true || 'true') {
+      return query(updateUserQry).then(() => cb(null, text))
+    } else if (user.receiveSMS === true || 'true') {
       text += `notifications via SMS will be sent to ${user.MobilePhone}`
-      // .then(() => twilioNotify(newCaseId).then)send newCaseId to twilio handler for sms
+      // send newCase to twilio handler for sms...
+      // .then(() => twilioNotify(newCase).then)
       return query(updateUserQry).then(() => cb(null, text))
     }
 
+    text += `You can view the details of your new incident at ${newCase.link}`
     return query(updateUserQry).then(() => cb(null, text))
   })
   .catch((err) => {

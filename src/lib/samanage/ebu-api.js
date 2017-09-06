@@ -145,13 +145,20 @@ function retrieveSfObj (conn) {
 
     createIncident (options) {
       return new Promise((resolve, reject) => {
+        let request
         options.RecordTypeId = record('id', 'Incident')
         console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
 
-        conn.sobject('Case').create(options, (error, ret) => {
-          if (error || !ret.success) return reject(error)
+        conn.sobject('Case').create(options, (err, ret) => {
+          if (err || !ret.success) return reject(err)
           console.log(`--> success! Created records id: ${ret.id}`)
-          return resolve(ret.id)
+          request = ret
+          request.link = `${conn.instanceUrl}/${ret.id}`
+          conn.sobject('Case').retrieve(ret.id, (reterr, res) => {
+            if (reterr) return reject(reterr)
+            request.CaseNumber = res.CaseNumber
+            return resolve(request)
+          })
         })
       })
     },
