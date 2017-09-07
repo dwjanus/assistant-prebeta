@@ -21,5 +21,5 @@ exports.multi_nocontext = (args, cb) => {
   console.log(`${util.inspect(params2)}`)
   console.log(`${util.inspect(params3)}`)
 
-  cb(null, text)
+  return cb(null, text)
 }

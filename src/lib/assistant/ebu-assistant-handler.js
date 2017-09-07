@@ -32,7 +32,6 @@ export default ((app, user) => {
   const promisedAction = Promise.promisify(action)
 
   console.log(`--> ebu assistant handler started for user: ${user.user_id}`)
-  console.log(`    current intent/action: ${util.inspect(action)}`)
 
   samanage(user.user_id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
