@@ -1,11 +1,13 @@
 import { welcome } from './welcome.js'
 import { knowledge } from './knowledge.js'
+import multiRecord from './multi-record.js'
 import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
 module.exports = {
   welcome,
   knowledge,
+  multi_nocontext: multiRecord.multi_nocontext,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   configSMS_start: configSMS.configSMS_start,

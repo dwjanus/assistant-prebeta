@@ -48,6 +48,7 @@ const returnParams = {
   CreatedDate: 1,
   CaseNumber: 1,
   SamanageESD__OwnerName__c: 1,
+  SamanageESD__Assignee_Name__c: 1,
   Priority: 1,
   Status: 1,
   SamanageESD__hasComments__c: 1,
@@ -164,10 +165,12 @@ function retrieveSfObj (conn) {
       })
     },
 
-    singleObject (options, callback) {
-      console.log(`--> [salesforce] singleObject\n    options:\n${util.inspect(options)}`)
+    singleRecord (options, callback) {
+      console.log(`\n--> [salesforce] singleRecord\n    options:\n${util.inspect(options)}`)
       const response = []
+      const type = record('id', options.RecordType)
       let searchParams = options
+
       delete searchParams.Owner
       delete searchParams.RecordType
       delete searchParams.Sortby
@@ -175,9 +178,9 @@ function retrieveSfObj (conn) {
       searchParams = _.omitBy(searchParams, _.isNil)
       searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
-      const type = record('id', options.RecordType)
       console.log(`Search Params:\n${util.inspect(searchParams)}`)
       console.log(`Return Params:\n${util.inspect(returnParams)}`)
+
       conn.sobject('Case')
       .find(searchParams, returnParams) // need handler for if no number and going by latest or something
       .execute((err, records) => {
@@ -196,6 +199,46 @@ function retrieveSfObj (conn) {
           }
           callback(null, response[0])
         }
+      })
+    },
+
+    multiRecord (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id', options.RecordType)
+        let searchParams = options
+
+        delete searchParams.Owner
+        delete searchParams.RecordType
+        delete searchParams.Sortby
+
+        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
+        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+
+        searchParams = _.omitBy(searchParams, _.isNil)
+        searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+
+        console.log(`Search Params:\n${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .execute((err, records) => {
+          if (err) return reject(err)
+          console.log(`Records:\n${util.inspect(records)}`)
+          for (const r of records) {
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            response.push(r)
+          }
+          return resolve(response) // need to include sorting at some point
+        })
       })
     },
 
