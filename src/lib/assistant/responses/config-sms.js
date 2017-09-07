@@ -14,14 +14,14 @@ exports.configSMS_start = (args, cb) => {
     text += 'But first, what is your mobile number?'
   }
 
-  return cb(null, text)
+  cb(null, text)
 }
 
 exports.configSMS_reject = (args, cb) => {
   console.log('--> inside configSMS -- reject')
 
   const text = 'No worries, feel free let me know if you would like to change this setting in the future.'
-  return cb(null, text)
+  cb(null, text)
 }
 
 exports.configSMS_number_confirmed = (args, cb) => {
