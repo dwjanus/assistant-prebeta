@@ -19,7 +19,7 @@ const CONFIG_SMS_NUMBER_INCORRECT = 'config.sms-number-incorrect'
 const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
-actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multirecord)
+actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
