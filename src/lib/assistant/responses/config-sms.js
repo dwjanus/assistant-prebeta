@@ -29,7 +29,7 @@ exports.configSMS_number_confirmed = (args, cb) => {
 
   const user = args.user
   const updateUserQry = `UPDATE users SET receiveSMS = 'true' WHERE user_id = '${user.user_id}'`
-  const text = `Right on, updates will be sent to ${user.MobilePhone}`
+  const text = `Right on, future notifications will be sent to ${user.MobilePhone}`
 
   return query(updateUserQry).then(() => cb(null, text)).catch(err => cb(err, null))
 }
