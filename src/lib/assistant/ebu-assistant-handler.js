@@ -1,4 +1,3 @@
-import util from 'util'
 import Promise from 'bluebird'
 import samanage from '../samanage/ebu-api.js'
 import responses from './responses/responses.js'
@@ -15,7 +14,7 @@ const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
 const CONFIG_SMS_NUMBER_INCORRECT = 'config.sms-number-incorrect'
 
 // eventually make contextual intent of knowledge rout to same function and pull subject from
-// context provided in conversation
+// context provided in conversation i.e. "Are there any articles on that?"
 const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
