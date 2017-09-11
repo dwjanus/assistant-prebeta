@@ -52,6 +52,8 @@ const returnParams = {
   Priority: 1,
   Status: 1,
   SamanageESD__hasComments__c: 1,
+  HasCommentsUnreadByOwner: 1,
+  Last_Comment__c: 1,
   RecordTypeId: 1
 }
 
@@ -174,9 +176,12 @@ function retrieveSfObj (conn) {
       delete searchParams.Owner
       delete searchParams.RecordType
       delete searchParams.Sortby
+
       if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
+      if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+
       searchParams = _.omitBy(searchParams, _.isNil)
-      searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+      if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
       console.log(`Search Params:\n${util.inspect(searchParams)}`)
       console.log(`Return Params:\n${util.inspect(returnParams)}`)
@@ -224,6 +229,7 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)

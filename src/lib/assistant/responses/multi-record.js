@@ -19,7 +19,9 @@ exports.multi_nocontext = (args, cb) => {
     RecordType: app.getArgument('record-type')
   }
 
-  if (app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
+  // default options
+  if (!app.getArgument('Assignee') || app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
+  if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
 
@@ -27,7 +29,15 @@ exports.multi_nocontext = (args, cb) => {
 
   return ebu.multiRecord(options).then((records) => {
     console.log('--> records returned from ebu api')
-    text = `I found ${records.length} ${options.RecordType} matching your description`
+    text = 'I\'m sorry, I was unable to find any records matching your description.'
+
+    if (records.length > 1) {
+      text = `${records.length} ${options.RecordType}s matching your description. ` +
+      `The most recently active being ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+    } else {
+      text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+    }
+
     return cb(null, text)
   })
 }

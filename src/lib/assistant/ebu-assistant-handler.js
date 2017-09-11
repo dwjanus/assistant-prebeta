@@ -6,6 +6,8 @@ import responses from './responses/responses.js'
 const GOOGLE_ASSISTANT_WELCOME = 'input.welcome'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
+const SINGLE_RECORD = 'query.single-record'
+const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CONFIG_SMS_START = 'config.sms-start'
@@ -13,12 +15,14 @@ const CONFIG_SMS_REJECT = 'config.sms-reject'
 const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
 const CONFIG_SMS_NUMBER_INCORRECT = 'config.sms-number-incorrect'
 
-// eventually make contextual intent of knowledge rout to same function and pull subject from
+// eventually make contextual intent of knowledge route to same function and pull subject from
 // context provided in conversation i.e. "Are there any articles on that?"
 const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
+actionMap.set(SINGLE_RECORD, responses.single)
+actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
