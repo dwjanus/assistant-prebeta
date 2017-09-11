@@ -167,30 +167,30 @@ function retrieveSfObj (conn) {
       })
     },
 
-    singleRecord (options, callback) {
-      console.log(`\n--> [salesforce] singleRecord\n    options:\n${util.inspect(options)}`)
-      const response = []
-      const type = record('id', options.RecordType)
-      let searchParams = options
+    singleRecord (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] singleRecord\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id', options.RecordType)
+        let searchParams = options
 
-      delete searchParams.Owner
-      delete searchParams.RecordType
-      delete searchParams.Sortby
+        delete searchParams.Owner
+        delete searchParams.RecordType
+        delete searchParams.Sortby
 
-      if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-      if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
+        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
 
-      searchParams = _.omitBy(searchParams, _.isNil)
-      if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+        searchParams = _.omitBy(searchParams, _.isNil)
+        if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
-      console.log(`Search Params:\n${util.inspect(searchParams)}`)
-      console.log(`Return Params:\n${util.inspect(returnParams)}`)
+        console.log(`Search Params:\n${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
 
-      conn.sobject('Case')
-      .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-      .execute((err, records) => {
-        if (err) callback(err, null)
-        else {
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .execute((err, records) => {
+          if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
@@ -202,8 +202,8 @@ function retrieveSfObj (conn) {
             }
             response.push(r)
           }
-          callback(null, response[0])
-        }
+          return resolve(response[0])
+        })
       })
     },
 
