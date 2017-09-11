@@ -90,22 +90,20 @@ exports.single_change = (args, cb) => {
     Status: app.getArgument('Status'),
     Priority: app.getArgument('Priority')
   }
-  const selectCurrentRecordStr = `SELECT lastRecord from users WHERE user_id = '${user.user_id}'`
+  // const selectCurrentRecordStr = `SELECT lastRecord (as JSON) from users WHERE user_id = '${user.user_id}'`
 
   options = _.omitBy(options, _.isNil)
   if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
 
-  return query(selectCurrentRecordStr).then((record) => {
-    const latestRecord = JSON.parse(record.latestRecord)
-    console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
-    options.Id = latestRecord.Id
-    return ebu.update(options).then(() => {
-      const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
-      return cb(null, text)
-    })
-    .catch((err) => {
-      return cb(err, null)
-    })
+  const latestRecord = JSON.parse(user.latestRecord)
+  console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
+  options.Id = latestRecord.Id
+  return ebu.update(options).then(() => {
+    const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
+    return cb(null, text)
+  })
+  .catch((err) => {
+    return cb(err, null)
   })
 }
 
