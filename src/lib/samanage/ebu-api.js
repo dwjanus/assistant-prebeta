@@ -217,7 +217,7 @@ function retrieveSfObj (conn) {
         if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
 
         searchParams = _.omitBy(searchParams, _.isNil)
-        searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+        if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
         console.log(`Search Params:\n${util.inspect(searchParams)}`)
         console.log(`Return Params:\n${util.inspect(returnParams)}`)

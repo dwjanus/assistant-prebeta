@@ -11,14 +11,6 @@ exports.multi_nocontext = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   let text = ''
-
-  // const Subject = app.getArgument('Subject')
-  // const Status = app.getArgument('Status')
-  // const Priority = app.getArgument('Priority')
-  // const SamanageESD__OwnerName__c = app.getArgument('Owner')
-  // const SamanageESD__Assignee_Name__c = app.getArgument('Assignee')
-  // const RecordType = app.getArgument('record-type')
-
   let options = {
     Subject: app.getArgument('Subject'),
     Status: app.getArgument('Status'),
