@@ -95,7 +95,7 @@ exports.single_change = (args, cb) => {
   options = _.omitBy(options, _.isNil)
   if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
 
-  const latestRecord = JSON.parse(user.latestRecord)
+  const latestRecord = JSON.parse(user.lastRecord)
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
   options.Id = latestRecord.Id
   return ebu.update(options).then(() => {
