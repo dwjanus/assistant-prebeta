@@ -248,6 +248,18 @@ function retrieveSfObj (conn) {
       })
     },
 
+    update (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] update\n    options:\n${util.inspect(options)}`)
+
+        conn.sobject('Case').update({ options }, (err, ret) => {
+          if (err) return reject(err)
+          console.log(`--> updated successfully: ${ret.id}`)
+          return resolve(ret)
+        })
+      })
+    },
+
     quantity (options, callback) {
       console.log(`--> [salesforce] quantity\n    options:\n${util.inspect(options)}`)
       const type = record('id', options.RecordType)

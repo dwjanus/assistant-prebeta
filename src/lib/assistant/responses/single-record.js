@@ -53,17 +53,58 @@ exports.single_nocontext = (args, cb) => {
     if (app.getArgument('yesno')) text = `No, ${text}`
     return cb(null, text)
   })
+  .catch((err) => {
+    return cb(err, null)
+  })
 }
 
 exports.single_details = (args, cb) => {
-  console.log('\n--> inside single details')
+  console.log('\n--> inside single -- details')
 
+  const app = args.app
   const user = args.user
-  const text = 'Calling Single Record from context!'
-  const selectRecordStr = `SELECT lastRecord FROM users WHERE user_id = '${user.user_id}'`
+  const returnType = app.getArgument('return-type')
+  let text = 'I\'m sorry, I seem to have lost what record this is related to. Try asking again with the case number included'
+  const selectRecordStr = `SELECT lastRecord from users WHERE user_id = '${user.user_id}'`
 
   return query(selectRecordStr).then((record) => {
     console.log(`--> got our contextually saved record!\n${util.inspect(record)}`)
+    if (record) {
+      text = `The ${returnType} is currently ${record[returnType]}`
+    }
     return cb(null, text)
   })
+  .catch((err) => {
+    return cb(err, null)
+  })
 }
+
+exports.single_change = (args, cb) => {
+  console.log('\n--> inside single -- change')
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  let returnType = app.getArgument('return-type')
+  let options = {
+    Status: app.getArgument('Status'),
+    Priority: app.getArgument('Priority')
+  }
+  const selectCurrentRecordStr = `SELECT lastRecord from users WHERE user_id = '${user.user_id}'`
+
+  options = _.omitBy(options, _.isNil)
+  if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
+
+  return query(selectCurrentRecordStr).then((record) => {
+    options.Id = record.Id
+    return ebu.update(options).then(() => {
+      const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
+      return cb(null, text)
+    })
+    .catch((err) => {
+      return cb(err, null)
+    })
+  })
+}
+
+// need to add single_change_nocontext!!

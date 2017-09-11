@@ -8,6 +8,7 @@ const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
+const SINGLE_RECORD_CHANGE = 'command.single-record-change'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CONFIG_SMS_START = 'config.sms-start'
@@ -23,6 +24,7 @@ actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
+actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
