@@ -96,6 +96,9 @@ exports.single_change = (args, cb) => {
   if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
 
   return query(selectCurrentRecordStr).then((record) => {
+    console.log(`--> lastRecord retrieved:\n${util.inspect(record)}`)
+    record = JSON.parse(record)
+    console.log(`--> record after jsonify:\n${util.inspect(record)}`)
     options.Id = record.Id
     return ebu.update(options).then(() => {
       const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
