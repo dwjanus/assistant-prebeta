@@ -11,6 +11,7 @@ module.exports = {
   multi_nocontext: multiRecord.multi_nocontext,
   single_nocontext: singleRecord.single_nocontext,
   single_details: singleRecord.single_details,
+  single_change: singleRecord.single_change,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   configSMS_start: configSMS.configSMS_start,
