@@ -63,19 +63,11 @@ exports.single_details = (args, cb) => {
   const app = args.app
   const user = args.user
   const returnType = app.getArgument('return-type')
-  let text = 'I\'m sorry, I seem to have lost what record this is related to. Try asking again with the case number included'
-  const selectRecordStr = `SELECT lastRecord from users WHERE user_id = '${user.user_id}'`
+  const latestRecord = JSON.parse(user.lastRecord)
+  console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
 
-  return query(selectRecordStr).then((record) => {
-    console.log(`--> got our contextually saved record!\n${util.inspect(record)}`)
-    if (record) {
-      text = `The ${returnType} is currently ${record[returnType]}`
-    }
-    return cb(null, text)
-  })
-  .catch((err) => {
-    return cb(err, null)
-  })
+  const text = `The ${returnType} is currently ${latestRecord[returnType]}`
+  return cb(null, text)
 }
 
 exports.single_change = (args, cb) => {
