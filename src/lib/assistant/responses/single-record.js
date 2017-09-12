@@ -16,8 +16,7 @@ exports.single_nocontext = (args, cb) => {
     RecordType: app.getArgument('record-type')
   }
 
-  // default options
-  if (!app.getArgument('Assignee') || app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
+  if (app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
@@ -54,7 +53,7 @@ exports.single_nocontext = (args, cb) => {
     return cb(null, text)
   })
   .catch((err) => {
-    return cb(err, null)
+    cb(err, null)
   })
 }
 
