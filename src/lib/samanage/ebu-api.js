@@ -54,8 +54,6 @@ const returnParams = {
   Priority: 1,
   Status: 1,
   SamanageESD__hasComments__c: 1,
-  HasCommentsUnreadByOwner: 1,
-  Last_Comment__c: 1,
   RecordTypeId: 1
 }
 
