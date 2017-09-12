@@ -59,3 +59,20 @@ exports.createTicket_details = (args, cb) => {
     cb(err, null)
   })
 }
+
+exports.createTicket_nocontext = (args, cb) => {
+  console.log('--> inside createTicket -- nocontext')
+
+  const app = args.app
+  const Subject = app.getArgument('Subject')
+  const Description = app.getArgument('Description')
+  const Priority = app.getArgument('Priority')
+  let text = `Sure thing! I'm about to submit your ticket for "${Subject}"`
+
+  if (Description) text += ` with a description: "${Description}"`
+  if (Priority) text += ` and make it ${Priority} priority`
+
+  text += '. You can make changes now or I can go ahead and submit'
+
+  return cb(null, text)
+}

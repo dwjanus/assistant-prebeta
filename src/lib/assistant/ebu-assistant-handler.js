@@ -11,6 +11,7 @@ const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
+const CREATE_TICKET_NO_CONTEXT = 'create.newticket-nocontext'
 const CONFIG_SMS_START = 'config.sms-start'
 const CONFIG_SMS_REJECT = 'config.sms-reject'
 const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
@@ -27,6 +28,7 @@ actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
+actionMap.set(CREATE_TICKET_NO_CONTEXT, responses.createTicket_nocontext)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
 actionMap.set(CONFIG_SMS_REJECT, responses.configSMS_reject)
 actionMap.set(CONFIG_SMS_NUMBER_CONFIRMED, responses.configSMS_number_confirmed)

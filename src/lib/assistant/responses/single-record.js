@@ -103,7 +103,7 @@ exports.single_change = (args, cb) => {
     return cb(null, text)
   })
   .catch((err) => {
-    return cb(err, null)
+    cb(err, null)
   })
 }
 
