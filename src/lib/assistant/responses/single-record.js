@@ -87,10 +87,10 @@ exports.single_change = (args, cb) => {
   const user = args.user
   let returnType = app.getArgument('return-type')
   let options = {
-    Status: app.getArgument('Status'),
-    Priority: app.getArgument('Priority')
+    Id: '',
+    Status: _.upperFirst(app.getArgument('Status')),
+    Priority: _.upperFirst(app.getArgument('Priority'))
   }
-  // const selectCurrentRecordStr = `SELECT lastRecord (as JSON) from users WHERE user_id = '${user.user_id}'`
 
   options = _.omitBy(options, _.isNil)
   if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
