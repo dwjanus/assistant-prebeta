@@ -15,7 +15,6 @@ exports.multi_nocontext = (args, cb) => {
     Subject: app.getArgument('Subject'),
     Status: app.getArgument('Status'),
     Priority: app.getArgument('Priority'),
-    SamanageESD__Assignee_Name__c: app.getArgument('Assignee'),
     RecordType: app.getArgument('record-type')
   }
 
@@ -29,13 +28,18 @@ exports.multi_nocontext = (args, cb) => {
 
   return ebu.multiRecord(options).then((records) => {
     console.log('--> records returned from ebu api')
-
-    if (app.getArgument('yesno')) text = 'Yes, '
-    if (records.length > 1) {
-      text = `${records.length} ${options.RecordType}s matching your description. ` +
-      `The most recently active being ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
-    } else {
-      text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+    if (records) {
+      if (records.length > 1) {
+        text = `here are ${records.length} `
+        if (app.getArgument('yesno')) text = `Yes, t${text}`
+        else text = `T${text}`
+        if (options.Status) text += `${options.Status} `
+        if (options.Priority) text += `${options.Priority} priority `
+        text += `${options.RecordType}s. The most recently active being ${options.RecordType} ` +
+       `${records[0].CaseNumber}: ${records[0].Subject}`
+      } else {
+        text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+      }
     }
 
     return cb(null, text)
