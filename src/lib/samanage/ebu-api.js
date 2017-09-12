@@ -13,18 +13,19 @@ const formatCaseNumber = (number) => {
 }
 
 const recordType = {
-  Incident: '01239000000EB4NAAW',
-  Change: '01239000000EB4MAAW',
-  Problem: '01239000000EB4OAAW',
-  Release: '01239000000EB4PAAW',
-  ServiceRequest: 'COMING__SOON'
+  Incident: '0121I000000kKdzQAE',
+  Change: '0121I000000kKe0QAE',
+  Problem: '0121I000000kKdwQAE',
+  Release: '0121I000000kKdvQAE',
+  Request: '0121I000000kKdyQAE'
 }
 
 const recordName = {
-  '01239000000EB4NAAW': 'Incident',
-  '01239000000EB4MAAW': 'Change',
-  '01239000000EB4OAAW': 'Problem',
-  '01239000000EB4PAAW': 'Release'
+  '0121I000000kKdzQAE': 'Incident',
+  '0121I000000kKe0QAE': 'Change',
+  '0121I000000kKdwQAE': 'Problem',
+  '0121I000000kKdvQAE': 'Release',
+  '0121I000000kKdyQAE': 'Request'
 }
 
 const record = (arg, key) => {
@@ -35,7 +36,7 @@ const record = (arg, key) => {
 }
 
 const oauth2 = new jsforce.OAuth2({
-  loginUrl: 'https://test.salesforce.com',
+  // loginUrl: 'https://test.salesforce.com',
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
   redirectUri: 'https://assistant-prebeta.herokuapp.com/authorize'
@@ -47,6 +48,7 @@ const returnParams = {
   Description: 1,
   CreatedDate: 1,
   CaseNumber: 1,
+  OwnerId: 1,
   SamanageESD__OwnerName__c: 1,
   SamanageESD__Assignee_Name__c: 1,
   Priority: 1,

@@ -10,7 +10,7 @@ exports.multi_nocontext = (args, cb) => {
   const app = args.app
   const ebu = args.ebu
   const user = args.user
-  let text = ''
+  let text = 'Currently there are none'
   let options = {
     Subject: app.getArgument('Subject'),
     Status: app.getArgument('Status'),
@@ -20,7 +20,7 @@ exports.multi_nocontext = (args, cb) => {
   }
 
   // default options
-  if (!app.getArgument('Assignee') || app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
+  if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
@@ -29,8 +29,8 @@ exports.multi_nocontext = (args, cb) => {
 
   return ebu.multiRecord(options).then((records) => {
     console.log('--> records returned from ebu api')
-    text = 'I\'m sorry, I was unable to find any records matching your description.'
 
+    if (app.getArgument('yesno')) text = 'Yes, '
     if (records.length > 1) {
       text = `${records.length} ${options.RecordType}s matching your description. ` +
       `The most recently active being ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`

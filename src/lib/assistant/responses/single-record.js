@@ -16,7 +16,7 @@ exports.single_nocontext = (args, cb) => {
     RecordType: app.getArgument('record-type')
   }
 
-  if (app.getArgument('Assignee') === 'Self') options.SamanageESD__Assignee_Name__c = user.Name
+  if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id // need to play with this
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
@@ -36,7 +36,7 @@ exports.single_nocontext = (args, cb) => {
         `Description: ${record.Description}`
       }
 
-      const saveRecordStr = `UPDATE users SET lastRecord = JSON_OBJECT('Id', '${record.Id}', 'Subject', '${record.Subject}', ` +
+      const saveRecordStr = `UPDATE users SET lastRecord = JSON_OBJECT('Id', '${record.Id}', 'Subject', '${record.Subject}', 'OwnerId', '${record.OwnerId}', ` +
         `'Description', '${record.Description}', 'CreatedDate', '${record.CreatedDate}', 'CaseNumber', '${record.CaseNumber}', ` +
         `'SamanageESD__OwnerName__c', '${record.SamanageESD__OwnerName__c}', 'SamanageESD__Assignee_Name__c', '${record.SamanageESD__Assignee_Name__c}', ` +
         `'Priority', '${record.Priority}', 'Status', '${record.Status}', 'SamanageESD__hasComments__c', '${record.SamanageESD__hasComments__c}', ` +
