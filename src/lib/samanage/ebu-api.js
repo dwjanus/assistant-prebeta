@@ -254,7 +254,7 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case').update(options, (err, ret) => {
           if (err || !ret.success) return reject(err)
-          console.log(`--> updated successfully: ${util.inspect(ret)}`)
+          console.log('--> updated successfully')
           return resolve()
         })
       })
