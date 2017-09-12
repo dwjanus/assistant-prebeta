@@ -87,13 +87,15 @@ exports.single_change = (args, cb) => {
   const user = args.user
   let returnType = app.getArgument('return-type')
   let options = {
-    Id: '',
-    Status: _.upperFirst(app.getArgument('Status')),
-    Priority: _.upperFirst(app.getArgument('Priority'))
+    Id: ''
   }
 
+  if (app.getArgument('Status')) options.Status = _.upperFirst(app.getArgument('Status'))
+  if (app.getArgument('Priority')) options.Priority = _.upperFirst(app.getArgument('Priority'))
+
   options = _.omitBy(options, _.isNil)
-  if (!returnType || returnType === 'undefined') returnType = _.keys(options)[0]
+
+  if (!returnType || returnType === 'undefined') returnType = _.keys(options)[1]
 
   const latestRecord = JSON.parse(user.lastRecord)
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)

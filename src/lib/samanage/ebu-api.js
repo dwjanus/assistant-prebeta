@@ -253,9 +253,9 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] update\n    options:\n${util.inspect(options)}`)
 
         conn.sobject('Case').update({ options }, (err, ret) => {
-          if (err) return reject(err)
+          if (err || !ret.success) return reject(err)
           console.log(`--> updated successfully: ${util.inspect(ret)}`)
-          return resolve(ret)
+          return resolve()
         })
       })
     },
