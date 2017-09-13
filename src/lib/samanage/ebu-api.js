@@ -266,6 +266,7 @@ function retrieveSfObj (conn) {
       return new Promise((resolve, reject) => {
         return this.getCaseFeed(objectId).then((caseFeed) => {
           return Promise.map(caseFeed, ((comment) => {
+            console.log('[comments] mapping users to feed objects')
             return this.getUser(comment.CreatedById).then((user) => {
               if (user) comment.User = user
               else comment.User = null
@@ -273,12 +274,13 @@ function retrieveSfObj (conn) {
             })
           }))
           .each((r) => {
+            console.log('[comments .each]')
             if (r.Body && r.Type === 'TextPost') comments.push(r)
             return comments
           })
-        })
-        .then(() => {
-          return Promise.all(comments).then(resolve(comments))
+          .then(() => {
+            return Promise.all(comments).then(resolve(comments))
+          })
         })
         .catch((err) => {
           reject(err)

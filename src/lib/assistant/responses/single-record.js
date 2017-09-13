@@ -67,7 +67,7 @@ exports.single_details = (args, cb) => {
   let text = `The ${returnType} is currently ${latestRecord[returnType]}`
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
 
-  if (returnType === 'Latest Comment') {
+  if (returnType === 'Latest Comment' || 'Comments') {
     console.log(`--> return type is: ${returnType}`)
     return ebu.comments(latestRecord.Id, user.sf_id).then((comments) => {
       console.log('--> just got comments back')
