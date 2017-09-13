@@ -69,7 +69,7 @@ export default ((userId) => {
     .then((user) => {
       if (!user.sf_id) {
         console.log('--! no connection object found !---\n    returning link now ')
-        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta-devin.herokuapp.com/login/${userId}` })
       }
 
       let conn = new jsforce.Connection({
