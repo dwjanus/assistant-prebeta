@@ -4,6 +4,7 @@ import responses from './responses/responses.js'
 
 // consts for intent map
 const GOOGLE_ASSISTANT_WELCOME = 'input.welcome'
+const THANK_YOU = 'general.thankyou'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
@@ -22,6 +23,7 @@ const CONFIG_SMS_NUMBER_INCORRECT = 'config.sms-number-incorrect'
 // context provided in conversation i.e. "Are there any articles on that?"
 const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
+actionMap.set(THANK_YOU, responses.thankyou)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)

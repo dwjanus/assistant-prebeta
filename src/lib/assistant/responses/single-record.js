@@ -61,13 +61,34 @@ exports.single_details = (args, cb) => {
   console.log('\n--> inside single -- details')
 
   const app = args.app
+  const ebu = args.ebu
   const user = args.user
   const returnType = app.getArgument('return-type')
   const latestRecord = JSON.parse(user.lastRecord)
+  let text = `The ${returnType} is currently ${latestRecord[returnType]}`
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
 
-  const text = `The ${returnType} is currently ${latestRecord[returnType]}`
-  return cb(null, text)
+  if (returnType !== 'Latest Comment' || 'Comments') return cb(null, text)
+  return ebu.comments(latestRecord.Id, user.sf_id).then((comments) => {
+    if (comments) {
+      if (returnType === 'Latest Comment') {
+        const latest = comments[0]
+        // add parse for date so text version says Aug. 29 at {time} and speech takes normal date-time field from object
+        text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User} on ${latest.CreatedDate}. `
+        if (latest.CommentCount === 0) text += 'There are no responses to this. Would you like to post a reply?'
+        if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
+        else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+      } else {
+        for (const c of comments) {
+          text += `${c.CreatedDate}: "${c.Body}" posted by ${c.User}`
+        }
+      }
+    } else {
+      text = 'There are no public comments, would you like to post one?'
+    }
+
+    return cb(null, text)
+  })
 }
 
 exports.single_change = (args, cb) => {

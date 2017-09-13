@@ -28,3 +28,10 @@ exports.welcome = (args, cb) => {
   console.log('All user field info appears in db')
   return cb(null, text)
 }
+
+exports.thankyou = (args, cb) => {
+  console.log('--> inside thankyou case')
+
+  const text = 'Anytime fam!'
+  return cb(null, text)
+}

@@ -132,7 +132,7 @@ function retrieveSfObj (conn) {
         const articles = []
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
-        return conn.search(`FIND {${search}} IN All Fields RETURNING Knowledge__kav (Id, UrlName, Title, Summary,
+        return conn.search(`FIND {${search}} IN All Fields RETURNING SamanageESD__Knowledge__kav (Id, UrlName, Title, Summary,
           LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body__c WHERE PublishStatus = 'online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {
@@ -260,66 +260,20 @@ function retrieveSfObj (conn) {
       })
     },
 
-    quantity (options, callback) {
-      console.log(`--> [salesforce] quantity\n    options:\n${util.inspect(options)}`)
-      const type = record('id', options.RecordType)
-      const response = []
-      const searchParams = _.omitBy(options, _.isNil)
-      if (searchParams.CaseNumber) searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
-      delete searchParams.RecordType
-      if (!_.isNil(type)) searchParams.RecordTypeId = type
-
-      console.log(`Search Params:\n${util.inspect(searchParams)}`)
-      console.log(`Return Params:\n${util.inspect(returnParams)}`)
-      conn.sobject('Case')
-      .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-      .execute((err, records) => {
-        if (err) callback(err, null)
-        console.log('    records retrieved!\n')
-        for (const r of records) {
-          r.RecordTypeMatch = true
-          r.RecordTypeName = record('name', r.RecordTypeId)
-          r.title_link = `${conn.instanceUrl}/${r.Id}`
-          if (type && (r.RecordTypeId !== type)) {
-            console.log(`--! Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-            r.RecordTypeMatch = false
-          } else {
-            console.log(`    Added record: ${r.Id}`)
-          }
-          response.push(r)
-        }
-        callback(null, response)
-      })
-    },
-
     comments (objectId, currentUserId) {
       console.log(`--> [salesforce] comments - Case: ${objectId} - User: ${currentUserId} **`)
       const comments = []
       return new Promise((resolve, reject) => {
-        Promise.join(this.getCaseOwner(objectId), this.getCaseFeed(objectId), (OwnerId, records) => {
-          return { OwnerId, records }
-        })
-        .then((joined) => {
-          return Promise.map(joined.records, ((joinedrecord) => {
-            return this.getUser(joinedrecord.CreatedById).then((user) => {
-              console.log('getting user')
-              if (user) {
-                joinedrecord.User = user
-                console.log(`User Added to record: ${joinedrecord.Id}`)
-              }
-              return joinedrecord
+        return this.getCaseFeed(objectId).then((caseFeed) => {
+          return Promise.map(caseFeed, ((comment) => {
+            return this.getUser(comment.CreatedById).then((user) => {
+              if (user) comment.User = user
+              else comment.User = null
+              return comment
             })
           }))
           .each((r) => {
-            if (r.Body) { // r.Visibility = InternalUsers for private comments
-              if (r.Visibility !== 'AllUsers' && r.CreatedById !== currentUserId && currentUserId !== joined.OwnerId) {
-                r.Body = '*Private Comment*'
-              }
-              return this.feedComments(r.ParentId, r.Id).then((feedComments) => {
-                r.attachments = feedComments
-                comments.push(r)
-              })
-            }
+            if (r.Body && r.Type === 'TextPost') comments.push(r)
             return comments
           })
         })
