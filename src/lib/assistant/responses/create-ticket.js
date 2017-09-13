@@ -76,3 +76,10 @@ exports.createTicket_nocontext = (args, cb) => {
 
   return cb(null, text)
 }
+
+exports.createTicket_deny = (args, cb) => {
+  console.log('--> inside createTicket -- deny')
+
+  const text = 'Sounds good, just let me know if you need anything'
+  return cb(null, text)
+}

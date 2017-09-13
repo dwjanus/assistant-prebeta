@@ -15,6 +15,7 @@ module.exports = {
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   createTicket_nocontext: createTicket.createTicket_nocontext,
+  createTicket_deny: createTicket.createTicket_deny,
   configSMS_start: configSMS.configSMS_start,
   configSMS_reject: configSMS.configSMS_reject,
   configSMS_number_confirmed: configSMS.configSMS_number_confirmed,
