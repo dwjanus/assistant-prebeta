@@ -19,7 +19,7 @@ const oauth2 = new jsforce.OAuth2({
   // loginUrl: 'https://test.salesforce.com',
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
-  redirectUri: 'https://assistant-prebeta.herokuapp.com/authorize'
+  redirectUri: 'https://assistant-prebeta-devin.herokuapp.com/authorize'
 })
 
 exports.login = (req, res) => {

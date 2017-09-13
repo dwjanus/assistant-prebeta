@@ -58,7 +58,7 @@ exports.auth = (req, res) => {
   const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
 
-  return query(insertQry).then(() => res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`))
+  return query(insertQry).then(() => res.redirect(`https://assistant-prebeta-devin.herokuapp.com/login/${userId}`))
   .catch((insError) => {
     console.log(`--> Error storing auth code <--\n${insError}`)
   })
