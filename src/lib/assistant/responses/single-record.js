@@ -70,7 +70,9 @@ exports.single_details = (args, cb) => {
 
   if (returnType !== 'Latest Comment' || 'Comments') return cb(null, text)
   return ebu.comments(latestRecord.Id, user.sf_id).then((comments) => {
+    console.log('--> just got comments back')
     if (comments) {
+      console.log('---> they are not empty')
       if (returnType === 'Latest Comment') {
         const latest = comments[0]
         // add parse for date so text version says Aug. 29 at {time} and speech takes normal date-time field from object
