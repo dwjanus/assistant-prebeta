@@ -1,6 +1,7 @@
 import db from '../../../config/db.js'
 import _ from 'lodash'
 import util from 'util'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
 
@@ -65,32 +66,71 @@ exports.single_details = (args, cb) => {
   const returnType = app.getArgument('return-type')
   const latestRecord = JSON.parse(user.lastRecord)
   let text = `The ${returnType} is currently ${latestRecord[returnType]}`
-  console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
 
   if (returnType === 'Latest Comment' || 'Comments') {
     console.log(`--> return type is: ${returnType}`)
-    return ebu.comments(latestRecord.Id, user.sf_id).then((comments) => {
+    return ebu.comments(latestRecord.Id).then((comments) => {
       console.log('--> just got comments back')
+      let saveFeedIdStr = ''
+
       if (comments) {
-        console.log('---> they are not empty')
+        console.log('   --> they are not empty')
         if (returnType === 'Latest Comment') {
           const latest = comments[0]
+
           // add parse for date so text version says Aug. 29 at {time} and speech takes normal date-time field from object
-          text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User} on ${latest.CreatedDate}. `
-          if (latest.CommentCount === 0) text += 'There are no responses to this. Would you like to post a reply?'
-          if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
-          else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+          const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
+          console.log(`    formated datetime: ${date}`)
+          text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
+
+          if (latest.CommentCount === 0) {
+            text += 'There are no responses to this. Would you like to post a reply?'
+            app.setContext('postfeed-prompt')
+          } else {
+            if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
+            else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+            app.setContext('viewfeed-prompt')
+          }
+
+          saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}'`
         } else {
           for (const c of comments) {
-            text += `${c.CreatedDate}: "${c.Body}" posted by ${c.User}`
+            const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+            text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
+            // need context handler for list of comments
           }
         }
       } else {
         text = 'There are no public comments, would you like to post one?'
+        app.setContext('postcomment-prompt')
       }
-      return cb(null, text)
+      query(saveFeedIdStr).then(() => cb(null, text))
     })
   }
+  return cb(null, text)
+}
+
+exports.single_viewfeed_confirmed = (args, cb) => {
+  console.log('\n inside single -- viewfeed/confirmed')
+
+  const ebu = args.ebu
+  const user = args.user
+  const latestRecord = JSON.parse(user.lastRecord)
+  const lastComment = user.lastCommentId
+  let text = ''
+
+  return ebu.feedComments(latestRecord.Id, lastComment).each((feedComment) => {
+    console.log(`-> adding feedComment ${feedComment.Id} to response`)
+    const date = dateFormat(feedComment.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+    text += `${date} "${feedComment.Body}" posted by ${feedComment.User.Name}\n`
+  })
+  .then(() => cb(null, text))
+  .catch(err => cb(err, null))
+}
+
+exports.single_viewfeed_deny = (args, cb) => {
+  console.log('\n inside single -- viewfeed/deny')
+  const text = 'Okay, I am here if you need anything else'
   return cb(null, text)
 }
 

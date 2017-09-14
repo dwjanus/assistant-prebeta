@@ -11,6 +11,8 @@ module.exports = {
   multi_nocontext: multiRecord.multi_nocontext,
   single_nocontext: singleRecord.single_nocontext,
   single_details: singleRecord.single_details,
+  single_viewfeed_confirmed: singleRecord.single_viewfeed_confirmed,
+  single_viewfeed_deny: singleRecord.single_viewfeed_deny,
   single_change: singleRecord.single_change,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,

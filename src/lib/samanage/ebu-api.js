@@ -260,7 +260,7 @@ function retrieveSfObj (conn) {
       })
     },
 
-    comments (objectId, currentUserId) {
+    comments (objectId) {
       console.log(`--> [salesforce] comments - Case: ${objectId} - User: ${currentUserId} **`)
       const comments = []
       return new Promise((resolve, reject) => {
@@ -280,7 +280,7 @@ function retrieveSfObj (conn) {
           })
         })
         .then(() => {
-          console.log('[comments .then]')
+          console.log(`[comments .then]\n${util.inspect(comments)}`)
           return Promise.all(comments).then(resolve(comments))
         })
         .catch((err) => {
@@ -291,8 +291,9 @@ function retrieveSfObj (conn) {
 
     feedComments (parentId, caseFeedId) { // need to retrieve only the comment which exists in the feedViews for the case
       return new Promise((resolve, reject) => {
-        console.log(`** [salesforce] retrieving FeedComments ${caseFeedId} for ${parentId} **`)
+        console.log(`** [salesforce] retrieving FeedComments for case: ${parentId} feed: ${caseFeedId} **`)
         const feedComments = []
+
         conn.sobject('FeedComment')
           .find({ ParentId: parentId, FeedItemId: caseFeedId })
           .orderby('CreatedDate', 'DESC')
@@ -300,14 +301,13 @@ function retrieveSfObj (conn) {
           if (err) reject(err)
           return Promise.map(records, (r) => {
             return this.getUser(r.CreatedById).then((user) => {
-              if (user) {
-                r.User = user
-              }
+              if (user) r.User = user
+              else r.User = null
               return r
             })
           })
           .each((feed) => {
-            if (feed.CommentBody && feed.IsDeleted === false) {
+            if (feed.IsDeleted === false) {
               feedComments.push(feed)
             }
             return feedComments

@@ -14,6 +14,8 @@ const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CREATE_TICKET_NO_CONTEXT = 'create.newticket-nocontext'
 const CREATE_TICKET_DENY = 'deny.newticket'
+const VIEW_FEED_FROM_SINGLE_CONFIRMED = 'confirm.viewfeed'
+const VIEW_FEED_FROM_SINGLE_DENY = 'deny.viewfeed'
 const CONFIG_SMS_START = 'config.sms-start'
 const CONFIG_SMS_REJECT = 'config.sms-reject'
 const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
@@ -33,6 +35,8 @@ actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CREATE_TICKET_NO_CONTEXT, responses.createTicket_nocontext)
 actionMap.set(CREATE_TICKET_DENY, responses.createTicket_deny)
+actionMap.set(VIEW_FEED_FROM_SINGLE_CONFIRMED, responses.single_viewfeed_confirmed)
+actionMap.set(VIEW_FEED_FROM_SINGLE_DENY, responses.single_viewfeed_deny)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
 actionMap.set(CONFIG_SMS_REJECT, responses.configSMS_reject)
 actionMap.set(CONFIG_SMS_NUMBER_CONFIRMED, responses.configSMS_number_confirmed)
