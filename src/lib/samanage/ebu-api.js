@@ -236,7 +236,7 @@ function retrieveSfObj (conn) {
           let sample_records = records.slice(0, 5).map( i => {
             records[i]
           })
-          console.log(`Records:\n${util.inspect(records)}`)
+          console.log(`Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
