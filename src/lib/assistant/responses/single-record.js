@@ -33,7 +33,7 @@ exports.single_nocontext = (args, cb) => {
       if (app.getArgument('return-type')) {
         text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
       } else {
-        text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} /` +
+        text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} / ` +
         `Description: ${record.Description}`
       }
 
@@ -77,10 +77,7 @@ exports.single_details = (args, cb) => {
         console.log('   --> they are not empty')
         if (returnType === 'Latest Comment') {
           const latest = comments[0]
-
-          // add parse for date so text version says Aug. 29 at {time} and speech takes normal date-time field from object
           const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
-          console.log(`    formated datetime: ${date}`)
           text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
 
           if (latest.CommentCount === 0) {
@@ -122,7 +119,7 @@ exports.single_viewfeed_confirmed = (args, cb) => {
   return ebu.feedComments(latestRecord.Id, lastComment).each((feedComment) => {
     console.log(`-> adding feedComment ${feedComment.Id} to response`)
     const date = dateFormat(feedComment.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-    text += `${date} "${feedComment.Body}" posted by ${feedComment.User.Name}\n`
+    text += `${date} "${feedComment.CommentBody}" posted by ${feedComment.User.Name}\n`
   })
   .then(() => cb(null, text))
   .catch(err => cb(err, null))
