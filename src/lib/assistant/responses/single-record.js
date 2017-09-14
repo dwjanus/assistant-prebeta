@@ -108,7 +108,7 @@ exports.single_details = (args, cb) => {
 }
 
 exports.single_viewfeed_confirmed = (args, cb) => {
-  console.log('\n inside single -- viewfeed/confirmed')
+  console.log('\n--> inside single -- viewfeed/confirmed')
 
   const ebu = args.ebu
   const user = args.user
@@ -129,8 +129,55 @@ exports.single_viewfeed_confirmed = (args, cb) => {
 }
 
 exports.single_viewfeed_deny = (args, cb) => {
-  console.log('\n inside single -- viewfeed/deny')
+  console.log('\n--> inside single -- viewfeed/deny')
   const text = 'Okay, I am here if you need anything else'
+  return cb(null, text)
+}
+
+exports.single_postfeed_confirm = (args, cb) => {
+  console.log('\n--> inside single -- postfeed/confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  let text = 'Okay, what would you like to say?'
+
+  if (!commentBody) return cb(null, text)
+  else {
+    text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+    app.setContext('feedcomment-verify')
+    return cb(null, text)
+  }
+}
+
+exports.single_postfeed_body = (args, cb) => {
+  console.log('\n--> inside single -- postfeed/confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  const text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  return cb(null, text)
+}
+
+exports.single_postfeed_verify_confirm = (args, cb) => {
+  console.log('\n--> inside postfeed/verify-confirm')
+  // ebu.createFeedComment(ids, userid) =>
+  const text = 'Your feed comment has been posted!'
+  return cb(null, text)
+}
+
+exports.single_postfeed_verify_newbody = (args, cb) => {
+  console.log('\n--> inside postfeed/verify-confirm')
+  console.log('\n--> inside single -- postfeed/confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  const text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  return cb(null, text)
+}
+
+exports.single_postfeed_verify_deny = (args, cb) => {
+  console.log('\n--> inside postfeed/verify-confirm')
+  const text = 'No worries, cancelling your post'
   return cb(null, text)
 }
 
