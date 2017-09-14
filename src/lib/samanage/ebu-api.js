@@ -220,6 +220,7 @@ function retrieveSfObj (conn) {
 
         if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
         if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+        if (options.Status) searchParams.Status = options.Status
 
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
