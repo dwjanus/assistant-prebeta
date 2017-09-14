@@ -212,6 +212,7 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id', options.RecordType)
+        let status = options.Status
         let searchParams = options
 
         delete searchParams.Owner
@@ -242,6 +243,10 @@ function retrieveSfObj (conn) {
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
             if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            if (status && (r.Status !== status)) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
