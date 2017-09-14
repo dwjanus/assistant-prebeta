@@ -69,7 +69,7 @@ export default ((userId) => {
     .then((user) => {
       if (!user.sf_id) {
         console.log('--! no connection object found !---\n    returning link now ')
-        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta-walls.herokuapp.com/login/${userId}` })
       }
 
       let conn = new jsforce.Connection({
@@ -111,7 +111,7 @@ export default ((userId) => {
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
-            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://assistant-prebeta-walls.herokuapp.com/login/${userId}` })
           })
         }
 
