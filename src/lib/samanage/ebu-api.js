@@ -233,6 +233,9 @@ function retrieveSfObj (conn) {
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
+          let sample_records = records.slice(0, 5).map( i => {
+            records[i]
+          })
           console.log(`Records:\n${util.inspect(records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
