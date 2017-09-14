@@ -33,7 +33,7 @@ exports.single_nocontext = (args, cb) => {
       if (app.getArgument('return-type')) {
         text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
       } else {
-        text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} ` +
+        text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} /` +
         `Description: ${record.Description}`
       }
 

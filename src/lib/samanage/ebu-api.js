@@ -261,7 +261,7 @@ function retrieveSfObj (conn) {
     },
 
     comments (objectId) {
-      console.log(`--> [salesforce] comments - Case: ${objectId} - User: ${currentUserId} **`)
+      console.log(`--> [salesforce] comments - Case: ${objectId} **`)
       const comments = []
       return new Promise((resolve, reject) => {
         return this.getCaseFeed(objectId).then((caseFeed) => {
