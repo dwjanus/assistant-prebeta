@@ -121,7 +121,10 @@ exports.single_viewfeed_confirmed = (args, cb) => {
     const date = dateFormat(feedComment.CreatedDate, "ddd m/d/yy '@' h:MM tt")
     text += `${date} "${feedComment.CommentBody}" posted by ${feedComment.User.Name}\n`
   })
-  .then(() => cb(null, text))
+  .then(() => {
+    text += '\nWould you like to post a response?'
+    cb(null, text)
+  })
   .catch(err => cb(err, null))
 }
 
