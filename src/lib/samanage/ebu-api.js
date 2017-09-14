@@ -235,7 +235,7 @@ function retrieveSfObj (conn) {
         .execute((err, records) => {
           if (err) return reject(err)
           let sample_records = records.slice(0, 5).map( i => {
-            records[i]
+            return (records[i])
           })
           console.log(`Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
