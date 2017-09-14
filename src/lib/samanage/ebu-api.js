@@ -275,12 +275,13 @@ function retrieveSfObj (conn) {
           }))
           .each((r) => {
             console.log('[comments .each]')
-            if (r.Body && r.Type === 'TextPost') comments.push(r)
+            if (r.Body) comments.push(r)
             return comments
           })
-          .then(() => {
-            return Promise.all(comments).then(resolve(comments))
-          })
+        })
+        .then(() => {
+          console.log('[comments .then]')
+          return Promise.all(comments).then(resolve(comments))
         })
         .catch((err) => {
           reject(err)
@@ -331,9 +332,8 @@ function retrieveSfObj (conn) {
     getCaseFeed (id) {
       return new Promise((resolve, reject) => {
         conn.sobject('CaseFeed')
-          .find({ ParentId: id })
+          .find({ ParentId: id, Type: 'TextPost' })
           .orderby('CreatedDate', 'DESC')
-          .limit(5)
         .execute((err, records) => {
           if (err) return reject(err)
           console.log('[getCaseFeed] got records')
