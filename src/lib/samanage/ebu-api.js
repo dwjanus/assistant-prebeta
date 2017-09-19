@@ -222,7 +222,7 @@ function retrieveSfObj (conn) {
         if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
         if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
         if (options.Status) searchParams.Status = options.Status
-
+        console.log(`\n Search Params: ${util.inspect(searchParams)}`)
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -241,6 +241,7 @@ function retrieveSfObj (conn) {
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
+            
             if (type && (r.RecordTypeId !== type)) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
