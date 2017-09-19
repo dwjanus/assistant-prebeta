@@ -234,8 +234,8 @@ function retrieveSfObj (conn) {
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
-          let sample_records = records.slice(0, 5)
-          
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
           console.log(`Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
