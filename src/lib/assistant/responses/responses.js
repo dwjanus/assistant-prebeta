@@ -1,4 +1,4 @@
-import { welcome } from './welcome.js'
+import welcome from './welcome.js'
 import { knowledge } from './knowledge.js'
 import multiRecord from './multi-record.js'
 import singleRecord from './single-record.js'
@@ -6,14 +6,22 @@ import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
 module.exports = {
-  welcome,
+  welcome: welcome.welcome,
+  thankyou: welcome.thankyou,
   knowledge,
   multi_nocontext: multiRecord.multi_nocontext,
   single_nocontext: singleRecord.single_nocontext,
   single_details: singleRecord.single_details,
+  single_postcomment_confirm: singleRecord.single_postcomment_confirm,
+  single_postcomment_body: singleRecord.single_postcomment_body,
+  single_postcomment_deny: singleRecord.single_postcomment_deny,
+  single_postcomment_verify_newbody: singleRecord.single_postcomment_verify_newbody,
+  single_postcomment_verify_deny: singleRecord.single_postcomment_verify_deny,
+  single_postcomment_verify_confirm: singleRecord.single_postcomment_verify_confirm,
   single_viewfeed_confirmed: singleRecord.single_viewfeed_confirmed,
   single_viewfeed_deny: singleRecord.single_viewfeed_deny,
   single_postfeed_confirm: singleRecord.single_postfeed_confirm,
+  single_postfeed_deny: singleRecord.single_postfeed_deny,
   single_postfeed_body: singleRecord.single_postfeed_body,
   single_postfeed_verify_confirm: singleRecord.single_postfeed_verify_confirm,
   single_postfeed_verify_newbody: singleRecord.single_postfeed_verify_newbody,

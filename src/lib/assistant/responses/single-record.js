@@ -94,7 +94,7 @@ exports.single_details = (args, cb) => {
           for (const c of comments) {
             const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
             text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-            // need context handler for list of comments
+            // need context handler for list of comments?
           }
         }
       } else {
@@ -106,6 +106,78 @@ exports.single_details = (args, cb) => {
   }
   return cb(null, text)
 }
+
+
+/** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
+ *               Handlers for Case Comment view/post convo paths              *
+ ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/
+
+exports.single_postcomment_confirm = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  let text = 'Okay, what would you like to say?'
+
+  if (!commentBody || commentBody === '') return cb(null, text)
+  text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  app.setContext('comment-verify')
+  return cb(null, text)
+}
+
+exports.single_postcomment_body = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  const text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  return cb(null, text)
+}
+
+exports.single_postcomment_deny = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/deny')
+  const text = 'No worries, I am here if you need anything else'
+  return cb(null, text)
+}
+
+exports.single_postcomment_verify_newbody = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/verify-confirm')
+
+  const app = args.app
+  const commentBody = app.getArgument('CommentBody')
+  const text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  return cb(null, text)
+}
+
+exports.single_postcomment_verify_deny = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/verify-confirm')
+  const text = 'No worries, cancelling your feed post'
+  return cb(null, text)
+}
+
+exports.single_postcomment_verify_confirm = (args, cb) => {
+  console.log('\n--> inside single -- postcomment/verify-confirm')
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  const latestRecord = JSON.parse(user.lastRecord)
+  const commentBody = app.getArgument('CommentBody')
+
+  return ebu.createComment(latestRecord.Id, user.sf_id, commentBody).then((ret) => {
+    console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
+    const text = 'Your comment has been posted!'
+    return cb(null, text)
+  })
+  .catch((err) => {
+    cb(err, null)
+  })
+}
+
+
+/** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
+ *               Handlers for Feed Comment view/post convo paths              *
+ ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/
 
 exports.single_viewfeed_confirmed = (args, cb) => {
   console.log('\n--> inside single -- viewfeed/confirmed')
@@ -142,11 +214,15 @@ exports.single_postfeed_confirm = (args, cb) => {
   let text = 'Okay, what would you like to say?'
 
   if (!commentBody) return cb(null, text)
-  else {
-    text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
-    app.setContext('feedcomment-verify')
-    return cb(null, text)
-  }
+  text = `Replying with: "${commentBody}" / say "Confirm" to post, or if this is incorrect respond with exactly what you want posted`
+  app.setContext('feedcomment-verify')
+  return cb(null, text)
+}
+
+exports.single_postfeed_deny = (args, cb) => {
+  console.log('\n--> inside single -- postfeed/deny')
+  const text = 'Okay, I am here if you need anything else'
+  return cb(null, text)
 }
 
 exports.single_postfeed_body = (args, cb) => {
@@ -158,16 +234,8 @@ exports.single_postfeed_body = (args, cb) => {
   return cb(null, text)
 }
 
-exports.single_postfeed_verify_confirm = (args, cb) => {
-  console.log('\n--> inside postfeed/verify-confirm')
-  // ebu.createFeedComment(ids, userid) =>
-  const text = 'Your feed comment has been posted!'
-  return cb(null, text)
-}
-
 exports.single_postfeed_verify_newbody = (args, cb) => {
-  console.log('\n--> inside postfeed/verify-confirm')
-  console.log('\n--> inside single -- postfeed/confirm')
+  console.log('\n--> inside single -- postfeed/verify-confirm')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -176,10 +244,33 @@ exports.single_postfeed_verify_newbody = (args, cb) => {
 }
 
 exports.single_postfeed_verify_deny = (args, cb) => {
-  console.log('\n--> inside postfeed/verify-confirm')
-  const text = 'No worries, cancelling your post'
+  console.log('\n--> inside single -- postfeed/verify-confirm')
+  const text = 'No worries, cancelling your feed post'
   return cb(null, text)
 }
+
+exports.single_postfeed_verify_confirm = (args, cb) => {
+  console.log('\n--> inside single -- postfeed/verify-confirm')
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  const caseFeed = user.lastCommentId
+  const commentBody = app.getArgument('CommentBody')
+
+  return ebu.createFeedComment(caseFeed, user.sf_id, commentBody).then((ret) => {
+    console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
+    const text = 'Your comment has been posted!'
+    return cb(null, text)
+  })
+  .catch((err) => {
+    cb(err, null)
+  })
+}
+
+/** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
+ *               Handlers for making single change to a case obj              *
+ ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/
 
 exports.single_change = (args, cb) => {
   console.log('\n--> inside single -- change')

@@ -1,32 +1,51 @@
 import db from '../../../config/db.js'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
+const now = new Date()
 
 exports.welcome = (args, cb) => {
   console.log('--> inside welcome case')
 
   const user = args.user
   const ebu = args.ebu
-  const text = 'What can I do for you? If you are not totally sure what to do, just say \"I need help\"'
+  let text = 'Welcome '
+  const datetime = dateFormat(now, 'isoDateTime')
 
-  if (!user.SamanageESD_FullName__c) {
-    console.log('--> updating user info')
-    return ebu.getUser(user.sf_id).then((userInfo) => {
-      if (!userInfo.SamanageESD_FullName__c) userInfo.SamanageESD_FullName__c = 'undefined'
-      const updateUserQry = `UPDATE users SET Name = '${userInfo.Name}', Photo = '${userInfo.Photo}',
-        MobilePhone = '${userInfo.MobilePhone}', CompanyName = '${userInfo.CompanyName}', Department = '${userInfo.Department}',
-        Email = '${userInfo.Email}', PortalRole = '${userInfo.PortalRole}', IsPortalEnabled = '${userInfo.IsPortalEnabled}',
-        SamanageESD__FullName__c = '${userInfo.SamanageESD__FullName__c}', SamanageESD__RoleName__c = '${userInfo.SamanageESD__RoleName__c}'
-        WHERE user_id = '${user.user_id}'`
+  console.log('--> updating user info')
+  return ebu.getUser(user.sf_id).then((userInfo) => {
+    const updateUserQry = `UPDATE users SET Name = '${userInfo.Name}', FirstName = '${userInfo.FirstName}',
+      Photo = '${userInfo.Photo}', MobilePhone = '${userInfo.MobilePhone}', Department = '${userInfo.Department}',
+      Email = '${userInfo.Email}', PortalRole = '${userInfo.PortalRole}', IsPortalEnabled = '${userInfo.IsPortalEnabled}',
+      lastLogin = '${datetime}', SamanageESD__RoleName__c = '${userInfo.SamanageESD__RoleName__c}'
+      WHERE sf_id = '${user.sf_id}' AND user_id = '${user.user_id}'`
+
+    if (!user.lastLogin) {
+      if (user.FirstName) text += ` ${user.FirstName}`
+      text += '! '
+      text = 'What can I do for you?'
+      return updateUserQry
+    }
+
+    text += `back ${user.FirstName}! `
+    return ebu.welcomeUser(user).then((welcome) => {
+      if (welcome.updates.length === 0 && welcome.newcases.length) text += 'Currently there are no updates to report.'
+      if (welcome.updates.length > 0) {
+        if (welcome.updates.length === 1) text += `A change has been made to ticket ${welcome.updates[0].CaseNumber}`
+        if (welcome.updates.length > 1) text += `${welcome.updates.length} of your cases have been modified`
+        if (welcome.newcases.length > 1) text += ` and you have ${welcome.newcases.length} new cases.`
+        if (welcome.newcases.length === 1) text += ' and you have 1 new case.'
+      } else {
+        if (welcome.newcases.length > 1) text += `You have ${welcome.newcases.length} new cases.`
+        if (welcome.newcases.length === 1) text += 'You have 1 new case.'
+      }
+
       return updateUserQry
     })
-    .then(updateUserQry => query(updateUserQry))
-    .then(() => cb(null, text))
-    .catch(err => cb(err, null))
-  }
-
-  console.log('All user field info appears in db')
-  return cb(null, text)
+  })
+  .then(updateUserQry => query(updateUserQry))
+  .then(() => cb(null, text))
+  .catch(err => cb(err, null))
 }
 
 exports.thankyou = (args, cb) => {

@@ -126,6 +126,32 @@ export default ((userId) => {
 
 function retrieveSfObj (conn) {
   return {
+    welcomeUser (user) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] welcoming returning user: ${user.sf_id}`)
+
+        const newcases = []
+        const updates = []
+
+        conn.sobject('Case')
+        .find({ OwnerId: user.sf_id }, returnParams)
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          console.log(`Records:\n${util.inspect(records)}`)
+          for (const r of records) {
+            if (r.CreatedDate > user.lastLogin) {
+              if (r.Status === 'New') newcases.push(r)
+              else updates.push(r)
+            }
+
+            if (r.LastModifiedDate > user.lastLogin && r.LastModifiedById !== user.sf_id) updates.push(r)
+          }
+          return resolve({ newcases, updates })
+        })
+      })
+    },
+
     knowledge (text) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
@@ -133,7 +159,7 @@ function retrieveSfObj (conn) {
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
         return conn.search(`FIND {${search}} IN All Fields RETURNING SamanageESD__Knowledge__kav (Id, UrlName, Title, Summary,
-          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body__c WHERE PublishStatus = 'online' AND Language = 'en_US'
+          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body WHERE PublishStatus = 'online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {
           if (err) return reject(err)
@@ -315,6 +341,43 @@ function retrieveSfObj (conn) {
           .then(() => {
             Promise.all(feedComments).then(resolve(feedComments))
           })
+        })
+      })
+    },
+
+    createComment (objectId, userId, comment) {
+      return new Promise((resolve, reject) => {
+        console.log(`** [salesforce] posting ${comment}\n   on case: ${objectId} for user: ${userId} **`)
+
+        conn.sobject('FeedItem').create({
+          ParentId: objectId,
+          Type: 'TextPost',
+          InsertedById: userId,
+          Body: comment,
+          Visibility: 'AllUsers'
+        })
+        .execute((err, ret) => {
+          console.log(`--> finsihed creating comment: ${ret.success}`)
+          if (err || !ret.success) return reject(err)
+          return resolve(ret)
+        })
+      })
+    },
+
+    createFeedComment (caseFeedId, userId, comment) {
+      return new Promise((resolve, reject) => {
+        console.log(`** [salesforce] posting ${comment}\n   on casefeed: ${caseFeedId} for user: ${userId} **`)
+
+        conn.sobject('FeedComment').create({
+          FeedItemId: caseFeedId,
+          CommentType: 'TextComment',
+          InsertedById: userId,
+          CommentBody: comment
+        })
+        .execute((err, ret) => {
+          console.log(`--> finsihed creating feed comment: ${ret.success}`)
+          if (err || !ret.success) return reject(err)
+          return resolve(ret)
         })
       })
     },
