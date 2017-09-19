@@ -5,12 +5,12 @@ import util from 'util'
 
 const query = db.querySql
 
-exports.closed_count = (args, cb) => {
+exports.metrics = (args, cb) => {
   console.log('\n--> inside multi -- nocontext')
   const app = args.app
   const ebu = args.ebu
   const user = args.user
-  let text = 'No tickets have been closed'
+  let text = 'No tickets have been found'
   let options = {
     Status: app.getArgument('Status'),
     Priority: app.getArgument('Priority'),
