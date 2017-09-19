@@ -15,7 +15,9 @@ exports.multi_nocontext = (args, cb) => {
     Subject: app.getArgument('Subject'),
     Status: app.getArgument('Status'),
     Priority: app.getArgument('Priority'),
-    RecordType: app.getArgument('record-type')
+    StatusChange: app.getArgument('status-change'),
+    RecordType: app.getArgument('record-type'),
+    StartDate: app.getArgument('start-date')
   }
 
   // default options
