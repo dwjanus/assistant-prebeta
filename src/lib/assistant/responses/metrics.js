@@ -12,8 +12,10 @@ exports.closed_count = (args, cb) => {
   const user = args.user
   let text = 'No tickets have been closed'
   let options = {
+    Status: app.getArgument('Status'),
+    Priority: app.getArgument('Priority'),
     RecordType: app.getArgument('record-type'),
-    OwnerId: app.getArgument('OwnerId'), // ?
+    DatePeriod: app.getArgument('date-period'),
   }
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
