@@ -46,7 +46,6 @@ exports.single_nocontext = (args, cb) => {
           if (returnType === 'Latest Comment' || 'Comments') {
             return ebu.comments(record.Id).then((comments) => {
               console.log('--> just got comments back')
-              let saveFeedIdStr = ''
 
               if (comments) {
                 console.log('   --> they are not empty')
@@ -64,28 +63,27 @@ exports.single_nocontext = (args, cb) => {
                     app.setContext('viewfeed-prompt')
                   }
 
-                  saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
-                } else {
-                  for (const c of comments) {
-                    const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-                    text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-                    // need context handler for list of comments?
-                  }
+                  const saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
+                  return query(saveFeedIdStr)
                 }
+
+                for (const c of comments) {
+                  const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+                  text += `\n${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies`
+                }
+                // need context handler for list of comments?
               } else {
                 text = 'There are no public comments, would you like to post one?'
                 app.setContext('postcomment-prompt')
               }
-              return saveFeedIdStr
-            }).then((saveFeedIdStr) => {
-              query(saveFeedIdStr)
-            }).then(() => {
+            })
+            .then(() => {
               if (app.getArgument('yesno') && record) text = `Yes, ${text}`
               return cb(null, text)
             })
-          } else {
-            text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
           }
+
+          text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
         } else {
           text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} / ` +
           `Description: ${record.Description}`
@@ -119,7 +117,6 @@ exports.single_details = (args, cb) => {
     console.log(`--> return type is: ${returnType}`)
     return ebu.comments(latestRecord.Id).then((comments) => {
       console.log('--> just got comments back')
-      let saveFeedIdStr = ''
 
       if (comments) {
         console.log('   --> they are not empty')
@@ -137,19 +134,21 @@ exports.single_details = (args, cb) => {
             app.setContext('viewfeed-prompt')
           }
 
-          saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
-        } else {
-          for (const c of comments) {
-            const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-            text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-            // need context handler for list of comments?
-          }
+          const saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
+          return query(saveFeedIdStr).then(() => cb(null, text))
+        }
+
+        for (const c of comments) {
+          const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+          text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
+          // need context handler for list of comments?
         }
       } else {
         text = 'There are no public comments, would you like to post one?'
         app.setContext('postcomment-prompt')
       }
-      query(saveFeedIdStr).then(() => cb(null, text))
+
+      return cb(null, text)
     })
   }
   return cb(null, text)
