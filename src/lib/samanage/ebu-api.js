@@ -267,8 +267,8 @@ function retrieveSfObj (conn) {
         let sfDate = new jsforce.sfDate()
         startClosedDate = sfDate.parseDate(options.DatePeriod.split('/')[0])
         endClosedDate = sfDate.parseDate(options.DatePeriod.split('/')[1])
-        if (searchParams.StatusChange === 'Closed') { statusDateType = 'ClosedDate'}
-        if (searchParams.StatusChange === 'Opened') { statusDateType = 'CreatedDate'}
+        if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
+        if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
         delete searchParams.StatusChange
         delete searchParams.RecordType
         delete searchParams.DatePeriod
