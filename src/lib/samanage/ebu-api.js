@@ -264,8 +264,9 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let startClosedDate = options.DatePeriod.split('/')[0]
-        let endClosedDate = options.DatePeriod.split('/')[1]
+        let sfDate = new jsforce.sfDate()
+        startClosedDate = sfDate..parseDate(options.DatePeriod.split('/')[0])
+        endClosedDate = sfDate..parseDate(options.DatePeriod.split('/')[1])
 
         delete searchParams.StatusChange
         delete searchParams.RecordType
@@ -300,7 +301,7 @@ function retrieveSfObj (conn) {
             }
             response.push(r)
           }
-          return resolve(response) // need to include sorting at some point
+          return resolve(response)
         })
       })
     },
