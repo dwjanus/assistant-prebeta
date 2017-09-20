@@ -23,7 +23,7 @@ exports.welcome = (args, cb) => {
     if (!user.lastLogin) {
       if (user.FirstName) text += ` ${user.FirstName}`
       text += '! '
-      text = 'What can I do for you?'
+      text += 'What can I do for you?'
       return updateUserQry
     }
 
