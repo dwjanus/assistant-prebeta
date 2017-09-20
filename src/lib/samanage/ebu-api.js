@@ -267,9 +267,12 @@ function retrieveSfObj (conn) {
         let startDate = options.DatePeriod.split('/')[0]
 
         delete searchParams.StatusChange
+        delete searchParams.RecordType
         delete searchParams.DatePeriod
 
         searchParams.ClosedDate = { $gte : startDate}
+        console.log(`Search Params: ${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
         .sort('-LastModifiedDate')
