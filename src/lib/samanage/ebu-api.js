@@ -264,13 +264,15 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
+
         let sfDates = new jsforce.SfDate()
         console.log(`sfDate = ${util.inspect(sfDates)}`)
         sfDates.startClosedDate =  options.DatePeriod.split('/')[0]
-        console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
         sfDates.endClosedDate=  options.DatePeriod.split('/')[1]
+        console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
         console.log(`sfDate.endClosedDate = ${util.inspect(sfDates.endClosedDate)}`)
-        let endClosedDate = new jsforce.sFDate(options.DatePeriod.split('/')[1])
+
+        console.log(`sfDate = ${util.inspect(sfDates)}`)
         let statusDateType = ''
         if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
         if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
