@@ -264,7 +264,7 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let startDate = new sfDate(options.DatePeriod.split('/')[0])
+        let startDate = new jsforce.sfDate(options.DatePeriod.split('/')[0])
 
         delete searchParams.StatusChange
         delete searchParams.RecordType
