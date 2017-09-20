@@ -264,19 +264,21 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let startDate = new jsforce.sfDate(options.DatePeriod.split('/')[0])
+        let startClosedDate = new jsforce.sfDate(options.DatePeriod.split('/')[0])
+        let endClosedDate = new jsforce.sfDate(options.DatePeriod.split('/')[1])
 
         delete searchParams.StatusChange
         delete searchParams.RecordType
         delete searchParams.DatePeriod
 
-        searchParams.ClosedDate = { $gte : closedDate}
+        // searchParams.ClosedDate = { $gte : closedDate}
         searchParams = _.omitBy(searchParams, _.isNil)
 
         console.log(`Search Params: ${util.inspect(searchParams)}`)
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .where("ClosedDate >= ${startClosedDate} AND ClosedDate <= ${endClosedDate}")
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
