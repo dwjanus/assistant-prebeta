@@ -21,6 +21,7 @@ const POST_COMMENT_BODY = 'comment.body'
 const POST_COMMENT_VERIFY_CONFIRM = 'create.comment'
 const POST_COMMENT_VERIFY_NEWBODY = 'comment.verify-newbody'
 const POST_COMMENT_VERIFY_DENY = 'comment.verify-deny'
+const VIEW_FEED_FROM_COMMENTS_LIST = 'comment.viewfeed'
 const VIEW_FEED_FROM_SINGLE_CONFIRMED = 'confirm.viewfeed'
 const VIEW_FEED_FROM_SINGLE_DENY = 'deny.viewfeed'
 const POST_FEED_COMMENT_CONFIRMED = 'confirm.post-feedcomment'
@@ -55,6 +56,7 @@ actionMap.set(POST_COMMENT_BODY, responses.single_postcomment_body)
 actionMap.set(POST_COMMENT_VERIFY_CONFIRM, responses.single_postcomment_verify_confirm)
 actionMap.set(POST_COMMENT_VERIFY_NEWBODY, responses.single_postcomment_verify_newbody)
 actionMap.set(POST_COMMENT_VERIFY_DENY, responses.single_postcomment_verify_deny)
+actionMap.set(VIEW_FEED_FROM_COMMENTS_LIST, responses.comments_viewfeed)
 actionMap.set(VIEW_FEED_FROM_SINGLE_CONFIRMED, responses.single_viewfeed_confirmed)
 actionMap.set(VIEW_FEED_FROM_SINGLE_DENY, responses.single_viewfeed_deny)
 actionMap.set(POST_FEED_COMMENT_CONFIRMED, responses.single_postfeed_confirm)

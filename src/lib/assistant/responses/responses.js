@@ -2,6 +2,7 @@ import welcome from './welcome.js'
 import { knowledge } from './knowledge.js'
 import multiRecord from './multi-record.js'
 import singleRecord from './single-record.js'
+import comments from './comments.js'
 import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
@@ -27,6 +28,7 @@ module.exports = {
   single_postfeed_verify_newbody: singleRecord.single_postfeed_verify_newbody,
   single_postfeed_verify_deny: singleRecord.single_postfeed_verify_deny,
   single_change: singleRecord.single_change,
+  comments_viewfeed: comments.comments_viewfeed,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   createTicket_nocontext: createTicket.createTicket_nocontext,

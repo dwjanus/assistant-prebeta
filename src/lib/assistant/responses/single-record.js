@@ -39,7 +39,7 @@ exports.single_nocontext = (args, cb) => {
         `'SamanageESD__OwnerName__c', '${record.SamanageESD__OwnerName__c}', 'SamanageESD__Assignee_Name__c', '${record.SamanageESD__Assignee_Name__c}', ` +
         `'CaseNumber', '${record.CaseNumber}', 'Priority', '${record.Priority}', 'Status', '${record.Status}', 'SamanageESD__hasComments__c', ` +
         `'${record.SamanageESD__hasComments__c}', 'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', ` +
-        `'RecordTypeId', '${record.RecordTypeId}')`
+        `'RecordTypeId', '${record.RecordTypeId}') WHERE user_id = '${user.user_id}'`
 
       return query(saveRecordStr).then(() => {
         if (returnType) {
@@ -67,15 +67,28 @@ exports.single_nocontext = (args, cb) => {
                   return query(saveFeedIdStr)
                 }
 
-                for (const c of comments) {
+                const limit = comments.length > 3 ? 3 : comments.length
+                const saved = {}
+                for (let i = 0; i < limit; i++) {
+                  const c = comments[i]
+                  saved[(i + 1)].comment = c
                   const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-                  text += `\n${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies`
+                  text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
                 }
-                // need context handler for list of comments?
-              } else {
-                text = 'There are no public comments, would you like to post one?'
-                app.setContext('postcomment-prompt')
+
+                if (comments.length > limit) text += `+${comments.length - limit} more`
+
+                // set context to comments list
+                app.setContext('comments-list')
+
+                // save comments array to lastRecord
+                const savedComments = JSON.stringify(saved)
+                const updateLastRecordStr = `UPDATE users SET lastRecord = VALUES(?) WHERE user_id = '${user.user_id}'`
+                return query(updateLastRecordStr, savedComments)
               }
+
+              text = 'There are no public comments, would you like to post one?'
+              app.setContext('postcomment-prompt')
             })
             .then(() => {
               if (app.getArgument('yesno') && record) text = `Yes, ${text}`
@@ -138,11 +151,24 @@ exports.single_details = (args, cb) => {
           return query(saveFeedIdStr).then(() => cb(null, text))
         }
 
-        for (const c of comments) {
+        const limit = comments.length > 3 ? 3 : comments.length
+        const saved = {}
+        for (let i = 0; i < limit; i++) {
+          const c = comments[i]
+          saved[(i + 1)].comment = c
           const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
           text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-          // need context handler for list of comments?
         }
+
+        if (comments.length > limit) text += `+${comments.length - limit} more`
+
+        // set context to comments list
+        app.setContext('comments-list')
+
+        // save comments array to lastRecord
+        const savedComments = JSON.stringify(saved)
+        const updateLastRecordStr = `UPDATE users SET lastRecord = VALUES(?) WHERE user_id = '${user.user_id}'`
+        return query(updateLastRecordStr, savedComments)
       } else {
         text = 'There are no public comments, would you like to post one?'
         app.setContext('postcomment-prompt')
