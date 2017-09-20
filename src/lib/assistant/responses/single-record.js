@@ -305,7 +305,7 @@ exports.single_postfeed_verify_confirm = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   const caseFeed = user.lastCommentId
-  let commentBody = app.getArgument('CommentBody')
+  let commentBody = app.getContextArgument('feedcomment-verify', 'CommentBody')
   if (!commentBody) commentBody = app.getRawInput()
 
   return ebu.createFeedComment(caseFeed, user.sf_id, commentBody).then((ret) => {
