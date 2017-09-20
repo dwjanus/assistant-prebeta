@@ -39,43 +39,50 @@ exports.single_nocontext = (args, cb) => {
         `'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', 'RecordTypeId', '${record.RecordTypeId}')`
 
       return query(saveRecordStr).then(() => {
-        if (returnType && returnType !== 'Comments' || 'Latest Comment') {
-          text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
-        } else if (returnType === 'Latest Comment' || 'Comments') {
-          return ebu.comments(record.Id).then((comments) => {
-            console.log('--> just got comments back')
-            let saveFeedIdStr = ''
+        if (returnType) {
+          if (returnType === 'Latest Comment' || 'Comments') {
+            return ebu.comments(record.Id).then((comments) => {
+              console.log('--> just got comments back')
+              let saveFeedIdStr = ''
 
-            if (comments) {
-              console.log('   --> they are not empty')
-              if (returnType === 'Latest Comment') {
-                const latest = comments[0]
-                const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
-                text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
+              if (comments) {
+                console.log('   --> they are not empty')
+                if (returnType === 'Latest Comment') {
+                  const latest = comments[0]
+                  const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
+                  text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
 
-                if (latest.CommentCount === 0) {
-                  text += 'There are no responses to this. Would you like to post a reply?'
-                  app.setContext('postfeed-prompt')
+                  if (latest.CommentCount === 0) {
+                    text += 'There are no responses to this. Would you like to post a reply?'
+                    app.setContext('postfeed-prompt')
+                  } else {
+                    if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
+                    else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+                    app.setContext('viewfeed-prompt')
+                  }
+
+                  saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}'`
                 } else {
-                  if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
-                  else text += `There are ${latest.CommentCount} responses, would you like to view them?`
-                  app.setContext('viewfeed-prompt')
+                  for (const c of comments) {
+                    const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+                    text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
+                    // need context handler for list of comments?
+                  }
                 }
-
-                saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}'`
               } else {
-                for (const c of comments) {
-                  const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-                  text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-                  // need context handler for list of comments?
-                }
+                text = 'There are no public comments, would you like to post one?'
+                app.setContext('postcomment-prompt')
               }
-            } else {
-              text = 'There are no public comments, would you like to post one?'
-              app.setContext('postcomment-prompt')
-            }
-            return query(saveFeedIdStr)
-          })
+              return saveFeedIdStr
+            }).then((saveFeedIdStr) => {
+              query(saveFeedIdStr)
+            }).then(() => {
+              if (app.getArgument('yesno') && record) text = `Yes, ${text}`
+              return cb(null, text)
+            })
+          } else {
+            text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
+          }
         } else {
           text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} / ` +
           `Description: ${record.Description}`
