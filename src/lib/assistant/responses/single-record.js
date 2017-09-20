@@ -71,7 +71,7 @@ exports.single_nocontext = (args, cb) => {
                 const saved = {}
                 for (let i = 0; i < limit; i++) {
                   const c = comments[i]
-                  saved[(i + 1)].comment = c
+                  saved[`${(i + 1)}`] = c
                   const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
                   text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
                 }
@@ -155,7 +155,7 @@ exports.single_details = (args, cb) => {
         const saved = {}
         for (let i = 0; i < limit; i++) {
           const c = comments[i]
-          saved[(i + 1)].comment = c
+          saved[`${i + 1}`] = c
           const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
           text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
         }
