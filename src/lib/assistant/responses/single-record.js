@@ -83,8 +83,8 @@ exports.single_nocontext = (args, cb) => {
 
                 // save comments array to lastRecord
                 const savedComments = JSON.stringify(saved)
-                const updateLastRecordStr = `UPDATE users SET lastRecord = VALUES(?) WHERE user_id = '${user.user_id}'`
-                return query(updateLastRecordStr, savedComments)
+                const updateLastRecordStr = `UPDATE users SET lastRecord = ${savedComments} WHERE user_id = '${user.user_id}'`
+                return query(updateLastRecordStr)
               }
 
               text = 'There are no public comments, would you like to post one?'
@@ -167,8 +167,8 @@ exports.single_details = (args, cb) => {
 
         // save comments array to lastRecord
         const savedComments = JSON.stringify(saved)
-        const updateLastRecordStr = `UPDATE users SET lastRecord = VALUES(?) WHERE user_id = '${user.user_id}'`
-        return query(updateLastRecordStr, savedComments)
+        const updateLastRecordStr = `UPDATE users SET lastRecord = ${savedComments} WHERE user_id = '${user.user_id}'`
+        return query(updateLastRecordStr)
       } else {
         text = 'There are no public comments, would you like to post one?'
         app.setContext('postcomment-prompt')
