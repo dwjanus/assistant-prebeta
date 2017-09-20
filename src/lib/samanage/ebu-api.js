@@ -264,14 +264,15 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let startDate = options.DatePeriod.split('/')[0]
+        let startDate = new sfDate(options.DatePeriod.split('/')[0])
 
         delete searchParams.StatusChange
         delete searchParams.RecordType
         delete searchParams.DatePeriod
 
-        searchParams.ClosedDate = { $gte : new sfDate(startDate)}
+        searchParams.ClosedDate = { $gte : closedDate}
         searchParams = _.omitBy(searchParams, _.isNil)
+
         console.log(`Search Params: ${util.inspect(searchParams)}`)
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
