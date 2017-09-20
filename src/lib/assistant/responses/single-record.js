@@ -59,7 +59,7 @@ exports.single_nocontext = (args, cb) => {
 
                   if (latest.CommentCount === 0) {
                     text += 'There are no responses to this. Would you like to post a reply?'
-                    app.setContext('postfeed-prompt')
+                    app.setContext('feedcomments-view')
                   } else {
                     if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
                     else text += `There are ${latest.CommentCount} responses, would you like to view them?`
@@ -131,7 +131,7 @@ exports.single_details = (args, cb) => {
 
           if (latest.CommentCount === 0) {
             text += 'There are no responses to this. Would you like to post a reply?'
-            app.setContext('postfeed-prompt')
+            app.setContext('feedcomments-view')
           } else {
             if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
             else text += `There are ${latest.CommentCount} responses, would you like to view them?`

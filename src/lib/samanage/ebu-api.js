@@ -12,6 +12,10 @@ const formatCaseNumber = (number) => {
   return s.substr(s.length - 8)
 }
 
+const addslashes = (str) => {
+  return (`${str} `).replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+}
+
 const recordType = {
   Incident: '0121I000000kKdzQAE',
   Change: '0121I000000kKe0QAE',
@@ -158,7 +162,7 @@ function retrieveSfObj (conn) {
         const articles = []
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
-        return conn.search(`FIND {${search}} IN All Fields RETURNING SamanageESD__Knowledge__kav (Id, UrlName, Title, Summary,
+        return conn.search(`FIND {${addslashes(search)}} IN All Fields RETURNING SamanageESD__Knowledge__kav (Id, UrlName, Title, Summary,
           LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body WHERE PublishStatus = 'online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {
