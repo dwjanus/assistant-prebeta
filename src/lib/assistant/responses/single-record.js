@@ -5,6 +5,10 @@ import dateFormat from 'dateformat'
 
 const query = db.querySql
 
+function addslashes (str) {
+  return (`${str} `).replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+}
+
 exports.single_nocontext = (args, cb) => {
   console.log('\n--> inside single -- nocontext')
 
@@ -32,11 +36,12 @@ exports.single_nocontext = (args, cb) => {
     text = 'I\'m sorry, I was unable to find any records matching your description.'
 
     if (record) {
-      const saveRecordStr = `UPDATE users SET lastRecord = JSON_OBJECT('Id', '${record.Id}', 'Subject', '${record.Subject}', 'OwnerId', '${record.OwnerId}', ` +
-        `'Description', '${record.Description}', 'CreatedDate', '${record.CreatedDate}', 'CaseNumber', '${record.CaseNumber}', ` +
+      const saveRecordStr = `UPDATE users SET lastRecord = JSON_OBJECT('Id', '${record.Id}', 'Subject', '${addslashes(record.Subject)}', ` +
+        `'OwnerId', '${record.OwnerId}', 'Description', '${addslashes(record.Description)}', 'CreatedDate', '${record.CreatedDate}', ` +
         `'SamanageESD__OwnerName__c', '${record.SamanageESD__OwnerName__c}', 'SamanageESD__Assignee_Name__c', '${record.SamanageESD__Assignee_Name__c}', ` +
-        `'Priority', '${record.Priority}', 'Status', '${record.Status}', 'SamanageESD__hasComments__c', '${record.SamanageESD__hasComments__c}', ` +
-        `'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', 'RecordTypeId', '${record.RecordTypeId}')`
+        `'CaseNumber', '${record.CaseNumber}', 'Priority', '${record.Priority}', 'Status', '${record.Status}', 'SamanageESD__hasComments__c', ` +
+        `'${record.SamanageESD__hasComments__c}', 'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', ` +
+        `'RecordTypeId', '${record.RecordTypeId}')`
 
       return query(saveRecordStr).then(() => {
         if (returnType) {
