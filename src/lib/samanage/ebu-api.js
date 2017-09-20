@@ -264,7 +264,7 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let sfDates = new jsforce.sfDate()
+        let sfDates = new jsforce.SfDate()
         console.log(`sfDate = ${util.inspect(sfDates)}`)
         sfDates.startClosedDate =  options.DatePeriod.split('/')[0]
         console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
