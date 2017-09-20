@@ -27,7 +27,7 @@ exports.single_nocontext = (args, cb) => {
   console.log(`--> return type is: ${returnType}`)
 
   return ebu.singleRecord(options).then((record) => {
-    console.log('--> records returned from ebu api')
+    console.log('--> record returned from ebu api')
 
     text = 'I\'m sorry, I was unable to find any records matching your description.'
 
@@ -39,7 +39,7 @@ exports.single_nocontext = (args, cb) => {
         `'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', 'RecordTypeId', '${record.RecordTypeId}')`
 
       return query(saveRecordStr).then(() => {
-        if (returnType && returnType !== 'Comments' || 'LatestComment') {
+        if (returnType && returnType !== 'Comments' || 'Latest Comment') {
           text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
         } else if (returnType === 'Latest Comment' || 'Comments') {
           return ebu.comments(record.Id).then((comments) => {
