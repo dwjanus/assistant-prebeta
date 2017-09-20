@@ -14,11 +14,11 @@ exports.welcome = (args, cb) => {
 
   console.log('--> updating user info')
   return ebu.getUser(user.sf_id).then((userInfo) => {
-    const updateUserQry = `UPDATE users SET Name = '${userInfo.Name}', FirstName = '${userInfo.FirstName}',
+    const updateUserQry = `UPDATE users SET user_id = '${user.user_id}', Name = '${userInfo.Name}', FirstName = '${userInfo.FirstName}',
       Photo = '${userInfo.Photo}', MobilePhone = '${userInfo.MobilePhone}', Department = '${userInfo.Department}',
       Email = '${userInfo.Email}', PortalRole = '${userInfo.PortalRole}', IsPortalEnabled = '${userInfo.IsPortalEnabled}',
       lastLogin = '${datetime}', SamanageESD__RoleName__c = '${userInfo.SamanageESD__RoleName__c}'
-      WHERE sf_id = '${user.sf_id}' AND user_id = '${user.user_id}'`
+      WHERE sf_id = '${user.sf_id}'`
 
     if (!user.lastLogin) {
       if (user.FirstName) text += ` ${user.FirstName}`
