@@ -280,7 +280,7 @@ function retrieveSfObj (conn) {
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .where(`${statusTypeDate} >= ${startClosedDate} AND ${statusTypeDate} <= ${endClosedDate}`)
+        .where(`${statusDateType} >= ${startClosedDate} AND ${statusDateType} <= ${endClosedDate}`)
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
