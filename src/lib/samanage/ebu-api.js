@@ -294,6 +294,7 @@ function retrieveSfObj (conn) {
             response.push(r)
           }
           return resolve(response) // need to include sorting at some point
+        })
       })
     },
 
