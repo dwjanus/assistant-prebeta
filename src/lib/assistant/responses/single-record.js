@@ -275,7 +275,7 @@ exports.single_postfeed_deny = (args, cb) => {
 }
 
 exports.single_postfeed_body = (args, cb) => {
-  console.log('\n--> inside single -- postfeed/confirm')
+  console.log('\n--> inside single -- postfeed/body')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -284,7 +284,7 @@ exports.single_postfeed_body = (args, cb) => {
 }
 
 exports.single_postfeed_verify_newbody = (args, cb) => {
-  console.log('\n--> inside single -- postfeed/verify-confirm')
+  console.log('\n--> inside single -- postfeed/verify-newbody')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -293,7 +293,7 @@ exports.single_postfeed_verify_newbody = (args, cb) => {
 }
 
 exports.single_postfeed_verify_deny = (args, cb) => {
-  console.log('\n--> inside single -- postfeed/verify-confirm')
+  console.log('\n--> inside single -- postfeed/verify-deny')
   const text = 'No worries, cancelling your feed post'
   return cb(null, text)
 }
@@ -305,7 +305,8 @@ exports.single_postfeed_verify_confirm = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   const caseFeed = user.lastCommentId
-  const commentBody = app.getArgument('CommentBody')
+  let commentBody = app.getArgument('CommentBody')
+  if (!commentBody) commentBody = app.getRawInput()
 
   return ebu.createFeedComment(caseFeed, user.sf_id, commentBody).then((ret) => {
     console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)

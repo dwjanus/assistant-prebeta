@@ -359,8 +359,7 @@ function retrieveSfObj (conn) {
           InsertedById: userId,
           Body: comment,
           Visibility: 'AllUsers'
-        })
-        .execute((err, ret) => {
+        }, (err, ret) => {
           console.log(`--> finsihed creating comment: ${ret.success}`)
           if (err || !ret.success) return reject(err)
           return resolve(ret)
@@ -377,8 +376,7 @@ function retrieveSfObj (conn) {
           CommentType: 'TextComment',
           InsertedById: userId,
           CommentBody: comment
-        })
-        .execute((err, ret) => {
+        }, (err, ret) => {
           console.log(`--> finsihed creating feed comment: ${ret.success}`)
           if (err || !ret.success) return reject(err)
           return resolve(ret)
