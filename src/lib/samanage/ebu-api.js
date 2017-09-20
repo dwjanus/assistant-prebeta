@@ -260,30 +260,40 @@ function retrieveSfObj (conn) {
     metrics (options) {
       return new Promise((resolve,reject) =>{
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
-      //   conn.sobject('Case')
-      //   .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-      //   .sort('-LastModifiedDate')
-      //   .execute((err, records) => {
-      //     if (err) return reject(err)
-      //     let sample_records = records.slice(0, 5) // Show first 5 records
+        const response = []
+        const type = record('id',options.RecordType)
+        let status = options.Status
+        let searchParams = options
+        let startDate = options.DatePeriod.split('/')[0]
 
-      //     console.log(`Records:\n${util.inspect(sample_records)}`)
-      //     for (const r of records) {
-      //       r.RecordTypeMatch = true
-      //       r.RecordTypeName = record('name', r.RecordTypeId)
-      //       r.title_link = `${conn.instanceUrl}/${r.Id}`
+        delete searchParams.StatusChange
+        delete searchParams.DatePeriod
 
-      //       if (type && (r.RecordTypeId !== type)) {
-      //         console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-      //         r.RecordTypeMatch = false
-      //       }
-      //       if (status && (r.Status !== status)) {
-      //         console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-      //         r.RecordTypeMatch = false
-      //       }
-      //       response.push(r)
-      //     }
-      //     return resolve(response) // need to include sorting at some point
+        searchParams.ClosedDate = { $gte : startDate}
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Records:\n${util.inspect(sample_records)}`)
+          for (const r of records) {
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            if (status && (r.Status !== status)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            response.push(r)
+          }
+          return resolve(response) // need to include sorting at some point
       })
     },
 
