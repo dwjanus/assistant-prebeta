@@ -268,7 +268,7 @@ function retrieveSfObj (conn) {
         let sfDates = new jsforce.SfDate()
         console.log(`sfDate = ${util.inspect(sfDates)}`)
         sfDates.startClosedDate =  options.DatePeriod.split('/')[0]
-        sfDates.endClosedDate=  options.DatePeriod.split('/')[1]
+        sfDates.endClosedDate =  options.DatePeriod.split('/')[1]
         console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
         console.log(`sfDate.endClosedDate = ${util.inspect(sfDates.endClosedDate)}`)
 
@@ -288,8 +288,8 @@ function retrieveSfObj (conn) {
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
         .where(
-          ClosedDate:  { $gte : sfDates.startClosedDate},
-          ClosedDate:  { $lte : sfDates.endClosedDate}
+          ClosedDate:  { $gte : sfDates.startClosedDate.toDateLiteral()},
+          ClosedDate:  { $lte : sfDates.endClosedDate.toString()}
           )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
