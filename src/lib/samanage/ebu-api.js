@@ -270,7 +270,8 @@ function retrieveSfObj (conn) {
         delete searchParams.RecordType
         delete searchParams.DatePeriod
 
-        searchParams.ClosedDate = { $gte : startDate}
+        searchParams.ClosedDate = { $gte : new sfDate(startDate)}
+        searchParams = _.omitBy(searchParams, _.isNil)
         console.log(`Search Params: ${util.inspect(searchParams)}`)
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
