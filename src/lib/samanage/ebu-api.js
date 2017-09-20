@@ -326,7 +326,7 @@ function retrieveSfObj (conn) {
 
         conn.sobject('FeedComment')
           .find({ ParentId: parentId, FeedItemId: caseFeedId })
-          .orderby('CreatedDate', 'DESC')
+          .orderby('-CreatedDate')
         .execute((err, records) => {
           if (err) reject(err)
           return Promise.map(records, (r) => {
@@ -377,8 +377,8 @@ function retrieveSfObj (conn) {
           InsertedById: userId,
           CommentBody: comment
         }, (err, ret) => {
-          console.log(`--> finsihed creating feed comment: ${ret.success}`)
-          if (err || !ret.success) return reject(err)
+          console.log(`--> finished creating feed comment: ${util.inspect(ret)}`)
+          if (err) return reject(err) // || !ret.success
           return resolve(ret)
         })
       })
@@ -396,9 +396,9 @@ function retrieveSfObj (conn) {
 
     getCaseFeed (id) {
       return new Promise((resolve, reject) => {
-        conn.sobject('CaseFeed')
+        conn.sobject('FeedItem')
           .find({ ParentId: id, Type: 'TextPost' })
-          .orderby('CreatedDate', 'DESC')
+          .orderby('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
           console.log('[getCaseFeed] got records')
