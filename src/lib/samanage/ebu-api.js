@@ -267,7 +267,8 @@ function retrieveSfObj (conn) {
         let sfDate = new jsforce.sfDate()
         startClosedDate = sfDate..parseDate(options.DatePeriod.split('/')[0])
         endClosedDate = sfDate..parseDate(options.DatePeriod.split('/')[1])
-
+        if (searchParams.StatusChange === 'Closed') { statusDateType = 'ClosedDate'}
+        if (searchParams.StatusChange === 'Opened') { statusDateType = 'CreatedDate'}
         delete searchParams.StatusChange
         delete searchParams.RecordType
         delete searchParams.DatePeriod
@@ -279,7 +280,7 @@ function retrieveSfObj (conn) {
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .where(`ClosedDate >= ${startClosedDate} AND ClosedDate <= ${endClosedDate}`)
+        .where(`${statusTypeDate} >= ${startClosedDate} AND ${statusTypeDate} <= ${endClosedDate}`)
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
