@@ -264,8 +264,13 @@ function retrieveSfObj (conn) {
         const type = record('id',options.RecordType)
         let status = options.Status
         let searchParams = options
-        let startClosedDate = new Date(options.DatePeriod.split('/')[0])
-        let endClosedDate = new Date(options.DatePeriod.split('/')[1])
+        let sfDates = new jsforce.sFDate()
+        console.log(`sfDate = ${util.inspect(sfDates)}`)
+        sfDates.startClosedDate =  options.DatePeriod.split('/')[0]
+        console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
+        sfDates.endClosedDate=  options.DatePeriod.split('/')[1]
+        console.log(`sfDate.endClosedDate = ${util.inspect(sfDates.endClosedDate)}`)
+        let endClosedDate = new jsforce.sFDate(options.DatePeriod.split('/')[1])
         let statusDateType = ''
         if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
         if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
@@ -281,8 +286,8 @@ function retrieveSfObj (conn) {
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
         .where(
-          ClosedDate:  { $gte : startClosedDate},
-          ClosedDate:  { $lte : endClosedDate}
+          ClosedDate:  { $gte : sfDates.startClosedDate.toString()},
+          ClosedDate:  { $lte : sfDates.endClosedDate.toString()}
           )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
