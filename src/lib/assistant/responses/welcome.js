@@ -28,7 +28,7 @@ exports.welcome = (args, cb) => {
       return updateUserQry
     }
 
-    text += `back ${user.FirstName}! `
+    text += `back ${userInfo.FirstName}! `
     return ebu.welcomeUser(user).then((welcome) => {
       console.log(`--> got cases back from welcome\n${util.inspect(welcome)}`)
       if (welcome.updates.length === 0 && welcome.newcases.length) text += 'Currently there are no updates to report.'

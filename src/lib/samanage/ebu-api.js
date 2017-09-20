@@ -421,6 +421,7 @@ function retrieveSfObj (conn) {
           // console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
+            FirstName: records[0].FirstName,
             Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`,
             MobilePhone: records[0].MobilePhone,
             CompanyName: records[0].CompanyName,
