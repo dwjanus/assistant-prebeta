@@ -288,8 +288,8 @@ function retrieveSfObj (conn) {
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
         .where(
-          ClosedDate:  { $gte : sfDates.startClosedDate.toDateLiteral()},
-          ClosedDate:  { $lte : sfDates.endClosedDate.toString()}
+          ClosedDate:  { $gte : jsforce.SfDate.parseDate(sfDates.startClosedDate)},
+          ClosedDate:  { $lte : jsforce.SfDate.parseDate(sfDates.endClosedDate)}
           )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
