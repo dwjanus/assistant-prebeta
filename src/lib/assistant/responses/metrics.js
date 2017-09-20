@@ -6,7 +6,7 @@ import util from 'util'
 const query = db.querySql
 
 exports.metrics = (args, cb) => {
-  console.log('\n--> inside multi -- nocontext')
+  console.log('\n--> inside metrics -- nocontext')
   const app = args.app
   const ebu = args.ebu
   const user = args.user
