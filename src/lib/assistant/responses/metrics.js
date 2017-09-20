@@ -26,7 +26,7 @@ exports.metrics = (args, cb) => {
 
   console.log(`options: ${util.inspect(options)}`)
 
-  return ebu.Metrics(options).then((records) => {
+  return ebu.metrics(options).then((records) => {
     console.log('--> records returned from ebu api')
     if (records) {
       if (records.length > 1) {
