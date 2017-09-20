@@ -16,6 +16,7 @@ exports.metrics = (args, cb) => {
     Status: app.getArgument('Status'),
     Priority: app.getArgument('Priority'),
     RecordType: app.getArgument('record-type'),
+    StatusChange: app.getArgument('StatusChange'),
     DatePeriod: app.getArgument('date-period'),
   }
   // default options
