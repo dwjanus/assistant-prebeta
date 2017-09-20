@@ -33,8 +33,6 @@ exports.single_nocontext = (args, cb) => {
   return ebu.singleRecord(options).then((record) => {
     console.log('--> record returned from ebu api')
 
-    text = 'I\'m sorry, I was unable to find any records matching your description.'
-
     if (record) {
       const saveRecordStr = `UPDATE users SET lastRecord = JSON_OBJECT('Id', '${record.Id}', 'Subject', '${addslashes(record.Subject)}', ` +
         `'OwnerId', '${record.OwnerId}', 'Description', '${addslashes(record.Description)}', 'CreatedDate', '${record.CreatedDate}', ` +
@@ -66,7 +64,7 @@ exports.single_nocontext = (args, cb) => {
                     app.setContext('viewfeed-prompt')
                   }
 
-                  saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}'`
+                  saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
                 } else {
                   for (const c of comments) {
                     const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
@@ -98,6 +96,7 @@ exports.single_nocontext = (args, cb) => {
       })
     }
 
+    text = 'I\'m sorry, I was unable to find any records matching your description.'
     if (app.getArgument('yesno')) text = `No, ${text}`
     return cb(null, text)
   })
@@ -138,7 +137,7 @@ exports.single_details = (args, cb) => {
             app.setContext('viewfeed-prompt')
           }
 
-          saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}'`
+          saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
         } else {
           for (const c of comments) {
             const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
