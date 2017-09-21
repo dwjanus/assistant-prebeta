@@ -45,7 +45,7 @@ exports.metrics = (args, cb) => {
       console.log(`\n--> Metrics not found options: ${util.inspect(options)}`)
       let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
       let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
-      text = `No ${options.RecordType}s were ${options.StatusChange} from ${startClosedDate} - ${endClosedDate}`
+      text = `No ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate}`
     }
     return cb(null, text)
   })
