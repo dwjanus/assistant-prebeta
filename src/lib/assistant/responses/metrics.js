@@ -18,32 +18,26 @@ exports.metrics = (args, cb) => {
     DatePeriod: app.getArgument('date-period'),
     StatusChange: app.getArgument('StatusChange')
   }
-  console.log(`\n--> Metrics options: ${util.inspect(options)}`)
+  console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
 
-  console.log(`\n--> Metrics computed options: ${util.inspect(options)}`)
-
   return ebu.metrics(options).then((records) => {
     console.log(`\n--> records returned from ebu api`)
     // if (!_.isEmpty(records)) {
       if (records) {
       if (records.length > 1) {
-        text = `here are ${records.length} `
+        text = `it looks like ${records.length} ${options.RecordType}s were ${options.StatusChange} `
         if (app.getArgument('yesno')) text = `Yes, t${text}`
-        else text = `T${text}`
-        if (options.Status) text += `${options.Status} `
-        if (options.Priority) text += `${options.Priority} priority `
         text += `${options.RecordType}s. The most recently active being ${options.RecordType} ` +
        `${records[0].CaseNumber}: ${records[0].Subject}`
       } else {
-        text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+        text = `I found ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
       }
     } else {
-      console.log(`\n--> Metrics not found options: ${util.inspect(options)}`)
       let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
       let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
       text = `No ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate}`
