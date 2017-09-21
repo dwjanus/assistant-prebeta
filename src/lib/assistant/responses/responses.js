@@ -11,6 +11,7 @@ module.exports = {
   thankyou: welcome.thankyou,
   knowledge,
   multi_nocontext: multiRecord.multi_nocontext,
+  multi_welcome: multiRecord.multi_welcome,
   single_nocontext: singleRecord.single_nocontext,
   single_details: singleRecord.single_details,
   single_postcomment_confirm: singleRecord.single_postcomment_confirm,

@@ -39,7 +39,8 @@ exports.single_nocontext = (args, cb) => {
         `'SamanageESD__OwnerName__c', '${record.SamanageESD__OwnerName__c}', 'SamanageESD__Assignee_Name__c', '${record.SamanageESD__Assignee_Name__c}', ` +
         `'CaseNumber', '${record.CaseNumber}', 'Priority', '${record.Priority}', 'Status', '${record.Status}', 'SamanageESD__hasComments__c', ` +
         `'${record.SamanageESD__hasComments__c}', 'SamanageESD__RecordType__c', '${record.SamanageESD__RecordType__c}', ` +
-        `'RecordTypeId', '${record.RecordTypeId}') WHERE user_id = '${user.user_id}'`
+        `'RecordTypeId', '${record.RecordTypeId}', 'SamanageESD__RequesterName__c', '${record.SamanageESD__RequesterName__c}')` +
+        ` WHERE user_id = '${user.user_id}'`
 
       return query(saveRecordStr).then(() => {
         if (returnType) {
@@ -125,7 +126,7 @@ exports.single_details = (args, cb) => {
   const user = args.user
   const returnType = app.getArgument('return-type')
   const latestRecord = JSON.parse(user.lastRecord)
-  let text = `The ${returnType} is currently ${latestRecord[returnType]}`
+  let text = ''
 
   if (returnType === 'Latest Comment' || 'Comments') {
     console.log(`--> return type is: ${returnType}`)
@@ -178,6 +179,8 @@ exports.single_details = (args, cb) => {
       return cb(null, text)
     })
   }
+
+  text = `The ${returnType} is currently ${latestRecord[returnType]}`
   return cb(null, text)
 }
 

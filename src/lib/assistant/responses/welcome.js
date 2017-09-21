@@ -8,8 +8,9 @@ const now = new Date()
 exports.welcome = (args, cb) => {
   console.log('--> inside welcome case')
 
-  const user = args.user
+  const app = args.app
   const ebu = args.ebu
+  const user = args.user
   let text = 'Welcome '
   const datetime = dateFormat(now, 'isoDateTime')
 
@@ -31,21 +32,40 @@ exports.welcome = (args, cb) => {
     text += `back ${userInfo.FirstName}! `
     return ebu.welcomeUser(user).then((welcome) => {
       console.log(`--> got cases back from welcome\n${util.inspect(welcome)}`)
-      if (welcome.updates.length === 0 && welcome.newcases.length) text += 'Currently there are no updates to report.'
-      if (welcome.updates.length > 0) {
-        if (welcome.updates.length === 1) text += `A change has been made to ticket ${welcome.updates[0].CaseNumber}`
-        if (welcome.updates.length > 1) text += `${welcome.updates.length} of your cases have been modified`
-        if (welcome.newcases.length > 1) text += ` and you have ${welcome.newcases.length} new cases.`
-        if (welcome.newcases.length === 1) text += ' and you have 1 new case.'
-      } else {
-        if (welcome.newcases.length > 1) text += `You have ${welcome.newcases.length} new cases.`
-        if (welcome.newcases.length === 1) text += 'You have 1 new case.'
+      const updates = welcome.updates
+      const newcases = welcome.newcases
+      const totalSize = updates.length + newcases.length
+
+      if (totalSize === 0) {
+        text += 'Currently there are no updates to report.'
+        return query(updateUserQry)
       }
 
-      return updateUserQry
+      if (updates.length === 1) text += `A change has been made to ticket ${updates[0].CaseNumber}`
+      if (updates.length > 1) text += `${updates.length} of your cases have been modified`
+      if (newcases.length === 1) text += `${updates.length > 0 ? ' and you' : 'You'} have 1 new case`
+      if (newcases.length > 1) text += `${updates.length > 0 ? 'and you' : 'You'} have ${newcases.length} new cases.`
+
+      if (totalSize === 1) {
+        // save record
+        const saved = updates.length > 0 ? JSON.stringify(updates) : JSON.stringify(newcases)
+        const updateLastRecordStr = `UPDATE users SET lastRecord = '${saved}' WHERE user_id = '${user.user_id}'`
+        console.log(`--> created json object for saved record:\n${util.inspect(saved)}`)
+        app.setContext('single-record')
+        return query(updateUserQry).then(() => query(updateLastRecordStr))
+      }
+
+      // save records
+      let saved = {}
+      if (updates.length > 0) saved.updates = updates
+      if (newcases.length > 0) saved.newcases = newcases
+      console.log(`--> created json object for saved record:\n${util.inspect(saved)}`)
+      saved = JSON.stringify(saved)
+      const updateLastRecordStr = `UPDATE users SET lastRecord = '${saved}' WHERE user_id = '${user.user_id}'`
+      app.setContext('welcome-multi-record')
+      return query(updateUserQry).then(() => query(updateLastRecordStr))
     })
   })
-  .then(updateUserQry => query(updateUserQry))
   .then(() => cb(null, text))
   .catch(err => cb(err, null))
 }
