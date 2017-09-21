@@ -263,14 +263,14 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id',options.RecordType)
-        const now = new Date()
         // let dateFormat = dateFormat(now)
         // let status = options.Status
         let searchParams = options
 
 
-        let startClosedDate =  dateFormat(now, options.DatePeriod.split('/')[0])
-        let endClosedDate =  dateFormat(now, options.DatePeriod.split('/')[1])
+        let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
+        let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
+        
         console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
         console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
 
