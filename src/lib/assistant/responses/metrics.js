@@ -38,9 +38,8 @@ exports.metrics = (args, cb) => {
       } else {
         text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
       }
-    else {
-        text = `No ${options.RecordType}s found`
-      }
+    } else {
+      text = `No ${options.RecordType}s found`
     }
     return cb(null, text)
   })
