@@ -246,6 +246,10 @@ function retrieveSfObj (conn) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
+            if (status && (r.Status !== status)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
             response.push(r)
           }
           return resolve(response) // need to include sorting at some point
@@ -289,15 +293,12 @@ function retrieveSfObj (conn) {
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
-
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
             if (type && (r.RecordTypeId !== type)) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
-            if (status && (r.Status !== status)) {
-              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-              r.RecordTypeMatch = false
-            }
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
             response.push(r)
           }
           return resolve(response)
