@@ -283,10 +283,13 @@ function retrieveSfObj (conn) {
         console.log(`Return Params:\n${util.inspect(returnParams)}`)
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .where({
+        .where(
+          // `ClosedDate >= ${}`
+        {
           ClosedDate: {$gte : startClosedDate},
           ClosedDate: {$lte : endClosedDate}
-        })
+        }
+        )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
