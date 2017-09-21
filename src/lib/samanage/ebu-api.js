@@ -294,7 +294,7 @@ function retrieveSfObj (conn) {
           )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
-          if (err) consnole.log(`error: ${util.inspect(err)}`)
+          if (err) console.log(`error: ${util.inspect(err)}`)
           if (err) return reject(err)
           let sample_records = records.slice(0, 5) // Show first 5 records
 
