@@ -297,6 +297,7 @@ function retrieveSfObj (conn) {
 
           console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
+            console.log(`Adding ${r.CaseNumber}`)
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
@@ -309,7 +310,6 @@ function retrieveSfObj (conn) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
-            console.log(`Adding ${r.CaseNumber}`)
             response.push(r)
           }
           return resolve(response)
