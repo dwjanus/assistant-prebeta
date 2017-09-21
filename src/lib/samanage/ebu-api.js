@@ -262,17 +262,15 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id',options.RecordType)
-        let sfDates = new jsforce.SfDate()
+        // let sfDates = new Date()
         let status = options.Status
         let searchParams = options
 
         console.log(`sfDate = ${util.inspect(sfDates)}`)
-        sfDates.startClosedDate =  options.DatePeriod.split('/')[0]
-        sfDates.endClosedDate =  options.DatePeriod.split('/')[1]
-        let startClosedDate = sfDates.sfDates.startClosedDate
-        let endClosedDate = sfDates.sfDates.endClosedDate
-        console.log(`sfDate.startClosedDate = ${util.inspect(sfDates.startClosedDate)}`)
-        console.log(`sfDate.endClosedDate = ${util.inspect(sfDates.endClosedDate)}`)
+        let startClosedDate =  new Date(options.DatePeriod.split('/')[0])
+        let endClosedDate =  new Date(options.DatePeriod.split('/')[1])
+        console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
+        console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
         console.log(`sfDate = ${util.inspect(sfDates)}`)
 
         let statusDateType = ''
