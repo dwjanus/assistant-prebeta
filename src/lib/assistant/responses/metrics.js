@@ -17,16 +17,17 @@ exports.metrics = (args, cb) => {
     DatePeriod: app.getArgument('date-period'),
     StatusChange: app.getArgument('StatusChange')
   }
+  console.log(`\n--> Metrics options: ${util.inspect(options)}`)
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
 
-  console.log(` --> Metrics options: ${util.inspect(options)}`)
+  console.log(`\n--> Metrics computed options: ${util.inspect(options)}`)
 
   return ebu.metrics(options).then((records) => {
-    console.log('--> records returned from ebu api')
+    console.log(`\n--> records returned from ebu api`)
     if (!_.isEmpty(records)) {
       if (records.length > 1) {
         text = `here are ${records.length} `
@@ -40,7 +41,7 @@ exports.metrics = (args, cb) => {
         text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
       }
     } else {
-      console.log(`--> Metrics not found options: ${util.inspect(options)}`)
+      console.log(`\n--> Metrics not found options: ${util.inspect(options)}`)
       text = `No ${options.RecordType}s were ${options.StatusChange}ed in ${options.DatePeriod}`
     }
     return cb(null, text)
