@@ -15,6 +15,7 @@ exports.metrics = (args, cb) => {
   let options = {
     RecordType: app.getArgument('record-type'),
     DatePeriod: app.getArgument('date-period'),
+    StatisChange: app.getArgument('StatusChange')
   }
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
