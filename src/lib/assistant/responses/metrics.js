@@ -15,7 +15,7 @@ exports.metrics = (args, cb) => {
   let options = {
     RecordType: app.getArgument('record-type'),
     DatePeriod: app.getArgument('date-period'),
-    StatisChange: app.getArgument('StatusChange')
+    StatusChange: app.getArgument('StatusChange')
   }
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
@@ -23,7 +23,7 @@ exports.metrics = (args, cb) => {
 
   options = _.omitBy(options, _.isNil)
 
-  console.log(`options: ${util.inspect(options)}`)
+  console.log(` --> Metrics options: ${util.inspect(options)}`)
 
   return ebu.metrics(options).then((records) => {
     console.log('--> records returned from ebu api')
@@ -40,7 +40,7 @@ exports.metrics = (args, cb) => {
         text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
       }
     } else {
-      console.log(`--> metrics options: ${util.inspect(options)}`)
+      console.log(`--> Metrics not found options: ${util.inspect(options)}`)
       text = `No ${options.RecordType}s were ${options.StatusChange}ed in ${options.DatePeriod}`
     }
     return cb(null, text)
