@@ -32,8 +32,8 @@ exports.metrics = (args, cb) => {
       let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
       if (records) {
       if (records.length > 1) {
-        text = `it looks like ${records.length} ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate} `
-        if (app.getArgument('yesno')) text = `Yes, t${text}`
+        text = `${records.length} ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate} `
+        if (app.getArgument('yesno')) text = `Yes, ${text}`
         text += `The most recently active being ${options.RecordType} ` +
        `${parseInt(records[0].CaseNumber, 10)}: ${records[0].Subject}`
       } else {
