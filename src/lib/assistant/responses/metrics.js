@@ -26,7 +26,7 @@ exports.metrics = (args, cb) => {
 
   return ebu.metrics(options).then((records) => {
     console.log('--> records returned from ebu api')
-    if (records !== []) {
+    if (!_.isEmpty(records)) {
       if (records.length > 1) {
         text = `here are ${records.length} `
         if (app.getArgument('yesno')) text = `Yes, t${text}`
