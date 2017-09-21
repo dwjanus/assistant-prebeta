@@ -39,7 +39,8 @@ exports.metrics = (args, cb) => {
         text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
       }
     } else {
-      text = `No ${options.RecordType}s found`
+      console.log(`--> metrics options: ${util.inspect(options)}`)
+      text = `No ${options.RecordType}s were ${options.StatusChange}ed in ${options.DatePeriod}`
     }
     return cb(null, text)
   })
