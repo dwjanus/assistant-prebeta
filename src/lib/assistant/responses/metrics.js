@@ -26,7 +26,7 @@ exports.metrics = (args, cb) => {
 
   return ebu.metrics(options).then((records) => {
     console.log('--> records returned from ebu api')
-    if (records) {
+    if (records !==) {
       if (records.length > 1) {
         text = `here are ${records.length} `
         if (app.getArgument('yesno')) text = `Yes, t${text}`
@@ -37,6 +37,9 @@ exports.metrics = (args, cb) => {
        `${records[0].CaseNumber}: ${records[0].Subject}`
       } else {
         text = `All I found was ${options.RecordType} ${records[0].CaseNumber}: ${records[0].Subject}`
+      }
+    else {
+        text = `No ${options.RecordType}s found`
       }
     }
     return cb(null, text)
