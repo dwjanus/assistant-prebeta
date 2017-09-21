@@ -132,6 +132,7 @@ export default ((userId) => {
 
 function retrieveSfObj (conn) {
   return {
+    // maybe also want to check if any tickets have been assigned to user, resolved or closed since last login?
     welcomeUser (user) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] welcoming returning user: ${user.sf_id}`)

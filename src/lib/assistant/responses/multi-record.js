@@ -124,3 +124,10 @@ exports.multi_welcome = (args, cb) => {
 
   return cb(null, text)
 }
+
+// This will handle the next context - takes ordinal and returns specific info on
+// the corresponding item in the latestRecord array (i.e. "are there comments on that second one?")
+// or --> "are there any comments on those?" --> "yes, there are (total number) new comments. 2 on ___ and 1 on ___"
+//         --> "show me the ones for (ordinal or case number)"
+//
+// exports.multi = (args, cb) => {}
