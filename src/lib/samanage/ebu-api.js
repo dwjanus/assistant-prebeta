@@ -213,7 +213,6 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id', options.RecordType)
-        let status = options.Status
         let searchParams = options
 
         delete searchParams.Owner
@@ -247,10 +246,6 @@ function retrieveSfObj (conn) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
-            if (status && (r.Status !== status)) {
-              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-              r.RecordTypeMatch = false
-            }
             response.push(r)
           }
           return resolve(response) // need to include sorting at some point
@@ -263,10 +258,7 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id',options.RecordType)
-        // let dateFormat = dateFormat(now)
-        // let status = options.Status
         let searchParams = options
-
 
         let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
         let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
@@ -285,10 +277,6 @@ function retrieveSfObj (conn) {
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
         .where(
           `ClosedDate >= ${startClosedDate} AND ClosedDate <= ${endClosedDate}`
-        // {
-        //   ClosedDate: {$gte : startClosedDate},
-        //   ClosedDate: {$lte : endClosedDate}
-        // }
         )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
