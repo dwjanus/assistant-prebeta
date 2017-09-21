@@ -270,7 +270,7 @@ function retrieveSfObj (conn) {
 
         let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
         let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
-        
+
         console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
         console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
 
@@ -294,6 +294,7 @@ function retrieveSfObj (conn) {
           )
         .sort('-LastModifiedDate')
         .execute((err, records) => {
+          if (err) consnole.log(`error: ${util.inspect(err)}`)
           if (err) return reject(err)
           let sample_records = records.slice(0, 5) // Show first 5 records
 
