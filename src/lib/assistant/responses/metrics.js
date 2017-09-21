@@ -12,10 +12,10 @@ exports.metrics = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   let text = 'No tickets have been found'
-  // let options = {
-  //   RecordType: app.getArgument('record-type'),
-  //   DatePeriod: app.getArgument('date-period'),
-  // }
+  let options = {
+    RecordType: app.getArgument('record-type'),
+    DatePeriod: app.getArgument('date-period'),
+  }
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
