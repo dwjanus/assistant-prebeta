@@ -243,7 +243,7 @@ function retrieveSfObj (conn) {
       return new Promise((resolve, reject) => {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
         const response = []
-        const type = record('id', options.RecordType)
+        let type = record('id', options.RecordType)
         let searchParams = options
 
         delete searchParams.Owner
@@ -252,7 +252,8 @@ function retrieveSfObj (conn) {
 
         if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
         if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
-
+        if (!options.RecordType) type = record('id', 'Incident')
+        searchParams.RecordTypeId = type
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -261,7 +262,7 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .sort('-LastModifiedDate')
+        .sort('-LastModifiedDate -CaseNumber')
         .execute((err, records) => {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
@@ -269,7 +270,7 @@ function retrieveSfObj (conn) {
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
-            if (type && (r.RecordTypeId !== type)) {
+            if (type && (r.RecordTypeId !== type)) { // this is currently obsolete since we default to incident record type
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
