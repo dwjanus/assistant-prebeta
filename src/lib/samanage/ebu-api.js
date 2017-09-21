@@ -309,6 +309,7 @@ function retrieveSfObj (conn) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
             }
+            console.log(`Adding ${r.CaseNumber}`)
             response.push(r)
           }
           return resolve(response)
