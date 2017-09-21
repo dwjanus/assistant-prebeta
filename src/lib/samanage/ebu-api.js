@@ -277,11 +277,6 @@ function retrieveSfObj (conn) {
         let statusDateType = ''
         if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
         if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
-        // delete searchParams.StatusChange
-        // delete searchParams.RecordType
-        // delete searchParams.DatePeriod
-
-        // searchParams.ClosedDate = { $gte : closedDate}
         searchParams = _.omitBy(searchParams, _.isNil)
 
         console.log(`Search Params: ${util.inspect(searchParams)}`)

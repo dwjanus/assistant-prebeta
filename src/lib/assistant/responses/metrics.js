@@ -1,6 +1,7 @@
 import db from '../../../config/db.js'
 import _ from 'lodash'
 import util from 'util'
+import dateFormat from 'dateformat'
 
 
 const query = db.querySql
@@ -42,7 +43,9 @@ exports.metrics = (args, cb) => {
       }
     } else {
       console.log(`\n--> Metrics not found options: ${util.inspect(options)}`)
-      text = `No ${options.RecordType}s were ${options.StatusChange}ed in ${options.DatePeriod}`
+      let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
+      let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
+      text = `No ${options.RecordType}s were ${options.StatusChange} from ${startClosedDate} - ${endClosedDate}`
     }
     return cb(null, text)
   })
