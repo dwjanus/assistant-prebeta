@@ -297,7 +297,7 @@ function retrieveSfObj (conn) {
 
           console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
-            console.log(`Adding ${r.CaseNumber}`)
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
