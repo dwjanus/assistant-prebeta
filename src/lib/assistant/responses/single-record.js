@@ -49,6 +49,7 @@ exports.single_nocontext = (args, cb) => {
 
               if (comments) {
                 console.log('   --> they are not empty')
+
                 if (returnType === 'Latest Comment') {
                   const latest = comments[0]
                   const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
@@ -88,10 +89,10 @@ exports.single_nocontext = (args, cb) => {
               }
 
               text = 'There are no public comments, would you like to post one?'
-              app.setContext('postcomment-prompt')
+              return app.setContext('postcomment-prompt')
             })
             .then(() => {
-              if (app.getArgument('yesno') && record) text = `Yes, ${text}`
+              if (app.getArgument('yesno') && record) text = `Yes ${text}`
               return cb(null, text)
             })
           }
@@ -162,18 +163,18 @@ exports.single_details = (args, cb) => {
 
         if (comments.length > limit) text += `+${comments.length - limit} more`
 
-        // set context to comments list
         app.setContext('comments-list')
 
-        // save comments array to lastRecord
         const savedComments = JSON.stringify(saved)
         const updateLastRecordStr = `UPDATE users SET lastRecord = '${savedComments}' WHERE user_id = '${user.user_id}'`
         return query(updateLastRecordStr)
       }
 
       text = 'There are no public comments, would you like to post one?'
-      app.setContext('postcomment-prompt')
-
+      return app.setContext('postcomment-prompt')
+    })
+    .then(() => {
+      if (app.getArgument('yesno')) text = `Yes ${text}`
       return cb(null, text)
     })
   }
