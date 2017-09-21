@@ -4,6 +4,7 @@ import db from '../../config/db.js'
 import config from '../../config/config.js'
 import _ from 'lodash'
 import Promise from 'bluebird'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
 
@@ -262,12 +263,14 @@ function retrieveSfObj (conn) {
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
         const response = []
         const type = record('id',options.RecordType)
-
-        let status = options.Status
+        const now = new Date()
+        // let dateFormat = dateFormat(now)
+        // let status = options.Status
         let searchParams = options
 
-        let startClosedDate =  new Date(options.DatePeriod.split('/')[0])
-        let endClosedDate =  new Date(options.DatePeriod.split('/')[1])
+
+        let startClosedDate =  dateFormat(now, options.DatePeriod.split('/')[0])
+        let endClosedDate =  dateFormat(now, options.DatePeriod.split('/')[1])
         console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
         console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
 

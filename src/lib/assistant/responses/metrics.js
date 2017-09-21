@@ -13,10 +13,7 @@ exports.metrics = (args, cb) => {
   const user = args.user
   let text = 'No tickets have been found'
   let options = {
-    Status: app.getArgument('Status'),
-    Priority: app.getArgument('Priority'),
     RecordType: app.getArgument('record-type'),
-    StatusChange: app.getArgument('StatusChange'),
     DatePeriod: app.getArgument('date-period'),
   }
   // default options
