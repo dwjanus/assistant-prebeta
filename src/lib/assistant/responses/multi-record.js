@@ -23,17 +23,14 @@ exports.multi_nocontext = (args, cb) => {
     RecordType: app.getArgument('record-type')
   }
 
-  // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
-  if (!app.getArgument('record-type')) options.RecordType = 'Incident'
-
   options = _.omitBy(options, _.isNil)
 
   console.log(`options: ${util.inspect(options)}`)
 
   return ebu.multiRecord(options).then((records) => {
     console.log('--> records returned from ebu api')
-    if (records) {
+    if (!_.isEmpty(records)) {
       if (records.length > 1) {
         text = `here are ${records.length} `
         if (app.getArgument('yesno')) text = `Yes, t${text}`
@@ -64,7 +61,7 @@ exports.multi_nocontext = (args, cb) => {
 }
 
 exports.multi_welcome = (args, cb) => {
-  console.log('\n--> inside multi')
+  console.log('\n--> inside multi -- welcome')
 
   const app = args.app
   const user = args.user

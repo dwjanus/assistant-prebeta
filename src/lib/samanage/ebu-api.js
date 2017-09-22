@@ -142,17 +142,13 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find({ OwnerId: user.sf_id }, returnParams)
-        .sort('-LastModifiedDate')
+        .sort('-LastModifiedDate -CaseNumber')
         .execute((err, records) => {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
           for (const r of records) {
-            if (r.CreatedDate > user.lastLogin) {
-              if (r.Status === 'New') newcases.push(r)
-              else updates.push(r)
-            }
-
-            if (r.LastModifiedDate > user.lastLogin && r.LastModifiedById !== user.sf_id) updates.push(r)
+            if (r.CreatedDate > user.lastLogin && r.Status === 'New') newcases.push(r)
+            else if (r.LastModifiedDate > user.lastLogin && r.LastModifiedById !== user.sf_id) updates.push(r)
           }
           return resolve({ newcases, updates })
         })
@@ -211,9 +207,6 @@ function retrieveSfObj (conn) {
         delete searchParams.RecordType
         delete searchParams.Sortby
 
-        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
-
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -243,18 +236,17 @@ function retrieveSfObj (conn) {
     multiRecord (options) {
       return new Promise((resolve, reject) => {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
-        const response = []
-        let type = record('id', options.RecordType)
         let searchParams = options
+
+        if (options.RecordType) {
+          const type = record('id', options.RecordType)
+          searchParams.RecordTypeId = type
+        }
 
         delete searchParams.Owner
         delete searchParams.RecordType
         delete searchParams.Sortby
 
-        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
-        if (!options.RecordType) type = record('id', 'Incident')
-        searchParams.RecordTypeId = type
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -267,17 +259,7 @@ function retrieveSfObj (conn) {
         .execute((err, records) => {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
-          for (const r of records) {
-            r.RecordTypeMatch = true
-            r.RecordTypeName = record('name', r.RecordTypeId)
-            r.title_link = `${conn.instanceUrl}/${r.Id}`
-            if (type && (r.RecordTypeId !== type)) { // this is currently obsolete since we default to incident record type
-              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-              r.RecordTypeMatch = false
-            }
-            response.push(r)
-          }
-          return resolve(response) // need to include sorting at some point
+          return resolve(records) // need to include sorting at some point
         })
       })
     },
