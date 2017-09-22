@@ -4,6 +4,7 @@ import db from '../../config/db.js'
 import config from '../../config/config.js'
 import _ from 'lodash'
 import Promise from 'bluebird'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
 
@@ -255,6 +256,55 @@ function retrieveSfObj (conn) {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
           return resolve(records) // need to include sorting at some point
+        })
+      })
+    },
+
+    metrics (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id', options.RecordType)
+        let searchParams = options
+
+        const startClosedDate = dateFormat(options.DatePeriod.split('/')[0], 'isoDateTime')
+        const endClosedDate = dateFormat(options.DatePeriod.split('/')[1], 'isoDateTime')
+
+        console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
+        console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
+
+        let statusDateType = ''
+        if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
+        if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
+        searchParams = _.omitBy(searchParams, _.isNil)
+
+        console.log(`Search Params: ${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .where(
+          `${statusDateType} >= ${startClosedDate} AND ${statusDateType} <= ${endClosedDate}`
+        )
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          const sampleRecords = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Found ${records.length} Records:\n${util.inspect(sampleRecords)}`)
+          for (const r of records) {
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            response.push(r)
+          }
+          return resolve(response)
         })
       })
     },

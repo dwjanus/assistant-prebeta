@@ -1,6 +1,7 @@
 import welcome from './welcome.js'
 import { knowledge } from './knowledge.js'
 import multiRecord from './multi-record.js'
+import { metrics } from './metrics.js'
 import singleRecord from './single-record.js'
 import comments from './comments.js'
 import createTicket from './create-ticket.js'
@@ -11,6 +12,7 @@ module.exports = {
   thankyou: welcome.thankyou,
   cancel: welcome.cancel,
   knowledge,
+  metrics,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,
   single_nocontext: singleRecord.single_nocontext,

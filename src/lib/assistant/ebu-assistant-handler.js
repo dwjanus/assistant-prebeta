@@ -11,6 +11,7 @@ const KNOWLEDGE_FROM_SINGLE = 'general.knowledge'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
 const SINGLE_FROM_MULTI = 'query.single-from-multi'
+const METRICS = 'general.metrics'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
@@ -49,6 +50,7 @@ actionMap.set(KNOWLEDGE_FROM_SINGLE, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
 actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)
+actionMap.set(METRICS, responses.metrics)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
