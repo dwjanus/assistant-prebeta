@@ -15,7 +15,7 @@ const config = {
   MONGODB_URI: process.env.MONGODB_URI,
   SF_ID: process.env.SF_ID,
   SF_SECRET: process.env.SF_SECRET,
-  HEROKU_URL: process.env.HEROKU_SUBDOMAIN
+  HEROKU_SUBDOMAIN: process.env.HEROKU_SUBDOMAIN
 }
 
 export default (key) => {
