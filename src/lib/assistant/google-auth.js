@@ -1,11 +1,12 @@
 import util from 'util'
 import config from '../../config/config.js'
-import mongo from '../../config/db.js'
 import crypto from 'crypto'
 import shortid from 'shortid'
 import memjs from 'memjs'
+import db from '../../config/db.js'
+import Promise from 'bluebird'
 
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const query = db.querySql
 const client = memjs.Client.create(config('CACHE_SV'),
   {
     username: config('CACHE_UN'),
@@ -43,17 +44,7 @@ exports.auth = (req, res) => {
   const userId = shortid.generate()
   const code = crypto.randomBytes(16).toString('base64')
   const expiresAt = expiration('set')
-  const redir = `https://oauth-redirect.googleusercontent.com/r/assistant-prebeta?code=${code}&state=${state}`
-
-  const newCode = {
-    id: code,
-    type: 'auth_code',
-    userId,
-    clientId: config('GOOGLE_ID'),
-    expiresAt
-  }
-
-  // storage.codes.save(newCode)
+  const redir = `https://oauth-redirect.googleusercontent.com/r/${config('HEROKU_SUBDOMAIN')}?code=${code}&state=${state}`
 
   console.log(`--> caching redirect url: ${redir}`)
 
@@ -62,118 +53,118 @@ exports.auth = (req, res) => {
     console.log(`--> redirect cached\n    key: ${userId}\n    val: ${val}`)
   })
 
-  console.log(`--> caching auth code: ${util.inspect(newCode)}`)
+  console.log(`--> saving auth code: ${code}`)
 
-  client.set(code, userId, { expires: 600 }, (error, val) => {
-    if (error) console.log(`!!! MEM CACHE ERROR: ${error}`)
-    console.log(`--> auth code cached\n    key: ${code}\n    val: ${val}`)
+  const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+    `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
+
+  return query(insertQry).then(() => res.redirect(`https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}`))
+  .catch((insError) => {
+    console.log(`--> Error storing auth code <--\n${insError}`)
   })
-
-  // --> send our request out to salesforce for auth
-  res.redirect(`https://assistant-prebeta.herokuapp.com/login/${userId}`)
 }
 
 exports.token = (req, res) => {
   res.setHeader('Content-Type', 'application/json')
   const grant = req.body.grant_type
-  const code = req.body.code
-  // const currentTime = expiration('get')
+  let code = req.body.code
+  const currentTime = expiration('get')
   // const secret = req.query.secret // we will check this later
+  const response = {
+    token_type: 'bearer',
+    expires_in: 3600
+  }
 
   console.log('--> google-auth /token')
   console.log(`    req url: ${util.inspect(req.url)}`)
-  console.log(`    req body: ${util.inspect(req.body)}\n`)
+  console.log(`    req body: ${util.inspect(req.body)}}`)
 
   // --> retrieve auth record
   if (grant === 'authorization_code') {
-    console.log(`    grant type ==> AUTH -- code: ${code}`)
+    console.log(`    grant type = AUTH\n--> code: ${code}`)
+    if (/\s/.test(code)) {
+      code = code.replace(/\s/g, '+')
+      console.log(`    whitespace detected\n--> new code: ${code}`)
+    }
+    const codeQryStr = `SELECT user_id FROM codes WHERE code_id = '${code}'`
 
-    client.get(code, (err, value, key) => {
-      console.log('Auth Code retrieved from cache:')
-      console.log(`--> key: ${key.toString()}`)
-      console.log(`--> value: ${value.toString()}`)
-
-
-      if (err || !value) {
-        console.log(`    Error in auth code storage: ${err}`)
+    return query(codeQryStr).then((result) => {
+      console.log(`auth code retrieved from db: ${util.inspect(result)}`)
+      if (!result) {
         res.sendStatus(500)
+        return Promise.reject('    Failure: No rows found')
       }
 
-      // if (currentTime > auth.expiresAt) {
-      //   console.log('\n--! discrepency registered between expiration times:')
-      //   console.log(`    currentTime: ${currentTime}  -  expiresAt: ${auth.expiresAt}`)
-      //   // res.sendStatus(500)
-      // }
+      if (currentTime > result[0].expires_at) {
+        console.log('\n--! discrepency registered between expiration times !--')
+        console.log(`       > currentTime: ${currentTime}  -  expiresAt: ${result[0].expires_at}`)
+        // res.sendStatus(500)
+      }
 
-      // if (req.body.client_id !== auth.clientId) {
-      //   console.log('\n--! discrepency registered between client Ids:')
-      //   console.log(`    req: ${req.body.client_id}  -  auth: ${auth.clientId}`)
-      //   // res.sendStatus(500)
-      // }
+      if (req.body.client_id !== result[0].client_id) {
+        console.log('\n--! discrepency registered between client Ids !--')
+        console.log(`       > req: ${req.body.client_id}  -  auth: ${result[0].client_id}`)
+        // res.sendStatus(500)
+      }
 
+      return result[0].user_id
+    })
+    .then((userId) => {
       const accessToken = crypto.randomBytes(16).toString('base64')
       const refreshToken = crypto.randomBytes(16).toString('base64')
       const expiresAt = expiration('setaccess')
+      const accessQryStr = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
+      `VALUES ('${accessToken}', 'access', '${userId}', 'samanage', '${expiresAt}')`
+      const refreshQryStr = 'INSERT INTO codes (code_id, type, user_id, client_id) ' +
+      `VALUES ('${refreshToken}', 'refresh', '${userId}', 'samanage')`
 
-      const access = {
-        id: accessToken,
-        type: 'access',
-        userId: value.toString(),
-        clientId: config('GOOGLE_ID'),
-        expiresAt
-      }
+      Promise.join(query(accessQryStr), query(refreshQryStr), () => {
+        console.log('--> saved access token\n--> saved refresh token')
+      })
+      .then(() => {
+        response.access_token = accessToken
+        response.refresh_token = refreshToken
 
-      const refresh = {
-        id: refreshToken,
-        type: 'refresh',
-        userId: value.toString(),
-        clientId: config('GOOGLE_ID'),
-        expiresAt: null
-      }
-
-      storage.codes.save(access)
-      console.log(`--> saved access token: ${util.inspect(access)}`)
-
-      storage.codes.save(refresh)
-      console.log(`--> saved refresh token: ${util.inspect(refresh)}`)
-
-      const response = {
-        token_type: 'bearer',
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        expires_in: 3600
-      }
-
-      console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
-      res.json(response).end()
+        console.log(`    access: ${accessToken}\n    refresh: ${refreshToken}`)
+        return res.json(response).end()
+      })
+      .catch((insError) => {
+        console.log(`--> Error storing access/refresh tokens <--\n${insError}`)
+      })
+    })
+    .catch((err) => {
+      console.log(`--> Error retrieving auth code from storage <--\n${err}`)
+      return res.sendStatus(500)
     })
   }
 
   if (grant === 'refresh_token') {
     console.log('--> Refresh Token recieved')
-    storage.codes.get(req.body.refresh_token, (err, refresh) => {
-      console.log(`    refresh code retrieved:\n${util.inspect(refresh)}`)
-      if (err) res.send(err)
-      // need to verify everything here
-      const accessToken = crypto.randomBytes(16).toString('base64')
-      const expiresAt = expiration('setaccess')
-      const access = {
-        id: accessToken,
-        type: 'access',
-        userId: refresh.userId,
-        clientId: config('GOOGLE_ID'),
-        expiresAt
-      }
 
-      storage.codes.save(access)
+    const accessToken = crypto.randomBytes(16).toString('base64')
+    response.access_token = accessToken
+    const expiresAt = expiration('setaccess')
+    const selectQry = `SELECT user_id FROM codes WHERE code_id = '${req.body.refresh_token}' AND type = 'refresh'`
 
-      const response = {
-        token_type: 'bearer',
-        access_token: accessToken,
-        expires_in: 3600
-      }
-      console.log(`    sending response object back:\n${util.inspect(response)}`)
-      res.json(response).end()
+    return query(selectQry).then((selectResult) => {
+      console.log(`--> retrieved user_id from refresh code: ${util.inspect(selectResult)}`)
+      return selectResult[0].user_id
+    })
+    .then((userId) => {
+      const updateQry = `UPDATE codes SET code_id = '${accessToken}', expires_at = '${expiresAt}' WHERE user_id = '${userId}'
+        AND type = 'access'`
+
+      return query(updateQry).then(() => {
+        console.log('--> saved user info')
+        console.log('--> sending response object back')
+        return res.json(response).end()
+      })
+      .catch((upError) => {
+        console.log(`--> Error in DB UPDATE <--\n${upError}`)
+      })
+    })
+    .catch((selError) => {
+      console.log(`--> Error in DB SELECT<--\n${selError}`)
     })
   }
 }

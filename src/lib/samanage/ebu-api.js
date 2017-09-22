@@ -1,11 +1,12 @@
 import util from 'util'
 import jsforce from 'jsforce'
-import mongo from '../../config/db.js'
+import db from '../../config/db.js'
 import config from '../../config/config.js'
 import _ from 'lodash'
 import Promise from 'bluebird'
+import dateFormat from 'dateformat'
 
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
+const query = db.querySql
 
 const formatCaseNumber = (number) => {
   const s = `0000000${number}`
@@ -13,18 +14,19 @@ const formatCaseNumber = (number) => {
 }
 
 const recordType = {
-  Incident: '01239000000EB4NAAW',
-  Change: '01239000000EB4MAAW',
-  Problem: '01239000000EB4OAAW',
-  Release: '01239000000EB4PAAW',
-  ServiceRequest: 'COMING__SOON'
+  Incident: '0121I000000kKdzQAE',
+  Change: '0121I000000kKe0QAE',
+  Problem: '0121I000000kKdwQAE',
+  Release: '0121I000000kKdvQAE',
+  Request: '0121I000000kKdyQAE'
 }
 
 const recordName = {
-  '01239000000EB4NAAW': 'Incident',
-  '01239000000EB4MAAW': 'Change',
-  '01239000000EB4OAAW': 'Problem',
-  '01239000000EB4PAAW': 'Release'
+  '0121I000000kKdzQAE': 'Incident',
+  '0121I000000kKe0QAE': 'Change',
+  '0121I000000kKdwQAE': 'Problem',
+  '0121I000000kKdvQAE': 'Release',
+  '0121I000000kKdyQAE': 'Request'
 }
 
 const record = (arg, key) => {
@@ -35,10 +37,10 @@ const record = (arg, key) => {
 }
 
 const oauth2 = new jsforce.OAuth2({
-  loginUrl: 'https://test.salesforce.com',
+  // loginUrl: 'https://test.salesforce.com',
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
-  redirectUri: 'https://assistant-prebeta.herokuapp.com/authorize'
+  redirectUri: `https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/authorize`
 })
 
 const returnParams = {
@@ -47,86 +49,150 @@ const returnParams = {
   Description: 1,
   CreatedDate: 1,
   CaseNumber: 1,
+  OwnerId: 1,
   SamanageESD__OwnerName__c: 1,
+  SamanageESD__Assignee_Name__c: 1,
   Priority: 1,
   Status: 1,
   SamanageESD__hasComments__c: 1,
+  SamanageESD__RecordType__c: 1,
   RecordTypeId: 1
 }
 
 export default ((userId) => {
   return new Promise((resolve, reject) => {
     console.log(`--> ebu api initialized for user: ${userId}`)
-    storage.users.get(userId, (err, user) => {
-      if (err) return reject({ text: err })
-      if (!user.sf) {
+
+    const getUser = `SELECT * from users WHERE user_id = '${userId}'`
+    query(getUser).then((userRow) => {
+      console.log(`\n[salesforce] user found!\n${util.inspect(userRow)}`)
+      return userRow[0]
+    })
+    .then((user) => {
+      if (!user.sf_id) {
         console.log('--! no connection object found !---\n    returning link now ')
-        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://samanage-assistant.herokuapp.com/login/${userId}` })
+        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
       }
 
-      console.log('    [salesforce] user found!')
       let conn = new jsforce.Connection({
         oauth2,
-        instanceUrl: user.sf.tokens.sfInstanceUrl,
-        accessToken: user.sf.tokens.sfAccessToken,
-        refreshToken: user.sf.tokens.sfRefreshToken
+        instanceUrl: user.url,
+        accessToken: user.access,
+        refreshToken: user.refresh
       })
 
       conn.on('refresh', (newToken, res) => {
         console.log(`--> got a refresh event from Salesforce!\n    new token: ${newToken}`)
-        user.sf.tokens.sfAccessToken = newToken
-        storage.users.save(user)
-        return resolve(retrieveSfObj(conn))
+        return query(`UPDATE users SET access = '${newToken}' WHERE user_id = '${user.user_id}'`).then((result) => {
+          console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
+          return resolve(retrieveSfObj(conn))
+        })
       })
 
       return conn.identity((iderr, res) => {
-        console.log('    identifying sf connection')
+        console.log('    identifying sf connection...')
+
         if (iderr || !res || res === 'undefined' || undefined) {
-          if (iderr) console.log(`!!! Connection Error: ${iderr}`)
-          else console.log('--! connection undefined')
-          return oauth2.refreshToken(user.sf.tokens.sfRefreshToken).then((ret) => {
+          if (iderr) console.log(`!!! Connection Error !!!\n${util.inspect(res)}`)
+          else console.log('--! connection undefined !---')
+          return oauth2.refreshToken(user.refresh).then((ret) => {
             console.log(`--> forcing oauth refresh\n${util.inspect(ret)}`)
             conn = new jsforce.Connection({
               instanceUrl: ret.instance_url,
               accessToken: ret.access_token
             })
-            user.sf.tokens.sfAccessToken = ret.access_token
-            user.sf.tokens.sfInstanceUrl = ret.instance_url
-            storage.users.save(user)
-            return resolve(retrieveSfObj(conn))
+
+            const updateStr = `UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`
+            console.log(`--> updating user: ${user.user_id} with new access token`)
+            return query(updateStr).then(resolve(retrieveSfObj(conn)))
+
+            // return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
+            //   console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
+            //   return resolve(retrieveSfObj(conn))
+            // })
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
-            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://samanage-assistant.herokuapp.com/login/${userId}` })
+            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
           })
         }
+
         return resolve(retrieveSfObj(conn))
       })
+    })
+    .catch((err) => {
+      return reject({ text: err })
     })
   })
 })
 
 function retrieveSfObj (conn) {
   return {
-    singleObject (options, callback) {
-      console.log(`--> [salesforce] singleObject\n    options:\n${util.inspect(options)}`)
-      const response = []
-      let searchParams = options
-      delete searchParams.Owner
-      delete searchParams.RecordType
-      delete searchParams.Sortby
-      if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-      searchParams = _.omitBy(searchParams, _.isNil)
-      searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+    knowledge (text) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
+        const articles = []
+        const search = _.replace(text, '-', ' ')
+        console.log(`--> search string: ${search}`)
+        return conn.search(`FIND {${search}} IN All Fields RETURNING Knowledge_2__kav (Id, UrlName, Title, Summary,
+          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body__c WHERE PublishStatus = 'online' AND Language = 'en_US'
+          AND IsLatestVersion = true)`,
+        (err, res) => {
+          if (err) return reject(err)
+          for (const r of res.searchRecords) {
+            r.title_link = `${conn.instanceUrl}/${r.UrlName}`
+            articles.push(r)
+          }
+          return resolve(articles)
+        })
+      })
+    },
 
-      const type = record('id', options.RecordType)
-      console.log(`Search Params:\n${util.inspect(searchParams)}`)
-      console.log(`Return Params:\n${util.inspect(returnParams)}`)
-      conn.sobject('Case')
-      .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-      .execute((err, records) => {
-        if (err) callback(err, null)
-        else {
+    createIncident (options) {
+      return new Promise((resolve, reject) => {
+        let request
+        options.RecordTypeId = record('id', 'Incident')
+        console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
+
+        conn.sobject('Case').create(options, (err, ret) => {
+          if (err || !ret.success) return reject(err)
+          console.log(`--> success! Created records id: ${ret.id}\n${util.inspect(ret)}`)
+          request = ret
+          request.link = `${conn.instanceUrl}/${ret.id}`
+          return conn.sobject('Case').retrieve(ret.id, (reterr, res) => {
+            if (reterr) return reject(reterr)
+            request.CaseNumber = res.CaseNumber
+            console.log(`--> got new case back:\n${util.inspect(request)}`)
+            return resolve(request)
+          })
+        })
+      })
+    },
+
+    singleRecord (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] singleRecord\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id', options.RecordType)
+        let searchParams = options
+
+        delete searchParams.Owner
+        delete searchParams.RecordType
+        delete searchParams.Sortby
+
+        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
+        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+
+        searchParams = _.omitBy(searchParams, _.isNil)
+        if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+
+        console.log(`Search Params:\n${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .execute((err, records) => {
+          if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
@@ -138,8 +204,114 @@ function retrieveSfObj (conn) {
             }
             response.push(r)
           }
-          callback(null, response[0])
-        }
+          return resolve(response[0])
+        })
+      })
+    },
+
+    multiRecord (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id', options.RecordType)
+        let searchParams = options
+
+        delete searchParams.Owner
+        delete searchParams.RecordType
+        delete searchParams.Sortby
+
+        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
+        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
+
+
+        searchParams = _.omitBy(searchParams, _.isNil)
+        if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
+
+        console.log(`Search Params:\n${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
+          for (const r of records) {
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            response.push(r)
+          }
+          return resolve(response) // need to include sorting at some point
+        })
+      })
+    },
+
+    metrics (options) {
+      return new Promise((resolve,reject) =>{
+        console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id',options.RecordType)
+        let searchParams = options
+
+        let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
+        let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
+
+        console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
+        console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
+
+        let statusDateType = ''
+        if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
+        if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
+        searchParams = _.omitBy(searchParams, _.isNil)
+
+        console.log(`Search Params: ${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .where(
+          `${statusDateType} >= ${startClosedDate} AND ${statusDateType} <= ${endClosedDate}`
+        )
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
+          for (const r of records) {
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            response.push(r)
+          }
+          return resolve(response)
+        })
+      })
+    },
+
+    update (options) {
+      return new Promise((resolve, reject) => {
+        console.log(`\n--> [salesforce] update\n    options:\n${util.inspect(options)}`)
+
+        conn.sobject('Case').update(options, (err, ret) => {
+          if (err || !ret.success) return reject(err)
+          console.log('--> updated successfully')
+          return resolve()
+        })
       })
     },
 
@@ -282,9 +454,18 @@ function retrieveSfObj (conn) {
         .find({ Id: id })
         .execute((err, records) => {
           if (err || !records) reject(err || 'no records found')
+          // console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
-            Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`
+            Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`,
+            MobilePhone: records[0].MobilePhone,
+            CompanyName: records[0].CompanyName,
+            Department: records[0].Department,
+            Email: records[0].Email,
+            PortalRole: records[0].PortalRole,
+            IsPortalEnabled: records[0].IsPortalEnabled,
+            SamanageESD_FullName__c: records[0].SamanageESD_FullName__c,
+            SamanageESD_RoleName__c: records[0].SamanageESD_RoleName__c
           }
           return resolve(user)
         })

@@ -5,15 +5,12 @@ import path from 'path'
 import config from './config/config.js'
 import sfauth from './lib/samanage/salesforce-auth.js'
 import gauth from './lib/assistant/google-auth.js'
-import mongo from './config/db.js'
-import Promise from 'bluebird'
+import db from './config/db.js'
 import samanageAssistant from './lib/assistant/ebu-assistant-handler.js'
 
 const app = express()
+const query = db.querySql
 const ApiAiApp = require('actions-on-google').ApiAiAssistant
-const storage = mongo({ mongoUri: config('MONGODB_URI') })
-const codes = Promise.promisify(storage.codes.get)
-const users = Promise.promisify(storage.users.get)
 const port = process.env.port || process.env.PORT || config('PORT') || 8080
 if (!port) {
   console.log('Error: Port not specified in environment')
@@ -23,7 +20,7 @@ if (!port) {
 app.set('port', port)
 app.use(express.static(path.join(__dirname, '../public')))
 app.use(bodyParser.json({ type: 'application/json', limit: '50mb' }))
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb', parameterLimit: 50000 }))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 app.get('/', (request, response) => {
   response.sendFile('index.html')
@@ -35,23 +32,23 @@ app.get('/login/:userId', sfauth.login)
 app.get('/authorize', sfauth.oauthCallback)
 
 app.post('/actions', (request, response) => {
-  console.log('--> /actions Webhook Received')
+  console.log('\n--> /actions Webhook Received\n')
+
   let ApiAiConstructor = { request, response }
   if (request.body.sessionId) ApiAiConstructor = { request, response, sessionId: request.body.sessionId }
   const assistant = new ApiAiApp(ApiAiConstructor)
   const currentUser = assistant.getUser()
   const currentToken = currentUser.access_token
-  console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
-  console.log(`    user data from assistant:\n${util.inspect(currentUser)}\n`)
-  codes(currentToken).then((access) => {
-    console.log(`    found user: ${util.inspect(access)}`)
-    return access.userId
-  })
-  .then((userId) => {
-    users(userId).then((user) => {
-      console.log(`    ${user.id} retrieved`)
+  const userQry = `SELECT user_id from codes WHERE code_id = '${currentToken}' AND type = 'access'`
+
+  // console.log(`    user data from request:\n${util.inspect(request.body.originalRequest.data)}\n`)
+  console.log(`    user:\n${util.inspect(currentUser)}\n`)
+
+  query(userQry).then(result => result[0].user_id).then((userId) => {
+    console.log(`--> starting up Assistant for user: ${userId}`)
+    query(`SELECT * from users WHERE user_id = '${userId}'`).then((user) => {
       // --> this is where we would check the token
-      samanageAssistant(assistant, user)
+      samanageAssistant(assistant, user[0])
     })
   })
 })
