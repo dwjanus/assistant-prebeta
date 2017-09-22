@@ -9,6 +9,7 @@ import configSMS from './config-sms.js'
 module.exports = {
   welcome: welcome.welcome,
   thankyou: welcome.thankyou,
+  cancel: welcome.cancel,
   knowledge,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,

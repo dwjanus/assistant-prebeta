@@ -50,7 +50,7 @@ exports.welcome = (args, cb) => {
         const saved = updates.length > 0 ? JSON.stringify(updates) : JSON.stringify(newcases)
         const updateLastRecordStr = `UPDATE users SET lastRecord = '${saved}' WHERE user_id = '${user.user_id}'`
         console.log(`--> created json object for saved record:\n${util.inspect(saved)}`)
-        app.setContext('single-record')
+        app.setContext('welcome-multi-record')
         return query(updateUserQry).then(() => query(updateLastRecordStr))
       }
 
@@ -69,8 +69,16 @@ exports.welcome = (args, cb) => {
 }
 
 exports.thankyou = (args, cb) => {
-  console.log('--> inside thankyou case')
+  console.log('--> inside thankyou')
 
   const text = 'Anytime fam!'
+  return cb(null, text)
+}
+
+exports.cancel = (args, cb) => {
+  console.log('--> inside cancel')
+
+  // might want to save user info here
+  const text = 'No worries, let me know if you need anything else!'
   return cb(null, text)
 }

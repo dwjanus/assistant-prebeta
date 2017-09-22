@@ -185,6 +185,75 @@ exports.single_details = (args, cb) => {
 }
 
 
+exports.single_fromMulti = (args, cb) => {
+  console.log('\n--> inside single -- from Multi')
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  const latestRecord = JSON.parse(user.lastRecord)
+  const ordinal = app.getArgument('ordinal')
+  const returnType = app.getArgument('return-type')
+  const single = latestRecord[ordinal]
+  let text = ''
+
+  if (returnType === 'Latest Comment' || 'Comments') {
+    console.log(`--> return type is: ${returnType}`)
+    return ebu.comments(single.Id).then((comments) => {
+      console.log('--> just got comments back')
+
+      if (!_.isEmpty(comments)) {
+        console.log('   --> they are not empty')
+        if (returnType === 'Latest Comment') {
+          const latest = comments[0]
+          const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
+          text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
+
+          if (latest.CommentCount === 0) {
+            text += 'There are no responses to this. Would you like to post a reply?'
+            app.setContext('feedcomments-view')
+          } else {
+            if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
+            else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+            app.setContext('viewfeed-prompt')
+          }
+
+          const saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
+          return query(saveFeedIdStr).then(() => cb(null, text))
+        }
+
+        const limit = comments.length > 3 ? 3 : comments.length
+        const saved = {}
+        for (let i = 0; i < limit; i++) {
+          const c = comments[i]
+          saved[`${i + 1}`] = c
+          const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+          text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
+        }
+
+        if (comments.length > limit) text += `+${comments.length - limit} more`
+
+        app.setContext('comments-list')
+
+        const savedComments = JSON.stringify(saved)
+        const updateLastRecordStr = `UPDATE users SET lastRecord = '${savedComments}' WHERE user_id = '${user.user_id}'`
+        return query(updateLastRecordStr)
+      }
+
+      text = 'There are no public comments, would you like to post one?'
+      return app.setContext('postcomment-prompt')
+    })
+    .then(() => {
+      if (app.getArgument('yesno')) text = `Yes ${text}`
+      return cb(null, text)
+    })
+  }
+
+  text = `The ${returnType} is currently ${single[returnType]}`
+  return cb(null, text)
+}
+
+
 /** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
  *               Handlers for Case Comment view/post convo paths              *
  ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/

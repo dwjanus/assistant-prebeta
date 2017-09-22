@@ -5,10 +5,12 @@ import responses from './responses/responses.js'
 // consts for intent map
 const GOOGLE_ASSISTANT_WELCOME = 'input.welcome'
 const THANK_YOU = 'general.thankyou'
+const CANCEL = 'general.cancel'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const KNOWLEDGE_FROM_SINGLE = 'general.knowledge'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
+const SINGLE_FROM_MULTI = 'query.single-from-multi'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
@@ -41,10 +43,12 @@ const CONFIG_SMS_NUMBER_INCORRECT = 'config.sms-number-incorrect'
 const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
 actionMap.set(THANK_YOU, responses.thankyou)
+actionMap.set(CANCEL, responses.cancel)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(KNOWLEDGE_FROM_SINGLE, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
+actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
