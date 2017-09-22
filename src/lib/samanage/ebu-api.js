@@ -13,6 +13,10 @@ const formatCaseNumber = (number) => {
   return s.substr(s.length - 8)
 }
 
+const addslashes = (str) => {
+  return (`${str} `).replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+}
+
 const recordType = {
   Incident: '0121I000000kKdzQAE',
   Change: '0121I000000kKe0QAE',
@@ -37,7 +41,6 @@ const record = (arg, key) => {
 }
 
 const oauth2 = new jsforce.OAuth2({
-  // loginUrl: 'https://test.salesforce.com',
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
   redirectUri: `https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/authorize`
@@ -48,10 +51,12 @@ const returnParams = {
   Subject: 1,
   Description: 1,
   CreatedDate: 1,
+  LastModifiedDate: 1,
   CaseNumber: 1,
   OwnerId: 1,
   SamanageESD__OwnerName__c: 1,
   SamanageESD__Assignee_Name__c: 1,
+  SamanageESD__RequesterName__c: 1,
   Priority: 1,
   Status: 1,
   SamanageESD__hasComments__c: 1,
@@ -105,11 +110,6 @@ export default ((userId) => {
             const updateStr = `UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`
             console.log(`--> updating user: ${user.user_id} with new access token`)
             return query(updateStr).then(resolve(retrieveSfObj(conn)))
-
-            // return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
-            //   console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
-            //   return resolve(retrieveSfObj(conn))
-            // })
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
@@ -121,21 +121,44 @@ export default ((userId) => {
       })
     })
     .catch((err) => {
-      return reject({ text: err })
+      reject(err)
     })
   })
 })
 
 function retrieveSfObj (conn) {
   return {
+    // maybe also want to check if any tickets have been assigned to user, resolved or closed since last login?
+    welcomeUser (user) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] welcoming returning user: ${user.sf_id}`)
+
+        const newcases = []
+        const updates = []
+
+        conn.sobject('Case')
+        .find({ OwnerId: user.sf_id }, returnParams)
+        .sort('-LastModifiedDate -CaseNumber')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          console.log(`Records:\n${util.inspect(records)}`)
+          for (const r of records) {
+            if (r.CreatedDate > user.lastLogin && r.Status === 'New') newcases.push(r)
+            else if (r.LastModifiedDate > user.lastLogin && r.LastModifiedById !== user.sf_id) updates.push(r)
+          }
+          return resolve({ newcases, updates })
+        })
+      })
+    },
+
     knowledge (text) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
         const articles = []
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
-        return conn.search(`FIND {${search}} IN All Fields RETURNING Knowledge_2__kav (Id, UrlName, Title, Summary,
-          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, Body__c WHERE PublishStatus = 'online' AND Language = 'en_US'
+        return conn.search(`FIND {${addslashes(search)}} IN All Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
+          LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, body__c WHERE PublishStatus = 'Online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {
           if (err) return reject(err)
@@ -180,9 +203,6 @@ function retrieveSfObj (conn) {
         delete searchParams.RecordType
         delete searchParams.Sortby
 
-        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
-
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -212,17 +232,16 @@ function retrieveSfObj (conn) {
     multiRecord (options) {
       return new Promise((resolve, reject) => {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
-        const response = []
-        const type = record('id', options.RecordType)
         let searchParams = options
+
+        if (options.RecordType) {
+          const type = record('id', options.RecordType)
+          searchParams.RecordTypeId = type
+        }
 
         delete searchParams.Owner
         delete searchParams.RecordType
         delete searchParams.Sortby
-
-        if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
-        if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
-
 
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
@@ -232,37 +251,24 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .sort('-LastModifiedDate')
+        .sort('-LastModifiedDate -CaseNumber')
         .execute((err, records) => {
           if (err) return reject(err)
-          let sample_records = records.slice(0, 5) // Show first 5 records
-
-          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
-          for (const r of records) {
-            r.RecordTypeMatch = true
-            r.RecordTypeName = record('name', r.RecordTypeId)
-            r.title_link = `${conn.instanceUrl}/${r.Id}`
-
-            if (type && (r.RecordTypeId !== type)) {
-              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-              r.RecordTypeMatch = false
-            }
-            response.push(r)
-          }
-          return resolve(response) // need to include sorting at some point
+          console.log(`Records:\n${util.inspect(records)}`)
+          return resolve(records) // need to include sorting at some point
         })
       })
     },
 
     metrics (options) {
-      return new Promise((resolve,reject) =>{
+      return new Promise((resolve, reject) => {
         console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
         const response = []
-        const type = record('id',options.RecordType)
+        const type = record('id', options.RecordType)
         let searchParams = options
 
-        let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
-        let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
+        const startClosedDate = dateFormat(options.DatePeriod.split('/')[0], 'isoDateTime')
+        const endClosedDate = dateFormat(options.DatePeriod.split('/')[1], 'isoDateTime')
 
         console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
         console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
@@ -282,9 +288,9 @@ function retrieveSfObj (conn) {
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
-          let sample_records = records.slice(0, 5) // Show first 5 records
+          const sampleRecords = records.slice(0, 5) // Show first 5 records
 
-          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
+          console.log(`Found ${records.length} Records:\n${util.inspect(sampleRecords)}`)
           for (const r of records) {
             console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
             r.RecordTypeMatch = true
@@ -315,70 +321,27 @@ function retrieveSfObj (conn) {
       })
     },
 
-    quantity (options, callback) {
-      console.log(`--> [salesforce] quantity\n    options:\n${util.inspect(options)}`)
-      const type = record('id', options.RecordType)
-      const response = []
-      const searchParams = _.omitBy(options, _.isNil)
-      if (searchParams.CaseNumber) searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
-      delete searchParams.RecordType
-      if (!_.isNil(type)) searchParams.RecordTypeId = type
-
-      console.log(`Search Params:\n${util.inspect(searchParams)}`)
-      console.log(`Return Params:\n${util.inspect(returnParams)}`)
-      conn.sobject('Case')
-      .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-      .execute((err, records) => {
-        if (err) callback(err, null)
-        console.log('    records retrieved!\n')
-        for (const r of records) {
-          r.RecordTypeMatch = true
-          r.RecordTypeName = record('name', r.RecordTypeId)
-          r.title_link = `${conn.instanceUrl}/${r.Id}`
-          if (type && (r.RecordTypeId !== type)) {
-            console.log(`--! Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
-            r.RecordTypeMatch = false
-          } else {
-            console.log(`    Added record: ${r.Id}`)
-          }
-          response.push(r)
-        }
-        callback(null, response)
-      })
-    },
-
-    comments (objectId, currentUserId) {
-      console.log(`--> [salesforce] comments - Case: ${objectId} - User: ${currentUserId} **`)
+    comments (objectId) {
+      console.log(`--> [salesforce] comments - Case: ${objectId} **`)
       const comments = []
       return new Promise((resolve, reject) => {
-        Promise.join(this.getCaseOwner(objectId), this.getCaseFeed(objectId), (OwnerId, records) => {
-          return { OwnerId, records }
-        })
-        .then((joined) => {
-          return Promise.map(joined.records, ((joinedrecord) => {
-            return this.getUser(joinedrecord.CreatedById).then((user) => {
-              console.log('getting user')
-              if (user) {
-                joinedrecord.User = user
-                console.log(`User Added to record: ${joinedrecord.Id}`)
-              }
-              return joinedrecord
+        return this.getCaseFeed(objectId).then((caseFeed) => {
+          return Promise.map(caseFeed, ((comment) => {
+            console.log('[comments] mapping users to feed objects')
+            return this.getUser(comment.CreatedById).then((user) => {
+              if (user) comment.User = user
+              else comment.User = null
+              return comment
             })
           }))
           .each((r) => {
-            if (r.Body) { // r.Visibility = InternalUsers for private comments
-              if (r.Visibility !== 'AllUsers' && r.CreatedById !== currentUserId && currentUserId !== joined.OwnerId) {
-                r.Body = '*Private Comment*'
-              }
-              return this.feedComments(r.ParentId, r.Id).then((feedComments) => {
-                r.attachments = feedComments
-                comments.push(r)
-              })
-            }
+            console.log('[comments .each]')
+            if (r.Body) comments.push(r)
             return comments
           })
         })
         .then(() => {
+          console.log(`[comments .then]\n${util.inspect(comments)}`)
           return Promise.all(comments).then(resolve(comments))
         })
         .catch((err) => {
@@ -389,23 +352,23 @@ function retrieveSfObj (conn) {
 
     feedComments (parentId, caseFeedId) { // need to retrieve only the comment which exists in the feedViews for the case
       return new Promise((resolve, reject) => {
-        console.log(`** [salesforce] retrieving FeedComments ${caseFeedId} for ${parentId} **`)
+        console.log(`** [salesforce] retrieving FeedComments for case: ${parentId} feed: ${caseFeedId} **`)
         const feedComments = []
+
         conn.sobject('FeedComment')
           .find({ ParentId: parentId, FeedItemId: caseFeedId })
-          .orderby('CreatedDate', 'DESC')
+          .orderby('-CreatedDate')
         .execute((err, records) => {
           if (err) reject(err)
           return Promise.map(records, (r) => {
             return this.getUser(r.CreatedById).then((user) => {
-              if (user) {
-                r.User = user
-              }
+              if (user) r.User = user
+              else r.User = null
               return r
             })
           })
           .each((feed) => {
-            if (feed.CommentBody && feed.IsDeleted === false) {
+            if (feed.IsDeleted === false) {
               feedComments.push(feed)
             }
             return feedComments
@@ -413,6 +376,41 @@ function retrieveSfObj (conn) {
           .then(() => {
             Promise.all(feedComments).then(resolve(feedComments))
           })
+        })
+      })
+    },
+
+    createComment (objectId, userId, comment) {
+      return new Promise((resolve, reject) => {
+        console.log(`** [salesforce] posting ${comment}\n   on case: ${objectId} for user: ${userId} **`)
+
+        conn.sobject('FeedItem').create({
+          ParentId: objectId,
+          Type: 'TextPost',
+          InsertedById: userId,
+          Body: comment,
+          Visibility: 'AllUsers'
+        }, (err, ret) => {
+          console.log(`--> finsihed creating comment: ${ret.success}`)
+          if (err || !ret.success) return reject(err)
+          return resolve(ret)
+        })
+      })
+    },
+
+    createFeedComment (caseFeedId, userId, comment) {
+      return new Promise((resolve, reject) => {
+        console.log(`** [salesforce] posting ${comment}\n   on casefeed: ${caseFeedId} for user: ${userId} **`)
+
+        conn.sobject('FeedComment').create({
+          FeedItemId: caseFeedId,
+          CommentType: 'TextComment',
+          InsertedById: userId,
+          CommentBody: comment
+        }, (err, ret) => {
+          console.log(`--> finished creating feed comment: ${util.inspect(ret)}`)
+          if (err) return reject(err) // || !ret.success
+          return resolve(ret)
         })
       })
     },
@@ -429,10 +427,9 @@ function retrieveSfObj (conn) {
 
     getCaseFeed (id) {
       return new Promise((resolve, reject) => {
-        conn.sobject('CaseFeed')
-          .find({ ParentId: id })
-          .orderby('CreatedDate', 'DESC')
-          .limit(5)
+        conn.sobject('FeedItem')
+          .find({ ParentId: id, Type: 'TextPost' })
+          .orderby('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
           console.log('[getCaseFeed] got records')
@@ -457,6 +454,7 @@ function retrieveSfObj (conn) {
           // console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
+            FirstName: records[0].FirstName,
             Photo: `${records[0].FullPhotoUrl}?oauth_token=${token}`,
             MobilePhone: records[0].MobilePhone,
             CompanyName: records[0].CompanyName,
