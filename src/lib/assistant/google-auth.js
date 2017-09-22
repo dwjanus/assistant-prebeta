@@ -44,7 +44,7 @@ exports.auth = (req, res) => {
   const userId = shortid.generate()
   const code = crypto.randomBytes(16).toString('base64')
   const expiresAt = expiration('set')
-  const redir = `https://oauth-redirect.googleusercontent.com/r/assistant-prebeta-devin?code=${code}&state=${state}`
+  const redir = `https://oauth-redirect.googleusercontent.com/r/${config('HEROKU_SUBDOMAIN')}?code=${code}&state=${state}`
 
   console.log(`--> caching redirect url: ${redir}`)
 
@@ -58,7 +58,7 @@ exports.auth = (req, res) => {
   const insertQry = 'INSERT INTO codes (code_id, type, user_id, client_id, expires_at) ' +
     `VALUES ('${code}', 'auth_code', '${userId}', '${config('GOOGLE_ID')}', '${expiresAt}')`
 
-  return query(insertQry).then(() => res.redirect(`https://assistant-prebeta-devin.herokuapp.com/login/${userId}`))
+  return query(insertQry).then(() => res.redirect(`https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}`))
   .catch((insError) => {
     console.log(`--> Error storing auth code <--\n${insError}`)
   })

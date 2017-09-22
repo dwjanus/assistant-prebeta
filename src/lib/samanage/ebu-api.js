@@ -42,7 +42,7 @@ const record = (arg, key) => {
 const oauth2 = new jsforce.OAuth2({
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
-  redirectUri: 'https://assistant-prebeta-devin.herokuapp.com/authorize'
+  redirectUri: `https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/authorize`
 })
 
 const returnParams = {
@@ -75,7 +75,7 @@ export default ((userId) => {
     .then((user) => {
       if (!user.sf_id) {
         console.log('--! no connection object found !---\n    returning link now ')
-        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta-devin.herokuapp.com/login/${userId}` })
+        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
       }
 
       let conn = new jsforce.Connection({
@@ -109,15 +109,10 @@ export default ((userId) => {
             const updateStr = `UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`
             console.log(`--> updating user: ${user.user_id} with new access token`)
             return query(updateStr).then(resolve(retrieveSfObj(conn)))
-
-            // return query(`UPDATE users SET access = '${ret.access_token}', url = '${ret.instance_url}' WHERE user_id = '${user.user_id}'`).then((result) => {
-            //   console.log(`--> updated user: ${user.user_id} with new access token - ${result}`)
-            //   return resolve(retrieveSfObj(conn))
-            // })
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
-            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
           })
         }
 
@@ -125,7 +120,7 @@ export default ((userId) => {
       })
     })
     .catch((err) => {
-      return reject({ text: err })
+      reject(err)
     })
   })
 })
