@@ -26,7 +26,7 @@ exports.welcome = (args, cb) => {
       if (userInfo.FirstName) text += `${userInfo.FirstName}`
       text += '! '
       text += 'What can I do for you?'
-      return updateUserQry
+      return query(updateUserQry)
     }
 
     text += `back ${userInfo.FirstName}! `
