@@ -48,7 +48,7 @@ exports.single_nocontext = (args, cb) => {
             return ebu.comments(record.Id).then((comments) => {
               console.log('--> just got comments back')
 
-              if (comments) {
+              if (!_.isEmpty(comments)) {
                 console.log('   --> they are not empty')
 
                 if (returnType === 'Latest Comment') {
@@ -133,7 +133,7 @@ exports.single_details = (args, cb) => {
     return ebu.comments(latestRecord.Id).then((comments) => {
       console.log('--> just got comments back')
 
-      if (comments) {
+      if (!_.isEmpty(comments)) {
         console.log('   --> they are not empty')
         if (returnType === 'Latest Comment') {
           const latest = comments[0]
