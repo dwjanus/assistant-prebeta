@@ -47,7 +47,6 @@ exports.welcome = (args, cb) => {
       if (newcases.length > 1) text += `${updates.length > 0 ? 'and you' : 'You'} have ${newcases.length} new cases.`
 
       if (totalSize === 1) {
-        // save record
         const saved = updates.length > 0 ? JSON.stringify(updates) : JSON.stringify(newcases)
         const updateLastRecordStr = `UPDATE users SET lastRecord = '${saved}' WHERE user_id = '${user.user_id}'`
         console.log(`--> created json object for saved record:\n${util.inspect(saved)}`)
@@ -55,7 +54,6 @@ exports.welcome = (args, cb) => {
         return query(updateUserQry).then(() => query(updateLastRecordStr))
       }
 
-      // save records
       let saved = {}
       if (updates.length > 0) saved.updates = updates
       if (newcases.length > 0) saved.newcases = newcases
