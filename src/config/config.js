@@ -14,7 +14,8 @@ const config = {
   CACHE_SV: process.env.MEMCACHEDCLOUD_SERVERS,
   MONGODB_URI: process.env.MONGODB_URI,
   SF_ID: process.env.SF_ID,
-  SF_SECRET: process.env.SF_SECRET
+  SF_SECRET: process.env.SF_SECRET,
+  HEROKU_URL: process.env.HEROKU_SUBDOMAIN
 }
 
 export default (key) => {

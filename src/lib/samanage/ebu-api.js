@@ -4,6 +4,7 @@ import db from '../../config/db.js'
 import config from '../../config/config.js'
 import _ from 'lodash'
 import Promise from 'bluebird'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
 
@@ -39,7 +40,7 @@ const oauth2 = new jsforce.OAuth2({
   // loginUrl: 'https://test.salesforce.com',
   clientId: config('SF_ID'),
   clientSecret: config('SF_SECRET'),
-  redirectUri: 'https://assistant-prebeta.herokuapp.com/authorize'
+  redirectUri: `https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/authorize`
 })
 
 const returnParams = {
@@ -70,7 +71,7 @@ export default ((userId) => {
     .then((user) => {
       if (!user.sf_id) {
         console.log('--! no connection object found !---\n    returning link now ')
-        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+        return reject({ text: `✋ Hold your horses!\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
       }
 
       let conn = new jsforce.Connection({
@@ -112,7 +113,7 @@ export default ((userId) => {
           })
           .catch((referr) => {
             console.log(`!!! refresh event error! ${referr}`)
-            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://assistant-prebeta.herokuapp.com/login/${userId}` })
+            return reject({ text: `✋ Whoa now! You need to reauthorize first.\nVisit this URL to login to Salesforce: https://${config('HEROKU_SUBDOMAIN')}.herokuapp.com/login/${userId}` })
           })
         }
 
@@ -222,6 +223,7 @@ function retrieveSfObj (conn) {
         if (options.Owner) searchParams.SamanageESD__OwnerName__c = options.Owner
         if (options.Assignee) searchParams.SamanageESD__Assignee_Name__c = options.Assignee
 
+
         searchParams = _.omitBy(searchParams, _.isNil)
         if (searchParams.CaseNumber && searchParams.CaseNumber !== 'undefined') searchParams.CaseNumber = formatCaseNumber(searchParams.CaseNumber)
 
@@ -233,11 +235,14 @@ function retrieveSfObj (conn) {
         .sort('-LastModifiedDate')
         .execute((err, records) => {
           if (err) return reject(err)
-          console.log(`Records:\n${util.inspect(records)}`)
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
           for (const r of records) {
             r.RecordTypeMatch = true
             r.RecordTypeName = record('name', r.RecordTypeId)
             r.title_link = `${conn.instanceUrl}/${r.Id}`
+
             if (type && (r.RecordTypeId !== type)) {
               console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
               r.RecordTypeMatch = false
@@ -245,6 +250,55 @@ function retrieveSfObj (conn) {
             response.push(r)
           }
           return resolve(response) // need to include sorting at some point
+        })
+      })
+    },
+
+    metrics (options) {
+      return new Promise((resolve,reject) =>{
+        console.log(`\n--> [salesforce] metrics\n    options:\n${util.inspect(options)}`)
+        const response = []
+        const type = record('id',options.RecordType)
+        let searchParams = options
+
+        let startClosedDate =  dateFormat(options.DatePeriod.split('/')[0],'isoDateTime')
+        let endClosedDate =  dateFormat(options.DatePeriod.split('/')[1],'isoDateTime')
+
+        console.log(`startClosedDate = ${util.inspect(startClosedDate)}`)
+        console.log(`endClosedDate = ${util.inspect(endClosedDate)}`)
+
+        let statusDateType = ''
+        if (searchParams.StatusChange === 'Closed') statusDateType = 'ClosedDate'
+        if (searchParams.StatusChange === 'Opened') statusDateType = 'CreatedDate'
+        searchParams = _.omitBy(searchParams, _.isNil)
+
+        console.log(`Search Params: ${util.inspect(searchParams)}`)
+        console.log(`Return Params:\n${util.inspect(returnParams)}`)
+        conn.sobject('Case')
+        .find(searchParams, returnParams) // need handler for if no number and going by latest or something
+        .where(
+          `${statusDateType} >= ${startClosedDate} AND ${statusDateType} <= ${endClosedDate}`
+        )
+        .sort('-LastModifiedDate')
+        .execute((err, records) => {
+          if (err) return reject(err)
+          let sample_records = records.slice(0, 5) // Show first 5 records
+
+          console.log(`Found ${records.length} Records:\n${util.inspect(sample_records)}`)
+          for (const r of records) {
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            r.RecordTypeMatch = true
+            r.RecordTypeName = record('name', r.RecordTypeId)
+            r.title_link = `${conn.instanceUrl}/${r.Id}`
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            if (type && (r.RecordTypeId !== type)) {
+              console.log(`Type Mismatch! type: ${type} != RecordTypeId: ${r.RecordTypeId}`)
+              r.RecordTypeMatch = false
+            }
+            console.log(`Adding ${r.CaseNumber} - ${r.RecordTypeId}`)
+            response.push(r)
+          }
+          return resolve(response)
         })
       })
     },

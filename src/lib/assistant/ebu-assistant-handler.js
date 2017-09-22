@@ -6,6 +6,7 @@ import responses from './responses/responses.js'
 const GOOGLE_ASSISTANT_WELCOME = 'input.welcome'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
+const METRICS = 'general.metrics'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
@@ -23,6 +24,7 @@ const actionMap = new Map()
 actionMap.set(GOOGLE_ASSISTANT_WELCOME, responses.welcome)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
+actionMap.set(METRICS, responses.metrics)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
