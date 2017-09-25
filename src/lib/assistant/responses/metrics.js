@@ -31,9 +31,9 @@ exports.metrics = (args, cb) => {
 
   return ebu.metrics(options).then((records) => {
     console.log(`\n--> records returned from ebu api`)
+    let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
+    let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
     if (!_.isEmpty(records)) {
-      let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
-      let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
       if (records.length > 1) {
         text = `${records.length} ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate} `
         if (app.getArgument('yesno')) text = `Yes, ${text}`
