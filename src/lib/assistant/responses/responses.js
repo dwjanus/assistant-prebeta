@@ -4,6 +4,7 @@ import multiRecord from './multi-record.js'
 import { metrics } from './metrics.js'
 import singleRecord from './single-record.js'
 import comments from './comments.js'
+import resolveClose from './resolve-close.js'
 import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
@@ -37,6 +38,11 @@ module.exports = {
   createTicket_details: createTicket.createTicket_details,
   createTicket_nocontext: createTicket.createTicket_nocontext,
   createTicket_deny: createTicket.createTicket_deny,
+  resolveclose_desc_confirm: resolveClose.resolveclose_desc_confirm,
+  resolveclose_desc_set: resolveClose.resolveclose_desc_set,
+  resolveclose_verify_confirm: resolveClose.resolveclose_verify_confirm,
+  resolveclose_verify_newfields: resolveClose.resolveclose_verify_newfields,
+  resolveclose_verify_deny: resolveClose.resolveclose_verify_deny,
   configSMS_start: configSMS.configSMS_start,
   configSMS_reject: configSMS.configSMS_reject,
   configSMS_number_confirmed: configSMS.configSMS_number_confirmed,

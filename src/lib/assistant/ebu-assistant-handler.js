@@ -34,6 +34,11 @@ const POST_FEED_COMMENT_BODY = 'feedcomment.body'
 const POST_FEED_COMMENT_VERIFY_CONFIRM = 'create.feedcomment'
 const POST_FEED_COMMENT_VERIFY_NEWBODY = 'feedcomment.verify-newbody'
 const POST_FEED_COMMENT_VERIFY_DENY = 'feedcomment.verify-deny'
+const RESOLVE_CLOSE_DESCRIPTION_CONFIRM = 'confirm.resolution-description'
+const RESOLVE_CLOSE_DESCRIPTION_SET = 'set.resolution-description'
+const RESOLVE_CLOSE_VERIFY_CONFIRM = 'resolveclose.verify-confirm'
+const RESOLVE_CLOSE_VERIFY_NEWFIELDS = 'resolveclose.verify-newfields'
+const RESOLVE_CLOSE_VERIFY_DENY = 'resolveclose.verify-deny'
 const CONFIG_SMS_START = 'config.sms-start'
 const CONFIG_SMS_REJECT = 'config.sms-reject'
 const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
@@ -73,6 +78,11 @@ actionMap.set(POST_FEED_COMMENT_BODY, responses.single_postfeed_body)
 actionMap.set(POST_FEED_COMMENT_VERIFY_CONFIRM, responses.single_postfeed_verify_confirm)
 actionMap.set(POST_FEED_COMMENT_VERIFY_NEWBODY, responses.single_postfeed_verify_newbody)
 actionMap.set(POST_FEED_COMMENT_VERIFY_DENY, responses.single_postfeed_verify_deny)
+actionMap.set(RESOLVE_CLOSE_DESCRIPTION_CONFIRM, responses.resolveclose_desc_confirm)
+actionMap.set(RESOLVE_CLOSE_DESCRIPTION_SET, responses.resolveclose_desc_set)
+actionMap.set(RESOLVE_CLOSE_VERIFY_CONFIRM, responses.resolveclose_verify_confirm)
+actionMap.set(RESOLVE_CLOSE_VERIFY_NEWFIELDS, responses.resolveclose_verify_newfields)
+actionMap.set(RESOLVE_CLOSE_VERIFY_DENY, responses.resolveclose_verify_deny)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
 actionMap.set(CONFIG_SMS_REJECT, responses.configSMS_reject)
 actionMap.set(CONFIG_SMS_NUMBER_CONFIRMED, responses.configSMS_number_confirmed)

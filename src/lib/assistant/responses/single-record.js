@@ -416,7 +416,7 @@ exports.single_postfeed_verify_confirm = (args, cb) => {
 }
 
 /** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
- *               Handlers for making single change to a case obj              *
+ *               Handlers for making change to a single case obj              *
  ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/
 
 exports.single_change = (args, cb) => {
@@ -426,6 +426,7 @@ exports.single_change = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   let returnType = app.getArgument('return-type')
+  let text = ''
   let options = {
     Id: ''
   }
@@ -440,13 +441,24 @@ exports.single_change = (args, cb) => {
   const latestRecord = JSON.parse(user.lastRecord)
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
   options.Id = latestRecord.Id
-  return ebu.update(options).then(() => {
-    const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
-    return cb(null, text)
-  })
-  .catch((err) => {
-    cb(err, null)
-  })
+  if (options.Status !== 'Resolved' || 'Closed') {
+    return ebu.update(options).then(() => {
+      text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
+      return cb(null, text)
+    })
+    .catch((err) => {
+      cb(err, null)
+    })
+  }
+
+  // if the user wants to change status to Resovled
+  if (latestRecord.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
+  else {
+    text = 'Can do. Would you like to add a description or resolution type?'
+    app.setContext('resolveclose-description-prompt')
+  }
+
+  return cb(null, text)
 }
 
 // need to add single_change_nocontext!!
