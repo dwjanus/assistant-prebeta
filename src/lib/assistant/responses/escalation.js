@@ -22,12 +22,16 @@ exports.agent = (args, cb) => {
   options = _.omitBy(options, _.isNil)
   console.log(`options: ${util.inspect(options)}`)
 
-  return ebu.singleRecord(options).then((record) => {
-    console.log(`\n--> Case: ${util.inspect(record)}`);
-
+  return ebu.singleRecord(options).then((records) => {
+    console.log(`\n--> record returned from ebu api`)
+    // if (!_.isEmpty(records)) {
+    if (records) {
+      console.log(`Escalation records: ${util.inspect(records)}`)
+      text += 'Found a record'
+    }
+    else {
+      text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
+    }
     return cb(null, text)
-  })
-  .catch((err) => {
-    cb(err, null)
   })
 }
