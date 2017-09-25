@@ -4,8 +4,17 @@ import util from 'util'
 
 const query = db.querySql
 
-exports.escalation = (args, cb) => {
-  console.log(`\n--> Inside `)
+exports.agent = (args, cb) => {
+  console.log(`\n--> Inside escalate.agent`)
+  console.log(`\n--> ${util.inspect(args)}`)
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+
+}
+
+exports.requester = (args, cb) => {
+  console.log(`\n--> Inside escalate.requester`)
   console.log(`\n--> ${util.inspect(args)}`)
   const app = args.app
   const ebu = args.ebu
