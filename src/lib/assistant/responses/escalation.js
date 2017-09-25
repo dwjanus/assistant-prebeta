@@ -11,7 +11,7 @@ const query = db.querySql
 // SamanageESD__Escalated_Date__c
 // SamanageESD__Escalated_To__c
 
-exports.agent = (args, cb) => {
+exports.escalation = (args, cb) => {
 
   console.log(`\n--> Inside escalate`)
   console.log(`\n--> ${util.inspect(args)}`)
