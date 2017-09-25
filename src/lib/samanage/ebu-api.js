@@ -451,7 +451,7 @@ function retrieveSfObj (conn) {
         .find({ Id: id })
         .execute((err, records) => {
           if (err || !records) reject(err || 'no records found')
-          console.log(`--> got user:\n${util.inspect(records[0])}`)
+          // console.log(`--> got user:\n${util.inspect(records[0])}`)
           const user = {
             Name: records[0].Name,
             FirstName: records[0].FirstName,
