@@ -18,7 +18,12 @@ exports.metrics = (args, cb) => {
     DatePeriod: app.getArgument('date-period'),
     StatusChange: app.getArgument('StatusChange')
   }
+  let escalation_options = {
+    EscalationReason: app.getArgument('EscalationReason'),
+    EscalationDescription: app.getArgument('EscalationDescription')
+  }
   console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
+  console.log(`\n--> [metrics] escalation_options: ${util.inspect(escalation_options)}`)
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
@@ -30,7 +35,6 @@ exports.metrics = (args, cb) => {
     if (!_.isEmpty(records)) {
       let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
       let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
-      if (records) {
       if (records.length > 1) {
         text = `${records.length} ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate} `
         if (app.getArgument('yesno')) text = `Yes, ${text}`
