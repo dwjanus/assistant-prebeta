@@ -46,5 +46,5 @@ exports.metrics = (args, cb) => {
       text = `No ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate}`
     }
     return cb(null, text)
-  }
+  })
 }
