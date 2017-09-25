@@ -50,7 +50,7 @@ exports.welcome = (args, cb) => {
         const saved = updates.length > 0 ? JSON.stringify(updates) : JSON.stringify(newcases)
         const updateLastRecordStr = `UPDATE users SET lastRecord = '${saved}' WHERE user_id = '${user.user_id}'`
         console.log(`--> created json object for saved record:\n${util.inspect(saved)}`)
-        app.setContext('welcome-multi-record')
+        app.setContext('single-record')
         return query(updateUserQry).then(() => query(updateLastRecordStr))
       }
 
