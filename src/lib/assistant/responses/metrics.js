@@ -23,7 +23,6 @@ exports.metrics = (args, cb) => {
     EscalationDescription: app.getArgument('EscalationDescription')
   }
   console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
-  console.log(`\n--> [metrics] escalation_options: ${util.inspect(escalation_options)}`)
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'

@@ -3,6 +3,13 @@ import _ from 'lodash'
 import util from 'util'
 
 const query = db.querySql
+// Escalation Fields:
+// SamanageESD__EscalationDescription__c
+// SamanageESD__EscalationReason__c
+// SamanageESD__EscalationUser__c
+// SamanageESD__Escalated_By__c
+// SamanageESD__Escalated_Date__c
+// SamanageESD__Escalated_To__c
 
 exports.agent = (args, cb) => {
 
@@ -16,11 +23,16 @@ exports.agent = (args, cb) => {
     CaseNumber: app.getArgument('CaseNumber'),
     RecordType: app.getArgument('record-type')
   }
+  let escalation_options = {
+    EscalationReason: app.getArgument('EscalationReason'),
+    EscalationDescription: app.getArgument('EscalationDescription')
+  }
 
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
   console.log(`options: ${util.inspect(options)}`)
+  console.log(`\n--> [metrics] escalation_options: ${util.inspect(escalation_options)}`)
 
   return ebu.singleRecord(options).then((record) => {
     console.log(`\n--> record returned from ebu api`)
@@ -32,8 +44,5 @@ exports.agent = (args, cb) => {
       text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
     }
     return cb(null, text)
-  })
-  .catch((err) => {
-    cb(err, null)
   })
 }
