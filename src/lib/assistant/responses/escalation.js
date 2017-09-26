@@ -41,11 +41,11 @@ exports.escalation = (args, cb) => {
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
       text += `I found ${options.RecordType} # ${record.CaseNumber}\n`
-      return ebu.update(escalation_options).then((result) => {
-        console.log(`Inside escalation update: ${util.inspect(result)}`)
-        text += `Escalation complete` // edit later
-        return cb(null, text)
-      })
+      // return ebu.update(escalation_options).then((result) => {
+      //   console.log(`Inside escalation update: ${util.inspect(result)}`)
+      //   text += `Escalation complete` // edit later
+      //   return cb(null, text)
+      // })
     }
     else {
       text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
