@@ -431,10 +431,11 @@ exports.single_change = (args, cb) => {
   const app = args.app
   const ebu = args.ebu
   const user = args.user
+  const latestRecord = JSON.parse(user.lastRecord)
   let returnType = app.getArgument('return-type')
   let text = ''
   let options = {
-    Id: ''
+    Id: latestRecord.Id
   }
 
   if (app.getArgument('Status')) options.Status = _.upperFirst(app.getArgument('Status'))
@@ -444,27 +445,27 @@ exports.single_change = (args, cb) => {
 
   if (!returnType || returnType === 'undefined') returnType = _.keys(options)[1]
 
-  const latestRecord = JSON.parse(user.lastRecord)
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
-  options.Id = latestRecord.Id
-  if (options.Status !== 'Resolved' || 'Closed') {
-    return ebu.update(options).then(() => {
-      text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
-      return cb(null, text)
-    })
-    .catch((err) => {
-      cb(err, null)
-    })
-  }
+  console.log(`--> options before convo invocation:\n${util.inspect(options)}`)
 
   // if the user wants to change status to Resovled
-  if (latestRecord.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
-  else {
-    text = 'Can do. Would you like to add a description or resolution type?'
-    app.setContext('resolveclose-description-prompt')
+  if (options.Status === 'Resolved' || 'Closed') {
+    if (latestRecord.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
+    else {
+      text = 'Would you like to add a description or resolution type?'
+      app.setContext('resolveclose-description-prompt')
+    }
+
+    return cb(null, text)
   }
 
-  return cb(null, text)
+  return ebu.update(options).then(() => {
+    text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
+    return cb(null, text)
+  })
+  .catch((err) => {
+    cb(err, null)
+  })
 }
 
 // need to add single_change_nocontext!!
