@@ -24,6 +24,8 @@ exports.escalation = (args, cb) => {
     RecordType: app.getArgument('record-type')
   }
   let escalation_options = {
+    CaseNumber: app.getArgument('CaseNumber'),
+    RecordType: app.getArgument('record-type')
     EscalationReason: app.getArgument('EscalationReason'),
     EscalationDescription: app.getArgument('EscalationDescription')
   }
@@ -38,8 +40,13 @@ exports.escalation = (args, cb) => {
     console.log(`\n--> record returned from ebu api`)
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
-      text += `Found a ${options.RecordType} # ${record.CaseNumber}\n`
-      text += `Let's collect a little more information`
+      text += `I found ${options.RecordType} # ${record.CaseNumber}\n`
+  
+    return ebu.update(escalation_options).then((result) => {
+        console.log(`Inside escalation update: ${util.inspect(result)}`)
+        text += `Escalation complete` // edit later
+        return cb(null, text)
+      })
     }
     else {
       text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
