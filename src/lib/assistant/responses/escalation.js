@@ -14,14 +14,14 @@ const query = db.querySql
 exports.escalation = (args, cb) => {
 
   console.log(`\n--> Inside escalate`)
-  console.log(`\n--> ${util.inspect(args)}`)
+  // console.log(`\n--> ${util.inspect(args)}`)
   const app = args.app
   const ebu = args.ebu
   const user = args.user
   let text = ''
   let options = {
     CaseNumber: app.getArgument('CaseNumber'),
-    RecordType: app.getArgument('record-type')
+    RecordType: app.getArgument('record-type'),
   }
   let escalation_options = {
     CaseNumber: app.getArgument('CaseNumber'),
@@ -33,7 +33,7 @@ exports.escalation = (args, cb) => {
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
-  console.log(`options: ${util.inspect(options)}`)
+  console.log(`\n--> app.getArgument options: ${util.inspect(options)}`)
   console.log(`\n--> escalation_options: ${util.inspect(escalation_options)}`)
 
   return ebu.singleRecord(options).then((record) => {
