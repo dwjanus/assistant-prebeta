@@ -26,8 +26,8 @@ exports.escalation = (args, cb) => {
   let escalation_options = {
     CaseNumber: app.getArgument('CaseNumber'),
     RecordType: app.getArgument('record-type'),
-    EscalationReason: app.getArgument('EscalationReason'),
-    EscalationDescription: app.getArgument('EscalationDescription')
+    SamanageESD__EscalationReason__c: app.getArgument('EscalationReason'),
+    SamanageESD__EscalationDescription__c: app.getArgument('EscalationDescription')
   }
 
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
@@ -41,11 +41,12 @@ exports.escalation = (args, cb) => {
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
       text += `I found ${options.RecordType} # ${record.CaseNumber}\n`
-      // return ebu.update(escalation_options).then((result) => {
-      //   console.log(`Inside escalation update: ${util.inspect(result)}`)
-      //   text += `Escalation complete` // edit later
-      //   return cb(null, text)
-      // })
+      let result = ebu.update(escalation_options).then((result) => {
+        console.log(`Inside escalation update: ${util.inspect(result)}`)
+        text += `Escalation complete` // edit later
+        return cb(null, text)
+      })
+      console.log(`Result was: ${util.inspect(record)}`)
     }
     else {
       text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
