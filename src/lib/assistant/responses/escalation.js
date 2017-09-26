@@ -19,26 +19,29 @@ exports.escalation = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   let text = ''
-  let options = {
+  let searchParams = {
     CaseNumber: app.getArgument('CaseNumber'),
     RecordType: app.getArgument('record-type'),
   }
+  let escalation_options = {
+    CaseNumber: app.getArgument('CaseNumber'),
+    SamanageESD__EscalationReason__c: app.getArgument('EscalationReason'),
+    SamanageESD__EscalationDescription__c: app.getArgument('EscalationDescription')
+  }
 
-  if (!app.getArgument('record-type')) options.RecordType = 'Incident'
+  if (!app.getArgument('record-type')) searchParams.RecordType = 'Incident'
 
-  options = _.omitBy(options, _.isNil)
-  let escalation_options = options
-  if (app.getArgument('EscalationReason')) escalation_options.SamanageESD__EscalationReason__c = app.getArgument('EscalationReason')
-  if (app.getArgument('EscalationDescription')) escalation_options.SamanageESD__EscalationDescription__c = app.getArgument('EscalationDescription')  
+  searchParams = _.omitBy(searchParams, _.isNil)
   escalation_options = _.omitBy(escalation_options, _.isNil)
-  console.log(`\n--> app.getArgument options: ${util.inspect(options)}`)
+  
+  console.log(`\n--> app.getArgument searchParams: ${util.inspect(searchParams)}`)
   console.log(`\n--> escalation_options: ${util.inspect(escalation_options)}`)
 
-  return ebu.singleRecord(options).then((record) => {
+  return ebu.singleRecord(searchParams).then((record) => {
     console.log(`\n--> record returned from ebu api`)
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
-      text += `I found ${options.RecordType} # ${record.CaseNumber}\n`
+      text += `I found ${searchParams.RecordType} # ${record.CaseNumber}\n`
       let result = ebu.update(escalation_options).then((result) => {
         console.log(`Inside escalation update: ${util.inspect(result)}`)
         text += `Escalation complete` // edit later
@@ -47,7 +50,7 @@ exports.escalation = (args, cb) => {
       console.log(`Result was: ${util.inspect(result)}`)
     }
     else {
-      text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
+      text += `I could not find ${searchParams.RecordType} number ${searchParams.CaseNumber}`
     }
     return cb(null, text)
   })
