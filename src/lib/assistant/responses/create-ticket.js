@@ -1,4 +1,5 @@
 import db from '../../../config/db.js'
+import _ from 'lodash'
 import util from 'util'
 
 const query = db.querySql
@@ -20,26 +21,24 @@ exports.createTicket_details = (args, cb) => {
   const user = args.user
   const ebu = args.ebu
   const app = args.app
-  const subject = app.getArgument('Subject')
-  const description = app.getArgument('Description')
-  const priority = app.getArgument('Priority')
   const returnType = app.getArgument('return-type')
-  const options = {
-    Subject: subject,
+  let options = {
+    Subject: app.getArgument('Subject'),
     SamanageESD__RequesterUser__c: user.sf_id,
+    Description: app.getArgument('Description'),
+    Priority: app.getArgument('Priority'),
     Origin: 'Samanage Assistant'
   }
   let text = 'Excellent, I am submitting your ticket now. '
 
-  if (priority) options.Priority = priority
-  if (description) options.Descriptions = description
+  options = _.omitBy(options, _.isNil)
 
-  console.log(`returnType:\n${util.inspect(returnType)}`)
-  console.log(`context argument: ${util.inspect(app.getContextArgument('newticket-details', 'Subject'))}`)
+  console.log(`> options:\n${util.inspect(options)}`)
+  console.log(`> returnType:\n${util.inspect(returnType)}`)
 
   return ebu.createIncident(options).then((newCase) => {
     console.log(`--> created new case ${newCase.id}`)
-    const updateUserQry = `UPDATE users SET latestCreatedTicket = '${newCase.id}' WHERE user_id = '${user.user_id}'`
+    const updateUserQry = `UPDATE users SET lastRecord = '${JSON.stringify(newCase)}' WHERE user_id = '${user.user_id}'`
 
     if (!user.receiveSMS) {
       text += 'You have no option set for SMS updates, would you like to receive text notifactions on your tickets?'
