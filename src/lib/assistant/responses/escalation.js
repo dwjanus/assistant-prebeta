@@ -23,16 +23,16 @@ exports.escalation = (args, cb) => {
     CaseNumber: app.getArgument('CaseNumber'),
     RecordType: app.getArgument('record-type')
   }
-  let escalation_options = {
-    EscalationReason: app.getArgument('EscalationReason'),
-    EscalationDescription: app.getArgument('EscalationDescription')
-  }
+  // let escalation_options = {
+  //   EscalationReason: app.getArgument('EscalationReason'),
+  //   EscalationDescription: app.getArgument('EscalationDescription')
+  // }
 
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
 
   options = _.omitBy(options, _.isNil)
   console.log(`options: ${util.inspect(options)}`)
-  console.log(`\n--> [metrics] escalation_options: ${util.inspect(escalation_options)}`)
+  console.log(`\n--> escalation_options: ${util.inspect(escalation_options)}`)
 
   // return ebu.singleRecord(options).then((record) => {
   //   console.log(`\n--> record returned from ebu api`)
