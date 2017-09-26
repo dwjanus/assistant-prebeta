@@ -52,6 +52,7 @@ const returnParams = {
   Description: 1,
   CreatedDate: 1,
   LastModifiedDate: 1,
+  LastModifiedById: 1,
   CaseNumber: 1,
   OwnerId: 1,
   SamanageESD__OwnerName__c: 1,

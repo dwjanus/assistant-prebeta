@@ -432,21 +432,24 @@ exports.single_change = (args, cb) => {
   const ebu = args.ebu
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
-  let returnType = app.getArgument('return-type')
   let text = ''
   let options = {
-    Id: latestRecord.Id
+    Id: latestRecord.Id,
+    Status: _.upperFirst(app.getArgument('Status')),
+    Priority: _.upperFirst(app.getArgument('Priority'))
   }
 
-  if (app.getArgument('Status')) options.Status = _.upperFirst(app.getArgument('Status'))
-  if (app.getArgument('Priority')) options.Priority = _.upperFirst(app.getArgument('Priority'))
-
+  if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id // need to play with this
   options = _.omitBy(options, _.isNil)
 
-  if (!returnType || returnType === 'undefined') returnType = _.keys(options)[1]
+  const returns = _.keys(options)
+  const returnType = returns.length > 2 ? _.slice(returns, 1, returns.length) : returns[1]
 
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
   console.log(`--> options before convo invocation:\n${util.inspect(options)}`)
+
+  let recordStr = latestRecord
+  let savedRecordStr
 
   // if the user wants to change status to Resovled
   if (options.Status === 'Resolved' || options.Status === 'Closed') {
@@ -456,12 +459,26 @@ exports.single_change = (args, cb) => {
       app.setContext('resolveclose-description-prompt')
     }
 
-    return cb(null, text)
+    recordStr = JSON.stringify(recordStr)
+    savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+    return query(savedRecordStr).then(() => cb(null, text))
   }
 
   return ebu.update(options).then(() => {
-    text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
-    return cb(null, text)
+    text = 'No problem, I have updated '
+
+    let i = returnType.length - 1
+    for (const r of returnType) {
+      latestRecord[r] = options[r]
+      text += `the ${r} to ${options[r]}`
+      if (returnType.length > 2 && i > 0) text += ', '
+      if (returnType.length >= 2 && i - 1 === 0) text += 'and '
+      i--
+    }
+
+    recordStr = JSON.stringify(recordStr)
+    savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+    return query(savedRecordStr).then(() => cb(null, text))
   })
   .catch((err) => {
     cb(err, null)
@@ -485,8 +502,7 @@ exports.single_change_nocontext = (args, cb) => {
   let updateoptions = {
     Id: '',
     Status: app.getArgument('Status'),
-    Priority: app.getArgument('Priority'),
-    Assignee: app.getArgument('Assignee')
+    Priority: app.getArgument('Priority')
   }
 
   searchoptions = _.omitBy(searchoptions, _.isNil)
@@ -524,14 +540,14 @@ exports.single_change_nocontext = (args, cb) => {
       }
 
       return ebu.update(updateoptions).then(() => {
-        text = 'No problem, I have updated the '
+        text = 'No problem, I have updated '
 
         let i = returnType.length - 1
         for (const r of returnType) {
           recordStr[r] = updateoptions[r]
-          text += `${r} to ${updateoptions[r]}`
+          text += `the ${r} to ${updateoptions[r]}`
           if (returnType.length > 2 && i > 0) text += ', '
-          if (returnType.length > 2 && i - 1 === 0) text += 'and '
+          if (returnType.length >= 2 && i - 1 === 0) text += 'and '
           i--
         }
 
