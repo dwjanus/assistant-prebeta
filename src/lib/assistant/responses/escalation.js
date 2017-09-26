@@ -46,7 +46,7 @@ exports.escalation = (args, cb) => {
         text += `Escalation complete` // edit later
         return cb(null, text)
       })
-      console.log(`Result was: ${util.inspect(record)}`)
+      console.log(`Result was: ${util.inspect(result)}`)
     }
     else {
       text += `I could not find ${options.RecordType} number ${options.CaseNumber}`
