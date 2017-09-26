@@ -65,12 +65,14 @@ exports.resolveclose_verify_confirm = (args, cb) => {
   const Description = app.getArgument('Description')
   const ResolutionType = app.getArgument('ResolutionType')
 
-  const options = {
+  let options = {
     Id: latestRecord.Id,
     Status,
-    Description,
-    ResolutionType
+    SamanageESD__ResolutionDescription__c: Description,
+    SamanageESD__ResolutionType__c: ResolutionType
   }
+
+  options = _.omitBy(options, _.isNil)
 
   return ebu.update(options).then(() => {
     const text = `Ticket ${latestRecord.CaseNumber} has been ${Status === 'Closed' ? 'closed' : 'resolved'}.`
