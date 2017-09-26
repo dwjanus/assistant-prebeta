@@ -25,7 +25,7 @@ exports.escalation = (args, cb) => {
   }
   let escalation_options = {
     CaseNumber: app.getArgument('CaseNumber'),
-    RecordType: app.getArgument('record-type')
+    RecordType: app.getArgument('record-type'),
     EscalationReason: app.getArgument('EscalationReason'),
     EscalationDescription: app.getArgument('EscalationDescription')
   }
@@ -41,8 +41,7 @@ exports.escalation = (args, cb) => {
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
       text += `I found ${options.RecordType} # ${record.CaseNumber}\n`
-  
-    return ebu.update(escalation_options).then((result) => {
+      return ebu.update(escalation_options).then((result) => {
         console.log(`Inside escalation update: ${util.inspect(result)}`)
         text += `Escalation complete` // edit later
         return cb(null, text)
