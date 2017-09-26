@@ -33,6 +33,7 @@ module.exports = {
   single_postfeed_verify_newbody: singleRecord.single_postfeed_verify_newbody,
   single_postfeed_verify_deny: singleRecord.single_postfeed_verify_deny,
   single_change: singleRecord.single_change,
+  single_change_nocontext: singleRecord.single_change_nocontext,
   comments_viewfeed: comments.comments_viewfeed,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,

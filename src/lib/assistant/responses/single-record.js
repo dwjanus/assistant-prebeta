@@ -468,4 +468,63 @@ exports.single_change = (args, cb) => {
   })
 }
 
-// need to add single_change_nocontext!!
+exports.single_change_nocontext = (args, cb) => {
+  console.log('\n--> inside single -- change no context')
+  // from no context we need to first find the case by number to get its Id
+  // then we make the update query
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  let text = 'I was unable to find that, try wording your request differently.'
+  let searchoptions = {
+    CaseNumber: app.getArgument('CaseNumber'),
+    RecordType: app.getArgument('record-type')
+  }
+
+  let updateoptions = {
+    Id: '',
+    Status: app.getArgument('Status'),
+    Priority: app.getArgument('Priority'),
+    Assignee: app.getArgument('Assignee')
+  }
+
+  searchoptions = _.omitBy(searchoptions, _.isNil)
+  updateoptions = _.omitBy(updateoptions, _.isNil)
+
+  if (app.getArgument('Assignee') === 'Self') searchoptions.OwnerId = user.sf_id // need to play with this
+  if (!app.getArgument('record-type')) searchoptions.RecordType = 'Incident'
+
+  const returns = _.keys(updateoptions)
+  const returnType = returns.length > 2 ? _.slice(returns, 1, returns.length) : returns[1]
+
+  console.log(`\n> search options: ${util.inspect(searchoptions)}`)
+  console.log(`> update options: ${util.inspect(updateoptions)}`)
+  console.log(`> return type: ${returnType}\n`)
+
+  return ebu.singleRecord(searchoptions).then((record) => {
+    console.log('--> record returned from ebu api')
+
+    if (record) {
+      let recordStr = record
+      updateoptions.Id = record.Id
+
+      return ebu.update(updateoptions).then(() => {
+        text = `No problem, I have updated the ${returnType} to ${updateoptions[returnType]}`
+
+        for (const r of returnType) {
+          recordStr[r] = updateoptions[r]
+        }
+
+        recordStr = JSON.stringify(recordStr)
+        const savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+        return query(savedRecordStr).then(() => cb(null, text))
+      })
+    }
+
+    return cb(null, text)
+  })
+  .catch((err) => {
+    cb(err, null)
+  })
+}

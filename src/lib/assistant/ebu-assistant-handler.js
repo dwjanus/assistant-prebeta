@@ -15,6 +15,7 @@ const METRICS = 'general.metrics'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
+const SINGLE_RECORD_CHANGE_NO_CONTEXT = 'command.single-record-change-no-context'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CREATE_TICKET_NO_CONTEXT = 'create.newticket-nocontext'
@@ -59,6 +60,7 @@ actionMap.set(METRICS, responses.metrics)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
+actionMap.set(SINGLE_RECORD_CHANGE_NO_CONTEXT, responses.single_change_nocontext)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CREATE_TICKET_NO_CONTEXT, responses.createTicket_nocontext)

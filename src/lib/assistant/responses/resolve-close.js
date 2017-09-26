@@ -8,7 +8,7 @@ exports.resolveclose_desc_confirm = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
 
-  const Status = app.getContextArgument('single-record-change', 'Status')
+  const Status = app.getArgument('Status')
   const Description = app.getArgument('Description')
   const ResolutionType = app.getArgument('ResolutionType')
   let text = 'Okay, simply tell me what you want to say. Whatever fields you do not provide info for will be left blank.'
@@ -36,7 +36,7 @@ exports.resolveclose_desc_set = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
 
-  const Status = app.getContextArgument('single-record-change', 'Status')
+  const Status = app.getArgument('Status')
   const Description = app.getArgument('Description')
   const ResolutionType = app.getArgument('ResolutionType')
 
@@ -61,7 +61,7 @@ exports.resolveclose_verify_confirm = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
 
-  const Status = app.getContextArgument('single-record-change', 'Status')
+  const Status = app.getArgument('Status')
   const Description = app.getArgument('Description')
   const ResolutionType = app.getArgument('ResolutionType')
 
@@ -90,7 +90,7 @@ exports.resolveclose_verify_newfields = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
 
-  const Status = app.getContextArgument('single-record-change', 'Status')
+  const Status = app.getArgument('Status')
   const Description = app.getArgument('Description')
   const ResolutionType = app.getArgument('ResolutionType')
 
