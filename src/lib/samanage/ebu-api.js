@@ -158,7 +158,7 @@ function retrieveSfObj (conn) {
         const articles = []
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
-        return conn.search(`FIND {${addslashes(search)}} IN All Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
+        return conn.search(`FIND {${addslashes(search)}} IN NAME Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
           LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, body__c WHERE PublishStatus = 'Online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {

@@ -1,4 +1,6 @@
 import Promise from 'bluebird'
+import _ from 'lodash'
+import util from 'util'
 import samanage from '../samanage/ebu-api.js'
 import responses from './responses/responses.js'
 
@@ -98,7 +100,11 @@ export default ((app, user) => {
 
   samanage(user.user_id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
-      app.ask(result)
+      if (_.isString(result)) app.ask(result)
+      else {
+        console.log(`--> result is not text!\n${util.inspect(result)}`)
+        result.call()
+      }
     })
   })
   .catch(err => console.log(err))
