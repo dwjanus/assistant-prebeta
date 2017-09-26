@@ -507,7 +507,21 @@ exports.single_change_nocontext = (args, cb) => {
 
     if (record) {
       let recordStr = record
+      let savedRecordStr
       updateoptions.Id = record.Id
+
+      // if the user wants to change status to Resovled
+      if (updateoptions.Status === 'Resolved' || 'Closed') {
+        if (record.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
+        else {
+          text = 'Would you like to add a description or resolution type?'
+          app.setContext('resolveclose-description-prompt')
+        }
+
+        recordStr = JSON.stringify(recordStr)
+        savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+        return query(savedRecordStr).then(() => cb(null, text))
+      }
 
       return ebu.update(updateoptions).then(() => {
         text = `No problem, I have updated the ${returnType} to ${updateoptions[returnType]}`
@@ -517,7 +531,7 @@ exports.single_change_nocontext = (args, cb) => {
         }
 
         recordStr = JSON.stringify(recordStr)
-        const savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+        savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
         return query(savedRecordStr).then(() => cb(null, text))
       })
     }
