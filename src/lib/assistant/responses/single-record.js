@@ -524,10 +524,15 @@ exports.single_change_nocontext = (args, cb) => {
       }
 
       return ebu.update(updateoptions).then(() => {
-        text = `No problem, I have updated the ${returnType} to ${updateoptions[returnType]}`
+        text = 'No problem, I have updated the '
 
+        let i = returnType.length - 1
         for (const r of returnType) {
           recordStr[r] = updateoptions[r]
+          text += `${r} to ${updateoptions[r]}`
+          if (returnType.length > 2 && i > 0) text += ', '
+          if (returnType.length > 2 && i - 1 === 0) text += 'and '
+          i--
         }
 
         recordStr = JSON.stringify(recordStr)
