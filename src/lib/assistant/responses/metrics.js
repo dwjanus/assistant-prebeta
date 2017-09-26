@@ -18,11 +18,7 @@ exports.metrics = (args, cb) => {
     DatePeriod: app.getArgument('date-period'),
     StatusChange: app.getArgument('StatusChange')
   }
-  let escalation_options = {
-    EscalationReason: app.getArgument('EscalationReason'),
-    EscalationDescription: app.getArgument('EscalationDescription')
-  }
-  console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
+   console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
