@@ -449,7 +449,7 @@ exports.single_change = (args, cb) => {
   console.log(`--> options before convo invocation:\n${util.inspect(options)}`)
 
   // if the user wants to change status to Resovled
-  if (options.Status === 'Resolved' || 'Closed') {
+  if (options.Status === 'Resolved' || options.Status === 'Closed') {
     if (latestRecord.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
     else {
       text = 'Would you like to add a description or resolution type?'
@@ -511,7 +511,7 @@ exports.single_change_nocontext = (args, cb) => {
       updateoptions.Id = record.Id
 
       // if the user wants to change status to Resovled
-      if (updateoptions.Status === 'Resolved' || 'Closed') {
+      if (updateoptions.Status === 'Resolved' || updateoptions.Status === 'Closed') {
         if (record.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
         else {
           text = 'Would you like to add a description or resolution type?'
