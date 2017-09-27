@@ -23,7 +23,7 @@ exports.knowledge = (args, cb) => {
       if (app.getArgument('yesno')) text = `Yes, ${text}`
       if (hasScreen) {
         let number = 1
-        // const ids = []
+        const ids = []
         const carousel = app.buildCarousel('Related Knowledge Articles')
         articles.forEach((article) => {
           carousel.addItems(app.buildOptionItem(`${article.KnowledgeArticleId}`, [_.toString(number)]) // maybe make this id ?
@@ -31,7 +31,7 @@ exports.knowledge = (args, cb) => {
             .setDescription(article.Summary))
 
           number++
-          // ids.push(article.KnowledgeArticleId)
+          ids.push(article.KnowledgeArticleId)
         })
 
         // save articles for next query
@@ -39,9 +39,8 @@ exports.knowledge = (args, cb) => {
           .addSimpleResponse(text)
           .addSuggestions(['Submit Incident']), carousel)
 
-        // const updateStr = `UPDATE users SET lastRecord = '${JSON.stringify(ids)}' WHERE user_id = ${user.user_id}`
-        // return query(updateStr).then(() => cb(null, askWithCarousel))
-        return cb(null, askWithCarousel)
+        const updateStr = `UPDATE users SET lastRecord = '${JSON.stringify(ids)}' WHERE user_id = ${user.user_id}`
+        return query(updateStr).then(() => cb(null, askWithCarousel))
       }
 
       return cb(null, text)
