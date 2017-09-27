@@ -156,7 +156,7 @@ function retrieveSfObj (conn) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
         let articles = []
-        console.log(`--> search string: ${text}`)
+        console.log(`--> search string: ${addslashes(text)}`)
         return conn.search(`FIND {${addslashes(text)}} IN NAME Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
           LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, body__c WHERE PublishStatus = 'Online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
