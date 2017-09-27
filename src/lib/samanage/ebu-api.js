@@ -173,15 +173,19 @@ function retrieveSfObj (conn) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge article\n    id:\n${id}`)
 
-        const articles = []
+        let articles = []
         conn.sobject('Knowledge__kav')
           .retrieve(id, (err, result) => {
             if (err) return reject(err)
-            for (const r of result) {
-              r.link = `${conn.instanceUrl}/${r.KnowledgeArticleId}`
-              articles.push(r)
+            if (result.length > 1) {
+              for (const r of result) {
+                r.link = `${conn.instanceUrl}/${r.KnowledgeArticleId}`
+                articles.push(r)
+              }
+            } else {
+              articles = result
+              articles.link = `${conn.instanceUrl}/${result.KnowledgeArticleId}`
             }
-            if (articles.length === 1) return resolve(articles[0])
             return resolve(articles)
           })
       })
