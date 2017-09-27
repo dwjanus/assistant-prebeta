@@ -179,7 +179,7 @@ function retrieveSfObj (conn) {
           .execute((err, articles) => {
             if (err) return reject(err)
             const article = articles[0]
-            article.link = `${conn.instanceUrl}/${article.UrlName}`
+            article.link = `${conn.instanceUrl}/${article.KnowledgeArticleId}`
             return resolve(article)
           })
       })

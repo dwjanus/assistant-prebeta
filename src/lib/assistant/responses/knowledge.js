@@ -1,7 +1,7 @@
 import util from 'util'
 import db from '../../../config/db.js'
 import _ from 'lodash'
-import textversion from 'textversionjs'
+import textversion from 'html-to-text'
 
 const query = db.querySql
 
@@ -66,7 +66,7 @@ exports.knowledge_article_fallback = (args, cb) => {
     return ebu.knowledge_article(articleId).then((article) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
-      const body = textversion(article.body__c)
+      const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true })
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
         .addBasicCard(app.buildBasicCard(body)
