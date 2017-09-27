@@ -94,7 +94,7 @@ exports.knowledge_article_fallback = (args, cb) => {
 }
 
 exports.knowledge_suggestion_buttons = (args, cb) => {
-  console.log('--> inside knowledge back button fallback')
+  console.log('--> inside knowledge suggestion buttons fallback')
 
   const app = args.app
   const ebu = args.ebu

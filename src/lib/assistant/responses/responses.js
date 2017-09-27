@@ -14,7 +14,7 @@ module.exports = {
   cancel: welcome.cancel,
   knowledge: knowledge.knowledge,
   knowledge_article_fallback: knowledge.knowledge_article_fallback,
-  knowledge_back_button: knowledge.knowledge_suggestion_buttons,
+  knowledge_suggestion_buttons: knowledge.knowledge_suggestion_buttons,
   metrics,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,
