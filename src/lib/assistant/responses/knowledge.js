@@ -16,6 +16,7 @@ exports.knowledge = (args, cb) => {
   let text = 'I was unable to find any relavent articles in the knowledge base, would like me to submit a ticket?'
   if (!Subject) Subject = app.getRawInput()
 
+  app.params = Subject
   return ebu.knowledge(Subject).then((articles) => {
     console.log(`--> articles retrieved:\n${util.inspect(articles)}`)
     if (articles.length > 0) {
