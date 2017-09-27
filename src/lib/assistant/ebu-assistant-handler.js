@@ -102,8 +102,8 @@ export default ((app, user) => {
 
   samanage(user.user_id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
-      if (_.isString(result)) app.ask(result)
-      else result.call()
+      if (_.isString(result)) return app.ask(result)
+      return result
     })
   })
   .catch(err => console.log(err))

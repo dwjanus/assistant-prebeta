@@ -163,10 +163,7 @@ function retrieveSfObj (conn) {
           AND IsLatestVersion = true)`,
         (err, res) => {
           if (err) return reject(err)
-          for (const r of res.searchRecords) {
-            r.title_link = `${conn.instanceUrl}/${r.UrlName}`
-            articles.push(r)
-          }
+          articles = res.searchRecords
           if (articles.length > 8) articles = _.slice(articles, 0, 7)
           return resolve(articles)
         })
