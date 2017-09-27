@@ -14,7 +14,7 @@ const formatCaseNumber = (number) => {
 }
 
 const addslashes = (str) => {
-  str.replace(/[&!:"'-*+~?^${}()|[\]\\]/g, '\\$&').replace(/\u0000/g, '\\0')
+  return str.replace(/[&!:"'-*+~?^${}()|[\]\\]/g, '\\$&').replace(/\u0000/g, '\\0')
 }
 
 const recordType = {
