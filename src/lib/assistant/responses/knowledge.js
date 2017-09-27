@@ -68,13 +68,16 @@ exports.knowledge_article_fallback = (args, cb) => {
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true, ignoreImage: true })
       const regex = /<img\b(?=\s)(?=(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*?\ssrc=['"]([^"]*)['"]?)(?:[^>=]|='[^']*'|="[^"]*"|=[^'"\s]*)*"\s?\/?>/g
       const results = regex.exec(article.body__c)
-      const img = !_.isEmpty(results) ? results[1] : null
+      let img = !_.isEmpty(results) ? results[1] : null
 
       const card = app.buildBasicCard(body)
         .setTitle(article.Title)
         .addButton('View in Browser', article.link)
 
-      if (img) card.setImage(img)
+      if (img) {
+        img = img.replace(/amp;/g, '')
+        card.setImage(img)
+      }
 
       console.log(`--> img: ${img}`)
       console.log(`--> results: ${util.inspect(results)}`)
