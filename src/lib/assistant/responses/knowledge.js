@@ -66,7 +66,7 @@ exports.knowledge_article_fallback = (args, cb) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true, ignoreImage: true })
-      const regex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g
+      const regex = /<img\b(?=\s)(?=(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*?\ssrc=['"]([^"]*)['"]?)(?:[^>=]|='[^']*'|="[^"]*"|=[^'"\s]*)*"\s?\/?>/g
       const results = regex.exec(article.body__c)
       const img = !_.isEmpty(results) ? results[1] : null
 
