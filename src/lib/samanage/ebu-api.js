@@ -155,7 +155,7 @@ function retrieveSfObj (conn) {
     knowledge (text) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
-        const articles = []
+        let articles = []
         const search = _.replace(text, '-', ' ')
         console.log(`--> search string: ${search}`)
         return conn.search(`FIND {${addslashes(search)}} IN NAME Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
@@ -167,8 +167,24 @@ function retrieveSfObj (conn) {
             r.title_link = `${conn.instanceUrl}/${r.UrlName}`
             articles.push(r)
           }
+          if (articles.length > 8) articles = _.slice(articles, 0, 7)
           return resolve(articles)
         })
+      })
+    },
+
+    knowledge_article (id) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] knowledge article\n    id:\n${id}`)
+
+        conn.sobject('Knowledge__kav')
+          .find({ KnowledgeArticleId: id, PublishStatus: 'Online' })
+          .execute((err, articles) => {
+            if (err) return reject(err)
+            const article = articles[0]
+            article.link = `${conn.instanceUrl}/${article.UrlName}`
+            return resolve(article)
+          })
       })
     },
 

@@ -1,10 +1,16 @@
 import util from 'util'
+import db from '../../../config/db.js'
+import _ from 'lodash'
+import textversion from 'textversionjs'
+
+const query = db.querySql
 
 exports.knowledge = (args, cb) => {
   console.log('--> inside knowledge case')
 
-  const ebu = args.ebu
   const app = args.app
+  const ebu = args.ebu
+  const user = args.user
   const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
   let Subject = app.getArgument('Subject')
   let text = 'I was unable to find any relavent articles in the knowledge base, would like me to submit a ticket?'
@@ -13,16 +19,28 @@ exports.knowledge = (args, cb) => {
   return ebu.knowledge(Subject).then((articles) => {
     console.log(`--> articles retrieved:\n${util.inspect(articles)}`)
     if (articles.length > 0) {
-      text = 'I found some knowledge base articles that matched your issue. If these do not help I can submit a ticket for you'
+      text = 'I found some knowledge base articles that matched your issue. If these do not help I can also submit a ticket for you'
       if (app.getArgument('yesno')) text = `Yes, ${text}`
       if (hasScreen) {
+        let number = 1
+        // const ids = []
         const carousel = app.buildCarousel('Related Knowledge Articles')
         articles.forEach((article) => {
-          carousel.addItems(app.buildOptionItem(`${article.ArticleNumber.replace(/^0+/, '')}`)
-          .setTitle(article.Title)
-          .setDescription(article.Summary))
+          carousel.addItems(app.buildOptionItem(`${article.KnowledgeArticleId}`, [_.toString(number)]) // maybe make this id ?
+            .setTitle(article.Title)
+            .setDescription(article.Summary))
+
+          number++
+          // ids.push(article.KnowledgeArticleId)
         })
-        const askWithCarousel = app.askWithCarousel(text, carousel)
+
+        // save articles for next query
+        const askWithCarousel = app.askWithCarousel(app.buildRichResponse()
+          .addSimpleResponse(text)
+          .addSuggestions(['Submit Incident']), carousel)
+
+        // const updateStr = `UPDATE users SET lastRecord = '${JSON.stringify(ids)}' WHERE user_id = ${user.user_id}`
+        // return query(updateStr).then(() => cb(null, askWithCarousel))
         return cb(null, askWithCarousel)
       }
 
@@ -32,4 +50,32 @@ exports.knowledge = (args, cb) => {
     return cb(null, text)
   })
   .catch(err => cb(err, null))
+}
+
+exports.knowledge_article_fallback = (args, cb) => {
+  console.log('--> inside knowledge article fallback')
+
+  const app = args.app
+  const ebu = args.ebu
+  const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
+  const articleId = app.getSelectedOption()
+
+  console.log(`--> got selected option: ${articleId}`)
+
+  return ebu.knowledge_article(articleId).then((article) => {
+    console.log(`--> article retrieved:\n${util.inspect(article)}`)
+
+    if (hasScreen) {
+      const body = textversion(article.body__c)
+      const articleCard = app.ask(app.buildRichResponse()
+        .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
+        .addBasicCard(app.buildBasicCard(body)
+        .setTitle(article.Title)
+        .addButton('View in Browser', article.link)))
+
+      return cb(null, articleCard)
+    }
+
+    return cb(null, 'Error retrieving knowledge article')
+  })
 }
