@@ -58,14 +58,14 @@ exports.knowledge_article_fallback = (args, cb) => {
   const app = args.app
   const ebu = args.ebu
   const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
-  const articleId = app.getSelectedOption()
+  const articleId = app.getContextArgument('actions_intent_option', 'OPTION').value
 
   console.log(`--> got selected option: ${articleId}`)
 
-  return ebu.knowledge_article(articleId).then((article) => {
-    console.log(`--> article retrieved:\n${util.inspect(article)}`)
+  if (hasScreen && articleId) {
+    return ebu.knowledge_article(articleId).then((article) => {
+      console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
-    if (hasScreen) {
       const body = textversion(article.body__c)
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
@@ -74,8 +74,8 @@ exports.knowledge_article_fallback = (args, cb) => {
         .addButton('View in Browser', article.link)))
 
       return cb(null, articleCard)
-    }
+    })
+  }
 
-    return cb(null, 'Error retrieving knowledge article')
-  })
+  return cb(null, 'Error retrieving knowledge article')
 }
