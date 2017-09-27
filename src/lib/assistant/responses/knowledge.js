@@ -39,7 +39,7 @@ exports.knowledge = (args, cb) => {
           .addSimpleResponse(text)
           .addSuggestions(['Submit Incident']), carousel)
 
-        const updateStr = `UPDATE users SET lastRecord = '${JSON.stringify(ids)}' WHERE user_id = ${user.user_id}`
+        const updateStr = `UPDATE users SET lastRecord = '${JSON.stringify(ids)}' WHERE user_id = '${user.user_id}'`
         return query(updateStr).then(() => cb(null, askWithCarousel))
       }
 
@@ -66,9 +66,9 @@ exports.knowledge_article_fallback = (args, cb) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true })
-      const regex = /(?<=<img src=").*?(?=")/gm
-      const img = regex.match(body)
-
+      const regex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g
+      const results = regex.exec(body)
+      const img = _.notEmpty(results) ? results[1] : null
       const card = app.buildBasicCard(body)
         .setTitle(article.Title)
         .addButton('View in Browser', article.link)
@@ -76,6 +76,7 @@ exports.knowledge_article_fallback = (args, cb) => {
       if (img) card.setImage(img)
 
       console.log(`--> img: ${img}`)
+      console.log(`--> results: ${util.inspect(results)}`)
 
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
