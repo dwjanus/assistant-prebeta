@@ -83,7 +83,8 @@ exports.knowledge_article_fallback = (args, cb) => {
 
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
-        .addSuggestions(['Back', 'Submit Incident'], card))
+        .addSuggestions(['Back', 'Submit Incident'])
+        .addBasicCard(card))
 
       return cb(null, articleCard)
     })
