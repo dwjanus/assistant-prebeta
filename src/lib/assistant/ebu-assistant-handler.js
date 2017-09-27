@@ -10,7 +10,6 @@ const THANK_YOU = 'general.thankyou'
 const CANCEL = 'general.cancel'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const KNOWLEDGE_FROM_SINGLE = 'general.knowledge'
-const KNOWLEDGE_ARTICLE = 'knowledge.article'
 const VIEW_ARTICLE_FALLBACK = 'knowledge.article-fallback'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
@@ -57,7 +56,6 @@ actionMap.set(THANK_YOU, responses.thankyou)
 actionMap.set(CANCEL, responses.cancel)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(KNOWLEDGE_FROM_SINGLE, responses.knowledge)
-actionMap.set(KNOWLEDGE_ARTICLE, responses.knowledge_article)
 actionMap.set(VIEW_ARTICLE_FALLBACK, responses.knowledge_article_fallback)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
