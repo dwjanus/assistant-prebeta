@@ -65,10 +65,11 @@ exports.knowledge_article_fallback = (args, cb) => {
     return ebu.knowledge_article(articleId).then((article) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
-      const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true })
+      const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true, ignoreImage: true })
       const regex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g
-      const results = regex.exec(body)
+      const results = regex.exec(article.body__c)
       const img = !_.isEmpty(results) ? results[1] : null
+
       const card = app.buildBasicCard(body)
         .setTitle(article.Title)
         .addButton('View in Browser', article.link)
