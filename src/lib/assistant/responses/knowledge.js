@@ -101,10 +101,9 @@ exports.knowledge_suggestion_buttons = (args, cb) => {
   const user = args.user
   const articleIds = JSON.parse(user.lastRecord)
   const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
-  const back = app.getArgument('Back')
+  const selected = app.getRawInput()
 
-  console.log(`--> got selected option: ${back}`)
-  console.log(`--> got article Ids: ${util.inspect(articleIds)}`)
+  console.log(`--> got selected option: ${selected}`)
 
   if (hasScreen) {
     return ebu.knowledge_article(articleIds).then((articles) => {
