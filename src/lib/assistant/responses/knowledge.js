@@ -105,7 +105,7 @@ exports.knowledge_suggestion_buttons = (args, cb) => {
 
   console.log(`--> got selected option: ${selected}`)
 
-  if (hasScreen) {
+  if (hasScreen && selected === 'Back') {
     return ebu.knowledge_article(articleIds).then((articles) => {
       let number = 1
       const carousel = app.buildCarousel('Related Knowledge Articles')
@@ -127,6 +127,8 @@ exports.knowledge_suggestion_buttons = (args, cb) => {
       cb(err, null)
     })
   }
+
+  // add handler for submit ticket
 
   return cb(null, 'I seem to have lost the articles we were looking at')
 }
