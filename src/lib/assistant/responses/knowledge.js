@@ -68,7 +68,7 @@ exports.knowledge_article_fallback = (args, cb) => {
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true })
       const regex = /<img[^>]+src="?([^"\s]+)"?[^>]*\/>/g
       const results = regex.exec(body)
-      const img = _.notEmpty(results) ? results[1] : null
+      const img = !_.isEmpty(results) ? results[1] : null
       const card = app.buildBasicCard(body)
         .setTitle(article.Title)
         .addButton('View in Browser', article.link)
