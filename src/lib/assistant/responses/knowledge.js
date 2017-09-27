@@ -66,11 +66,20 @@ exports.knowledge_article_fallback = (args, cb) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true })
+      const regex = /(?<=<img src=").*?(?=")/gm
+      const img = regex.match(body)
+
+      const card = app.buildBasicCard(body)
+        .setTitle(article.Title)
+        .addButton('View in Browser', article.link)
+
+      if (img) card.setImage(img)
+
+      console.log(`--> img: ${img}`)
+
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
-        .addBasicCard(app.buildBasicCard(body)
-        .setTitle(article.Title)
-        .addButton('View in Browser', article.link)))
+        .addBasicCard(card))
 
       return cb(null, articleCard)
     })
