@@ -93,15 +93,15 @@ exports.knowledge_article_fallback = (args, cb) => {
   return cb(null, 'Error retrieving knowledge article')
 }
 
-exports.knowledge_back_button = (args, cb) => {
-  console.log('--> inside knowledge article fallback')
+exports.knowledge_suggestion_buttons = (args, cb) => {
+  console.log('--> inside knowledge back button fallback')
 
   const app = args.app
   const ebu = args.ebu
   const user = args.user
   const articleIds = JSON.parse(user.lastRecord)
   const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
-  const back = app.getContextArgument('actions_intent_option', 'OPTION').value
+  const back = app.getArgument('Back')
 
   console.log(`--> got selected option: ${back}`)
   console.log(`--> got article Ids: ${util.inspect(articleIds)}`)
