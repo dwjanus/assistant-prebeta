@@ -9,12 +9,12 @@ exports.createTicket_knowledge = (args, cb) => {
 
   const app = args.app
   const subject = app.getContextArgument('KNOWLEDGE_NO_CONTEXT', 'Subject')
-  const subject2 = app.getContextArgument('knowledge', 'Subject')
+  const subject2 = app.originalRequest
   const text = `Sure thing! So far I have ${subject} as the subject for your incident. If you ` +
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
 
-  console.log(`--> subject: ${subject}\n--> subject2: ${subject2}`)
+  console.log(`--> subject: ${subject}\n--> subject2: ${util.inspect(subject2)}\n${util.inspect(app)}`)
   return cb(null, text)
 }
 
