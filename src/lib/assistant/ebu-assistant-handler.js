@@ -1,6 +1,5 @@
 import Promise from 'bluebird'
 import _ from 'lodash'
-import util from 'util'
 import samanage from '../samanage/ebu-api.js'
 import responses from './responses/responses.js'
 
@@ -11,6 +10,7 @@ const CANCEL = 'general.cancel'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const KNOWLEDGE_FROM_SINGLE = 'general.knowledge'
 const VIEW_ARTICLE_FALLBACK = 'knowledge.article-fallback'
+const KNOWLEDGE_BACK_BUTTON = 'knowledge.back'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
 const SINGLE_FROM_MULTI = 'query.single-from-multi'
@@ -57,6 +57,7 @@ actionMap.set(CANCEL, responses.cancel)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(KNOWLEDGE_FROM_SINGLE, responses.knowledge)
 actionMap.set(VIEW_ARTICLE_FALLBACK, responses.knowledge_article_fallback)
+actionMap.set(KNOWLEDGE_BACK_BUTTON, responses.knowledge_back_button)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
 actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)

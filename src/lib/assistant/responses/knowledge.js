@@ -26,15 +26,14 @@ exports.knowledge = (args, cb) => {
         const ids = []
         const carousel = app.buildCarousel('Related Knowledge Articles')
         articles.forEach((article) => {
-          carousel.addItems(app.buildOptionItem(`${article.KnowledgeArticleId}`, [_.toString(number)]) // maybe make this id ?
+          carousel.addItems(app.buildOptionItem(`${article.Id}`, [_.toString(number)]) // maybe make this id ?
             .setTitle(article.Title)
             .setDescription(article.Summary))
 
           number++
-          ids.push(article.KnowledgeArticleId)
+          ids.push(article.Id)
         })
 
-        // save articles for next query
         const askWithCarousel = app.askWithCarousel(app.buildRichResponse()
           .addSimpleResponse(text)
           .addSuggestions(['Submit Incident']), carousel)
@@ -84,11 +83,50 @@ exports.knowledge_article_fallback = (args, cb) => {
 
       const articleCard = app.ask(app.buildRichResponse()
         .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
-        .addBasicCard(card))
+        .addSuggestions(['Back', 'Submit Incident'], app.addBasicCard(card)))
 
       return cb(null, articleCard)
     })
   }
 
   return cb(null, 'Error retrieving knowledge article')
+}
+
+exports.knowledge_back_button = (args, cb) => {
+  console.log('--> inside knowledge article fallback')
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  const articleIds = JSON.parse(user.lastRecord)
+  const hasScreen = app.hasSurfaceCapability(app.SurfaceCapabilities.SCREEN_OUTPUT)
+  const back = app.getContextArgument('actions_intent_option', 'OPTION').value
+
+  console.log(`--> got selected option: ${back}`)
+  console.log(`--> got article Ids: ${util.inspect(articleIds)}`)
+
+  if (hasScreen) {
+    return ebu.knowledge_article(articleIds).then((articles) => {
+      let number = 1
+      const carousel = app.buildCarousel('Related Knowledge Articles')
+      articles.forEach((article) => {
+        carousel.addItems(app.buildOptionItem(`${article.Id}`, [_.toString(number)]) // maybe make this id ?
+          .setTitle(article.Title)
+          .setDescription(article.Summary))
+
+        number++
+      })
+
+      const askWithCarousel = app.askWithCarousel(app.buildRichResponse()
+        .addSimpleResponse('Previous Knowledge Articles')
+        .addSuggestions(['Submit Incident']), carousel)
+
+      return cb(null, askWithCarousel)
+    })
+    .catch((err) => {
+      cb(err, null)
+    })
+  }
+
+  return cb(null, 'I seem to have lost the articles we were looking at')
 }
