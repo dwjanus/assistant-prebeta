@@ -9,7 +9,7 @@ exports.createTicket_knowledge = (args, cb) => {
 
   const app = args.app
   const temp = 'Blah'
-  const subject = app.request_.IncomingMessage.res.body.originalRequest
+  const subject = app.request_.IncomingMessage.body.originalRequest
   const text = `Sure thing! So far I have ${temp} as the subject for your incident. If you ` +
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
