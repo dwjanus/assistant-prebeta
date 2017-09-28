@@ -27,10 +27,8 @@ exports.escalation = (args, cb) => {
   if (!app.getArgument('record-type')) searchParams.RecordType = 'Incident'
 
   searchParams = _.omitBy(searchParams, _.isNil)
-  escalationOptions = _.omitBy(escalationOptions, _.isNil)
-
   console.log(`\n--> app.getArgument searchParams: ${util.inspect(searchParams)}`)
-  console.log(`\n--> escalationOptions: ${util.inspect(escalationOptions)}`)
+
 
   return ebu.singleRecord(searchParams).then((record) => {
     console.log(`\n--> record returned from ebu api`)
