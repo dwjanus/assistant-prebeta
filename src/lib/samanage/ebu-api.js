@@ -169,7 +169,7 @@ function retrieveSfObj (conn) {
       })
     },
 
-    knowledge_article (id) {
+    knowledgeArticle (id) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge article\n    id:\n${id}`)
 
@@ -246,6 +246,28 @@ function retrieveSfObj (conn) {
           }
           return resolve(response[0])
         })
+      })
+    },
+
+    caseRecordsById (ids) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] caseRecordsById\n-->ids: ${ids}`)
+
+        let records = []
+        conn.sobject('Case')
+          .retrieve(ids, (err, result) => {
+            if (err) return reject(err)
+            if (result.length > 1) {
+              for (const r of result) {
+                r.link = `${conn.instanceUrl}/${r.Id}`
+                records.push(r)
+              }
+            } else {
+              records = result
+              records.link = `${conn.instanceUrl}/${result.KnowledgeArticleId}`
+            }
+            return resolve(records)
+          })
       })
     },
 

@@ -18,6 +18,8 @@ module.exports = {
   metrics,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,
+  multi_selection: multiRecord.multi_selection,
+  multi_selection_suggestion_buttons: multiRecord.multi_selection_suggestion_buttons,
   single_nocontext: singleRecord.single_nocontext,
   single_details: singleRecord.single_details,
   single_postcomment_confirm: singleRecord.single_postcomment_confirm,

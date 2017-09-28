@@ -61,7 +61,7 @@ exports.knowledge_article_fallback = (args, cb) => {
   console.log(`--> got selected option: ${articleId}`)
 
   if (hasScreen && articleId) {
-    return ebu.knowledge_article(articleId).then((article) => {
+    return ebu.knowledgeArticle(articleId).then((article) => {
       console.log(`--> article retrieved:\n${util.inspect(article)}`)
 
       const body = textversion.fromString(article.body__c, { preserveNewlines: true, hideLinkHrefIfSameAsText: true, ignoreImage: true })
@@ -82,7 +82,7 @@ exports.knowledge_article_fallback = (args, cb) => {
       console.log(`--> results: ${util.inspect(results)}`)
 
       const articleCard = app.ask(app.buildRichResponse()
-        .addSimpleResponse(`Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
+        .addSimpleResponse(`Knowledge Article: ${article.ArticleNumber.replace(/^0+/, '')}`)
         .addSuggestions(['Back', 'Submit Incident'])
         .addBasicCard(card))
 
@@ -106,7 +106,7 @@ exports.knowledge_suggestion_buttons = (args, cb) => {
   console.log(`--> got selected option: ${selected}`)
 
   if (hasScreen && selected === 'Back') {
-    return ebu.knowledge_article(articleIds).then((articles) => {
+    return ebu.knowledgeArticle(articleIds).then((articles) => {
       let number = 1
       const carousel = app.buildCarousel('Related Knowledge Articles')
       articles.forEach((article) => {
