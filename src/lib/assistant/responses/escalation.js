@@ -50,7 +50,7 @@ exports.escalation = (args, cb) => {
       }
       console.log(`Escalation Options: ${util.inspect(escalationOptions)}`)
       return ebu.update(escalationOptions).then((result) => {
-        text += `Escalation complete` // edit later
+        text += `${record.RecordType} #${record.CaseNumber} has been escalated` // edit later
         return cb(null, text)
       })
       console.log(`Result: ${result}`)
