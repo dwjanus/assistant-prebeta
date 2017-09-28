@@ -39,9 +39,9 @@ exports.escalation = (args, cb) => {
         Id: record.Id,
         SamanageESD__EscalationReason__c: 'Other', // app.getArgument('EscalationReason'),
         SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
+        SamanageESD__Escalated_By__c: user.sf_id,
       }
       let update_result = ebu.update(escalationOptions).then((result) => {
-        console.log(`Inside escalation update: ${util.inspect(result)}`)
         text += `Escalation complete` // edit later
         return cb(null, text)
       })
