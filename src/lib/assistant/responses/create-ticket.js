@@ -9,6 +9,10 @@ exports.createTicket_knowledge = (args, cb) => {
 
   const app = args.app
   const subject = app.getArgument('Subject')
+  const contexts = app.getContexts()
+
+  console.log(`--> contexts:\n${util.inspect(contexts)}`)
+
   let text = 'What information would like to include? Just say the field name followed by the value. ' +
     'For instance, \"Subject Network drive problem and make the priority medium.\" Minimum required is Subject.'
 
