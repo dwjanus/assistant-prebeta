@@ -194,7 +194,8 @@ function retrieveSfObj (conn) {
     createIncident (options) {
       return new Promise((resolve, reject) => {
         let request
-        options.RecordTypeId = record('id', 'Incident')
+        // options.RecordTypeId = record('id', 'Incident')
+        options.SamanageESD__RecordType__c = 'Incident'
         console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
 
         conn.sobject('Case').create(options, (err, ret) => {
