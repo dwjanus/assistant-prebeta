@@ -53,6 +53,7 @@
     "eslint-plugin-react": "^6.10.3",
     "express": "^4.15.2",
     "express-http-proxy": "^0.6.0",
+    "html-to-text": "^3.3.0",
     "https": "^1.0.0",
     "jsforce": "^1.8.0",
     "lodash": "^4.6.1",
@@ -61,7 +62,8 @@
     "monk": "^5.0.2",
     "node-mysql": "^0.4.2",
     "shortid": "^2.2.8",
-    "ssml": "0.0.4"
+    "ssml": "0.0.4",
+    "textversionjs": "^1.0.2"
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",

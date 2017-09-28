@@ -14,7 +14,7 @@ const formatCaseNumber = (number) => {
 }
 
 const addslashes = (str) => {
-  return (`${str} `).replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')
+  return str.replace(/[&!:"'-*+~?^${}()|[\]\\]/g, '\\$&').replace(/\u0000/g, '\\0')
 }
 
 const recordType = {
@@ -52,6 +52,7 @@ const returnParams = {
   Description: 1,
   CreatedDate: 1,
   LastModifiedDate: 1,
+  LastModifiedById: 1,
   CaseNumber: 1,
   OwnerId: 1,
   SamanageESD__OwnerName__c: 1,
@@ -154,20 +155,39 @@ function retrieveSfObj (conn) {
     knowledge (text) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge search\n    options:\n${util.inspect(text)}`)
-        const articles = []
-        const search = _.replace(text, '-', ' ')
-        console.log(`--> search string: ${search}`)
-        return conn.search(`FIND {${addslashes(search)}} IN All Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
+        let articles = []
+        console.log(`--> search string: ${addslashes(text)}`)
+        return conn.search(`FIND {${addslashes(text)}} IN NAME Fields RETURNING Knowledge__kav (Id, KnowledgeArticleId, UrlName, Title, Summary,
           LastPublishedDate, ArticleNumber, CreatedBy.Name, CreatedDate, VersionNumber, body__c WHERE PublishStatus = 'Online' AND Language = 'en_US'
           AND IsLatestVersion = true)`,
         (err, res) => {
           if (err) return reject(err)
-          for (const r of res.searchRecords) {
-            r.title_link = `${conn.instanceUrl}/${r.UrlName}`
-            articles.push(r)
-          }
+          articles = res.searchRecords
+          if (articles.length > 8) articles = _.slice(articles, 0, 7)
           return resolve(articles)
         })
+      })
+    },
+
+    knowledge_article (id) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] knowledge article\n    id:\n${id}`)
+
+        let articles = []
+        conn.sobject('Knowledge__kav')
+          .retrieve(id, (err, result) => {
+            if (err) return reject(err)
+            if (result.length > 1) {
+              for (const r of result) {
+                r.link = `${conn.instanceUrl}/${r.KnowledgeArticleId}`
+                articles.push(r)
+              }
+            } else {
+              articles = result
+              articles.link = `${conn.instanceUrl}/${result.KnowledgeArticleId}`
+            }
+            return resolve(articles)
+          })
       })
     },
 

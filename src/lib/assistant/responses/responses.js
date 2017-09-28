@@ -1,9 +1,10 @@
 import welcome from './welcome.js'
-import { knowledge } from './knowledge.js'
+import knowledge from './knowledge.js'
 import multiRecord from './multi-record.js'
 import { metrics } from './metrics.js'
 import singleRecord from './single-record.js'
 import comments from './comments.js'
+import resolveClose from './resolve-close.js'
 import createTicket from './create-ticket.js'
 import configSMS from './config-sms.js'
 
@@ -11,7 +12,9 @@ module.exports = {
   welcome: welcome.welcome,
   thankyou: welcome.thankyou,
   cancel: welcome.cancel,
-  knowledge,
+  knowledge: knowledge.knowledge,
+  knowledge_article_fallback: knowledge.knowledge_article_fallback,
+  knowledge_suggestion_buttons: knowledge.knowledge_suggestion_buttons,
   metrics,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,
@@ -32,11 +35,17 @@ module.exports = {
   single_postfeed_verify_newbody: singleRecord.single_postfeed_verify_newbody,
   single_postfeed_verify_deny: singleRecord.single_postfeed_verify_deny,
   single_change: singleRecord.single_change,
+  single_change_nocontext: singleRecord.single_change_nocontext,
   comments_viewfeed: comments.comments_viewfeed,
   createTicket_knowledge: createTicket.createTicket_knowledge,
   createTicket_details: createTicket.createTicket_details,
   createTicket_nocontext: createTicket.createTicket_nocontext,
   createTicket_deny: createTicket.createTicket_deny,
+  resolveclose_desc_confirm: resolveClose.resolveclose_desc_confirm,
+  resolveclose_desc_set: resolveClose.resolveclose_desc_set,
+  resolveclose_verify_confirm: resolveClose.resolveclose_verify_confirm,
+  resolveclose_verify_newfields: resolveClose.resolveclose_verify_newfields,
+  resolveclose_verify_deny: resolveClose.resolveclose_verify_deny,
   configSMS_start: configSMS.configSMS_start,
   configSMS_reject: configSMS.configSMS_reject,
   configSMS_number_confirmed: configSMS.configSMS_number_confirmed,
