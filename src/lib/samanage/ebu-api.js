@@ -264,7 +264,7 @@ function retrieveSfObj (conn) {
               }
             } else {
               records = result
-              records.link = `${conn.instanceUrl}/${result.KnowledgeArticleId}`
+              records.link = `${conn.instanceUrl}/${result.Id}`
             }
             return resolve(records)
           })

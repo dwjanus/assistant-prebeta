@@ -157,8 +157,8 @@ exports.multi_selection = (args, cb) => {
     return ebu.caseRecordsById(recordId).then((record) => {
       console.log(`--> case retrieved:\n${util.inspect(record)}`)
 
-      const text = `${record.Subject}\n\nStatus: ${record.Status}\nPriority: ${record.Priority}\nAssigned: ${record.SamanageESD__Assignee_Name__c}` +
-        `\n\n${record.Description}\n\n${record.SamanageESD__hasComments__c} comments`
+      const text = `*${record.Subject}*<br>Status: ${record.Status}\nPriority: ${record.Priority}\nAssigned: ${record.SamanageESD__Assignee_Name__c}` +
+        `<br>${_.isNil(record.Description) ? 'No Description Provided' : record.Description}<br>${record.SamanageESD__hasComments__c} Comments`
 
       const card = app.buildBasicCard(text)
         .setTitle(`${record.SamanageESD__RecordType__c} ${record.CaseNumber}`)
@@ -192,7 +192,7 @@ exports.multi_selection_suggestion_buttons = (args, cb) => {
   console.log(`--> contexts:\n${util.inspect(contexts)}`)
 
   if (hasScreen && selected === 'Back') {
-    return ebu.knowledge_art(recordIds).then((records) => {
+    return ebu.caseRecordsById(recordIds).then((records) => {
       let number = 1
       const list = app.buildList()
       records.forEach((r) => {
