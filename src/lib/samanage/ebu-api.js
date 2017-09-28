@@ -194,8 +194,7 @@ function retrieveSfObj (conn) {
     createIncident (options) {
       return new Promise((resolve, reject) => {
         let request
-        // options.RecordTypeId = record('id', 'Incident')
-        options.SamanageESD__RecordType__c = 'Incident'
+        options.RecordTypeId = record('id', 'Incident') // --> suddenly stopped working?? INVALID_CROSS_REFERENCE_KEY
         console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
 
         conn.sobject('Case').create(options, (err, ret) => {
