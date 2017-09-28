@@ -45,7 +45,7 @@ exports.escalation = (args, cb) => {
         text += `Escalation complete` // edit later
         return cb(null, text)
       })
-      console.log(`Result was: ${util.inspect(Promise.resolve(update_result))}`)
+      return Promise.resolve(update_result)
     }
     else {
       text += `I could not find ${searchParams.RecordType} number ${searchParams.CaseNumber}`
