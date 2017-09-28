@@ -35,6 +35,7 @@ exports.escalation = (args, cb) => {
     console.log(`\n--> record returned from ebu api`)
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
+      let RecordType = app.getArgument('record-type')
       text += `I found ${record.RecordType} # ${record.CaseNumber}\n`
       let now = new Date()
       let escalationOptions = {
