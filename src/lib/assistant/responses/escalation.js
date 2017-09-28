@@ -1,6 +1,7 @@
 import db from '../../../config/db.js'
 import _ from 'lodash'
 import util from 'util'
+import dateFormat from 'dateformat'
 
 const query = db.querySql
 // Escalation Fields:
@@ -35,10 +36,13 @@ exports.escalation = (args, cb) => {
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
       text += `I found ${searchParams.RecordType} # ${record.CaseNumber}\n`
+      let now = new Date()
       let escalationOptions = {
         Id: record.Id,
         SamanageESD__EscalationReason__c: 'Other', // app.getArgument('EscalationReason'),
         SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
+        SamanageESD__HasBeenEscalated__c: true,
+        SamanageESD__Escalated_Date__c: dateFormat(now, 'fulldate')
         SamanageESD__Escalated_By__c: user.sf_id,
       }
       return ebu.update(escalationOptions).then((result) => {
