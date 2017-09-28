@@ -24,6 +24,7 @@ exports.escalation = (args, cb) => {
     RecordType: app.getArgument('record-type'),
   }
   let escalation_options = {
+    RecordType: app.getArgument('record-type'),
     CaseNumber: app.getArgument('CaseNumber'),
     SamanageESD__EscalationReason__c: app.getArgument('EscalationReason'),
     SamanageESD__EscalationDescription__c: app.getArgument('EscalationDescription')
