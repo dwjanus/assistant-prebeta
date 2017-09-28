@@ -49,9 +49,8 @@ exports.escalation = (args, cb) => {
       }
       console.log(`Escalation Options: ${util.inspect(escalationOptions)}`)
       return ebu.update(escalationOptions).then((result) => {
-        let RecordType = app.getArgument('record-type') // Clean up later
-        let CaseNumber = app.getArgument('CaseNumber') // Clean up later
-        text += `${RecordType} #${CaseNumber} has been escalated` // edit later
+        let CaseNumber = app.getArgument('CaseNumber')
+        text += `${record.SamanageESD__RecordType__c} #${CaseNumber} has been escalated`
         return cb(null, text)
       })
       console.log(`Result: ${result}`)
