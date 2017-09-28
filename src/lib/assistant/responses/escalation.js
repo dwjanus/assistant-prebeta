@@ -35,12 +35,12 @@ exports.escalation = (args, cb) => {
     console.log(`\n--> record returned from ebu api`)
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
-      text += `I found ${searchParams.RecordType} # ${record.CaseNumber}\n`
+      text += `I found ${record.RecordType} # ${record.CaseNumber}\n`
       let now = new Date()
       let escalationOptions = {
         Id: record.Id,
-        SamanageESD__EscalationReason__c: 'Other', // app.getArgument('EscalationReason'),
-        SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
+        SamanageESD__EscalationReason__c: app.getArgument('EscalationReason'),
+        SamanageESD__EscalationDescription__c: app.getArgument('EscalationDescription'),
         IsEscalated: true,
         SamanageESD__HasBeenEscalated__c: true,
         Status: 'Escalated',
