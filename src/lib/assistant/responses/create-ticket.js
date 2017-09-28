@@ -8,13 +8,16 @@ exports.createTicket_knowledge = (args, cb) => {
   console.log('--> inside createTicket -- entry')
 
   const app = args.app
-  const temp = 'Blah'
-  const subject = app.IncomingMessage.body.originalRequest // test this next!
-  const text = `Sure thing! So far I have ${temp} as the subject for your incident. If you ` +
+  const subject = app.getArgument('Subject')
+  let text = 'What information would like to include? Just say the field name followed by the value. ' +
+    'For instance, \"Subject Network drive problem and make the priority medium.\" Minimum required is Subject.'
+
+  if (!_.isNil(subject)) {
+    text = `Sure thing! So far I have ${subject} as the subject for your incident. If you ` +
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
+  }
 
-  console.log(`--> subject: ${util.inspect(subject)}`)
   return cb(null, text)
 }
 
