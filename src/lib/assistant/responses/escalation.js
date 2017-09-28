@@ -42,7 +42,7 @@ exports.escalation = (args, cb) => {
         SamanageESD__EscalationReason__c: 'Other', // app.getArgument('EscalationReason'),
         SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
         SamanageESD__HasBeenEscalated__c: true,
-        SamanageESD__Escalated_Date__c: dateFormat(now, 'fulldate'),
+        SamanageESD__Escalated_Date__c: dateFormat(now, 'isoDateTime'),
         SamanageESD__Escalated_By__c: user.sf_id,
       }
       return ebu.update(escalationOptions).then((result) => {
