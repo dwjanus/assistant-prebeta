@@ -41,7 +41,9 @@ exports.escalation = (args, cb) => {
         Id: record.Id,
         SamanageESD__EscalationReason__c: 'Other', // app.getArgument('EscalationReason'),
         SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
+        IsEscalated: true,
         SamanageESD__HasBeenEscalated__c: true,
+        Status: 'Escalated'
         SamanageESD__Escalated_Date__c: dateFormat(now, 'isoDateTime'),
         SamanageESD__Escalated_By__c: user.sf_id,
       }
