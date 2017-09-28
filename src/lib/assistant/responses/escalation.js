@@ -47,6 +47,7 @@ exports.escalation = (args, cb) => {
         SamanageESD__Escalated_Date__c: dateFormat(now, 'isoDateTime'),
         SamanageESD__Escalated_By__c: user.sf_id,
       }
+      console.log(`Escalation Options: ${util.inspect(escalationOptions)}`)
       return ebu.update(escalationOptions).then((result) => {
         text += `Escalation complete` // edit later
         return cb(null, text)
