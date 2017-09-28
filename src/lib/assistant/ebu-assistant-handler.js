@@ -1,4 +1,5 @@
 import Promise from 'bluebird'
+import _ from 'lodash'
 import samanage from '../samanage/ebu-api.js'
 import responses from './responses/responses.js'
 
@@ -8,6 +9,8 @@ const THANK_YOU = 'general.thankyou'
 const CANCEL = 'general.cancel'
 const KNOWLEDGE_NO_CONTEXT = 'general.knowledge-nocontext'
 const KNOWLEDGE_FROM_SINGLE = 'general.knowledge'
+const VIEW_ARTICLE_FALLBACK = 'knowledge.article-fallback'
+const KNOWLEDGE_ARTICLE_SUGGESTIONS = 'knowledge.article-suggestions'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
 const SINGLE_FROM_MULTI = 'query.single-from-multi'
@@ -16,6 +19,7 @@ const ESCALATION = 'general.escalation'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
+const SINGLE_RECORD_CHANGE_NO_CONTEXT = 'command.single-record-change-nocontext'
 const CREATE_TICKET_FROM_KNOWLEDGE = 'create.newticket-knowledge'
 const CREATE_TICKET_DETAILS = 'create.newticket-details'
 const CREATE_TICKET_NO_CONTEXT = 'create.newticket-nocontext'
@@ -35,6 +39,11 @@ const POST_FEED_COMMENT_BODY = 'feedcomment.body'
 const POST_FEED_COMMENT_VERIFY_CONFIRM = 'create.feedcomment'
 const POST_FEED_COMMENT_VERIFY_NEWBODY = 'feedcomment.verify-newbody'
 const POST_FEED_COMMENT_VERIFY_DENY = 'feedcomment.verify-deny'
+const RESOLVE_CLOSE_DESCRIPTION_CONFIRM = 'confirm.resolution-description'
+const RESOLVE_CLOSE_DESCRIPTION_SET = 'set.resolution-description'
+const RESOLVE_CLOSE_VERIFY_CONFIRM = 'resolveclose.verify-confirm'
+const RESOLVE_CLOSE_VERIFY_NEWFIELDS = 'resolveclose.verify-newfields'
+const RESOLVE_CLOSE_VERIFY_DENY = 'resolveclose.verify-deny'
 const CONFIG_SMS_START = 'config.sms-start'
 const CONFIG_SMS_REJECT = 'config.sms-reject'
 const CONFIG_SMS_NUMBER_CONFIRMED = 'config.sms-number-confirmed'
@@ -48,6 +57,8 @@ actionMap.set(THANK_YOU, responses.thankyou)
 actionMap.set(CANCEL, responses.cancel)
 actionMap.set(KNOWLEDGE_NO_CONTEXT, responses.knowledge)
 actionMap.set(KNOWLEDGE_FROM_SINGLE, responses.knowledge)
+actionMap.set(VIEW_ARTICLE_FALLBACK, responses.knowledge_article_fallback)
+actionMap.set(KNOWLEDGE_ARTICLE_SUGGESTIONS, responses.knowledge_suggestion_buttons)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
 actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)
@@ -56,6 +67,7 @@ actionMap.set(ESCALATION, responses.escalation)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)
+actionMap.set(SINGLE_RECORD_CHANGE_NO_CONTEXT, responses.single_change_nocontext)
 actionMap.set(CREATE_TICKET_FROM_KNOWLEDGE, responses.createTicket_knowledge)
 actionMap.set(CREATE_TICKET_DETAILS, responses.createTicket_details)
 actionMap.set(CREATE_TICKET_NO_CONTEXT, responses.createTicket_nocontext)
@@ -75,6 +87,11 @@ actionMap.set(POST_FEED_COMMENT_BODY, responses.single_postfeed_body)
 actionMap.set(POST_FEED_COMMENT_VERIFY_CONFIRM, responses.single_postfeed_verify_confirm)
 actionMap.set(POST_FEED_COMMENT_VERIFY_NEWBODY, responses.single_postfeed_verify_newbody)
 actionMap.set(POST_FEED_COMMENT_VERIFY_DENY, responses.single_postfeed_verify_deny)
+actionMap.set(RESOLVE_CLOSE_DESCRIPTION_CONFIRM, responses.resolveclose_desc_confirm)
+actionMap.set(RESOLVE_CLOSE_DESCRIPTION_SET, responses.resolveclose_desc_set)
+actionMap.set(RESOLVE_CLOSE_VERIFY_CONFIRM, responses.resolveclose_verify_confirm)
+actionMap.set(RESOLVE_CLOSE_VERIFY_NEWFIELDS, responses.resolveclose_verify_newfields)
+actionMap.set(RESOLVE_CLOSE_VERIFY_DENY, responses.resolveclose_verify_deny)
 actionMap.set(CONFIG_SMS_START, responses.configSMS_start)
 actionMap.set(CONFIG_SMS_REJECT, responses.configSMS_reject)
 actionMap.set(CONFIG_SMS_NUMBER_CONFIRMED, responses.configSMS_number_confirmed)
@@ -88,7 +105,8 @@ export default ((app, user) => {
 
   samanage(user.user_id).then((ebu) => {
     promisedAction({ app, ebu, user }).then((result) => {
-      app.ask(result)
+      if (_.isString(result)) return app.ask(result)
+      return result
     })
   })
   .catch(err => console.log(err))

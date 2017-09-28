@@ -43,7 +43,7 @@ exports.single_nocontext = (args, cb) => {
         ` WHERE user_id = '${user.user_id}'`
 
       return query(saveRecordStr).then(() => {
-        if (returnType) {
+        if (!_.isNil(returnType)) {
           if (returnType === 'Latest Comment' || 'Comments') {
             return ebu.comments(record.Id).then((comments) => {
               console.log('--> just got comments back')
@@ -128,59 +128,65 @@ exports.single_details = (args, cb) => {
   const latestRecord = JSON.parse(user.lastRecord)
   let text = ''
 
-  if (returnType === 'Latest Comment' || 'Comments') {
-    console.log(`--> return type is: ${returnType}`)
-    return ebu.comments(latestRecord.Id).then((comments) => {
-      console.log('--> just got comments back')
+  if (!_.isNil(returnType)) {
+    if (returnType === 'Latest Comment' || 'Comments') {
+      console.log(`--> return type is: ${returnType}`)
+      return ebu.comments(latestRecord.Id).then((comments) => {
+        console.log('--> just got comments back')
 
-      if (!_.isEmpty(comments)) {
-        console.log('   --> they are not empty')
-        if (returnType === 'Latest Comment') {
-          const latest = comments[0]
-          const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
-          text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
+        if (!_.isEmpty(comments)) {
+          console.log('   --> they are not empty')
+          if (returnType === 'Latest Comment') {
+            const latest = comments[0]
+            const date = dateFormat(latest.CreatedDate, "dddd mmmm dS, yyyy, 'at' h:MM:ss tt")
+            text = `The most recent comment is "${latest.Body}" and was posted by ${latest.User.Name} on ${date}. `
 
-          if (latest.CommentCount === 0) {
-            text += 'There are no responses to this. Would you like to post a reply?'
-            app.setContext('feedcomments-view')
-          } else {
-            if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
-            else text += `There are ${latest.CommentCount} responses, would you like to view them?`
-            app.setContext('viewfeed-prompt')
+            if (latest.CommentCount === 0) {
+              text += 'There are no responses to this. Would you like to post a reply?'
+              app.setContext('feedcomments-view')
+            } else {
+              if (latest.CommentCount === 1) text += 'There is 1 response, would you like to view it?'
+              else text += `There are ${latest.CommentCount} responses, would you like to view them?`
+              app.setContext('viewfeed-prompt')
+            }
+
+            const saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
+            return query(saveFeedIdStr).then(() => cb(null, text))
           }
 
-          const saveFeedIdStr = `UPDATE users SET lastCommentId = '${latest.Id}' WHERE user_id = '${user.user_id}'`
-          return query(saveFeedIdStr).then(() => cb(null, text))
+          const limit = comments.length > 3 ? 3 : comments.length
+          const saved = {}
+          for (let i = 0; i < limit; i++) {
+            const c = comments[i]
+            saved[`${i + 1}`] = c
+            const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
+            text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
+          }
+
+          if (comments.length > limit) text += `+${comments.length - limit} more`
+
+          app.setContext('comments-list')
+
+          const savedComments = JSON.stringify(saved)
+          const updateLastRecordStr = `UPDATE users SET lastRecord = '${savedComments}' WHERE user_id = '${user.user_id}'`
+          return query(updateLastRecordStr)
         }
 
-        const limit = comments.length > 3 ? 3 : comments.length
-        const saved = {}
-        for (let i = 0; i < limit; i++) {
-          const c = comments[i]
-          saved[`${i + 1}`] = c
-          const date = dateFormat(c.CreatedDate, "ddd m/d/yy '@' h:MM tt")
-          text += `${date} "${c.Body}" posted by ${c.User.Name} - ${c.CommentCount} replies\n`
-        }
+        text = 'There are no public comments, would you like to post one?'
+        return app.setContext('postcomment-prompt')
+      })
+      .then(() => {
+        if (app.getArgument('yesno')) text = `Yes ${text}`
+        return cb(null, text)
+      })
+    }
 
-        if (comments.length > limit) text += `+${comments.length - limit} more`
-
-        app.setContext('comments-list')
-
-        const savedComments = JSON.stringify(saved)
-        const updateLastRecordStr = `UPDATE users SET lastRecord = '${savedComments}' WHERE user_id = '${user.user_id}'`
-        return query(updateLastRecordStr)
-      }
-
-      text = 'There are no public comments, would you like to post one?'
-      return app.setContext('postcomment-prompt')
-    })
-    .then(() => {
-      if (app.getArgument('yesno')) text = `Yes ${text}`
-      return cb(null, text)
-    })
+    text = `The ${returnType} is currently ${latestRecord[returnType]}`
+    return cb(null, text)
   }
 
-  text = `The ${returnType} is currently ${latestRecord[returnType]}`
+  text = `${latestRecord.SamanageESD__RecordType__c} ${latestRecord.CaseNumber} - ${latestRecord.Subject} / ` +
+  `Priority: ${latestRecord.Priority} / Status: ${latestRecord.Status} / Description: ${latestRecord.Description}`
   return cb(null, text)
 }
 
@@ -416,7 +422,7 @@ exports.single_postfeed_verify_confirm = (args, cb) => {
 }
 
 /** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***
- *               Handlers for making single change to a case obj              *
+ *               Handlers for making change to a single case obj              *
  ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ***/
 
 exports.single_change = (args, cb) => {
@@ -425,28 +431,135 @@ exports.single_change = (args, cb) => {
   const app = args.app
   const ebu = args.ebu
   const user = args.user
-  let returnType = app.getArgument('return-type')
+  const latestRecord = JSON.parse(user.lastRecord)
+  let text = ''
   let options = {
-    Id: ''
+    Id: latestRecord.Id,
+    Status: _.upperFirst(app.getArgument('Status')),
+    Priority: _.upperFirst(app.getArgument('Priority'))
   }
 
-  if (app.getArgument('Status')) options.Status = _.upperFirst(app.getArgument('Status'))
-  if (app.getArgument('Priority')) options.Priority = _.upperFirst(app.getArgument('Priority'))
-
+  if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id // need to play with this
   options = _.omitBy(options, _.isNil)
 
-  if (!returnType || returnType === 'undefined') returnType = _.keys(options)[1]
+  const returns = _.keys(options)
+  const returnType = returns.length > 2 ? _.slice(returns, 1, returns.length) : returns[1]
 
-  const latestRecord = JSON.parse(user.lastRecord)
   console.log(`--> record after jsonify:\n${util.inspect(latestRecord)}`)
-  options.Id = latestRecord.Id
+  console.log(`--> options before convo invocation:\n${util.inspect(options)}`)
+
+  let recordStr = latestRecord
+  let savedRecordStr
+
+  // if the user wants to change status to Resovled
+  if (options.Status === 'Resolved' || options.Status === 'Closed') {
+    if (latestRecord.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
+    else {
+      text = 'Would you like to add a description or resolution type?'
+      app.setContext('resolveclose-description-prompt')
+    }
+
+    recordStr = JSON.stringify(recordStr)
+    savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+    return query(savedRecordStr).then(() => cb(null, text))
+  }
+
   return ebu.update(options).then(() => {
-    const text = `No problem, I have updated the ${returnType} to ${options[returnType]}`
-    return cb(null, text)
+    text = 'No problem, I have updated '
+
+    let i = returnType.length - 1
+    for (const r of returnType) {
+      latestRecord[r] = options[r]
+      text += `the ${r} to ${options[r]}`
+      if (returnType.length > 2 && i > 0) text += ', '
+      if (returnType.length >= 2 && i - 1 === 0) text += 'and '
+      i--
+    }
+
+    recordStr = JSON.stringify(recordStr)
+    savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+    return query(savedRecordStr).then(() => cb(null, text))
   })
   .catch((err) => {
     cb(err, null)
   })
 }
 
-// need to add single_change_nocontext!!
+exports.single_change_nocontext = (args, cb) => {
+  console.log('\n--> inside single -- change no context')
+  // from no context we need to first find the case by number to get its Id
+  // then we make the update query
+
+  const app = args.app
+  const ebu = args.ebu
+  const user = args.user
+  let text = 'I was unable to find that, try wording your request differently.'
+  let searchoptions = {
+    CaseNumber: app.getArgument('CaseNumber'),
+    RecordType: app.getArgument('record-type')
+  }
+
+  let updateoptions = {
+    Id: '',
+    Status: app.getArgument('Status'),
+    Priority: app.getArgument('Priority')
+  }
+
+  searchoptions = _.omitBy(searchoptions, _.isNil)
+  updateoptions = _.omitBy(updateoptions, _.isNil)
+
+  if (app.getArgument('Assignee') === 'Self') searchoptions.OwnerId = user.sf_id // need to play with this
+  if (!app.getArgument('record-type')) searchoptions.RecordType = 'Incident'
+
+  const returns = _.keys(updateoptions)
+  const returnType = returns.length > 2 ? _.slice(returns, 1, returns.length) : returns[1]
+
+  console.log(`\n> search options: ${util.inspect(searchoptions)}`)
+  console.log(`> update options: ${util.inspect(updateoptions)}`)
+  console.log(`> return type: ${returnType}\n`)
+
+  return ebu.singleRecord(searchoptions).then((record) => {
+    console.log('--> record returned from ebu api')
+
+    if (record) {
+      let recordStr = record
+      let savedRecordStr
+      updateoptions.Id = record.Id
+
+      // if the user wants to change status to Resovled
+      if (updateoptions.Status === 'Resolved' || updateoptions.Status === 'Closed') {
+        if (record.OwnerId !== user.sf_id) text = 'Sorry, you do not have permission to resolve a case that is not assigned to you.'
+        else {
+          text = 'Would you like to add a description or resolution type?'
+          app.setContext('resolveclose-description-prompt')
+        }
+
+        recordStr = JSON.stringify(recordStr)
+        savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+        return query(savedRecordStr).then(() => cb(null, text))
+      }
+
+      return ebu.update(updateoptions).then(() => {
+        text = 'No problem, I have updated '
+
+        let i = returnType.length - 1
+        for (const r of returnType) {
+          recordStr[r] = updateoptions[r]
+          text += `the ${r} to ${updateoptions[r]}`
+          if (returnType.length > 2 && i > 0) text += ', '
+          if (returnType.length >= 2 && i - 1 === 0) text += 'and '
+          i--
+        }
+
+        recordStr = JSON.stringify(recordStr)
+        savedRecordStr = `UPDATE users SET lastRecord = '${recordStr}' WHERE user_id = '${user.user_id}'`
+        return query(savedRecordStr).then(() => cb(null, text))
+      })
+    }
+
+    return cb(null, text)
+  })
+  .catch((err) => {
+    cb(err, null)
+  })
+}
