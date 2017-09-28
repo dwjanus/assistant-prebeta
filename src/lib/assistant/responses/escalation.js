@@ -41,11 +41,11 @@ exports.escalation = (args, cb) => {
         SamanageESD__EscalationDescription__c: 'Other', // app.getArgument('EscalationDescription')
         SamanageESD__Escalated_By__c: user.sf_id,
       }
-      let update_result = ebu.update(escalationOptions).then((result) => {
+      return ebu.update(escalationOptions).then((result) => {
         text += `Escalation complete` // edit later
         return cb(null, text)
       })
-      return Promise.resolve(update_result)
+      console.log(`Result: ${result}`)
     }
     else {
       text += `I could not find ${searchParams.RecordType} number ${searchParams.CaseNumber}`
