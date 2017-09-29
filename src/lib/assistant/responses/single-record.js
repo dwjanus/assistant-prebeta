@@ -317,8 +317,8 @@ exports.single_postcomment_verify_confirm = (args, cb) => {
   const commentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody')
   const contexts = app.getContexts()
 
-  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${commentBodyFromPost}\n`)
-  console.log(`--> contexts:\n${util.inspect(contexts)}`)
+  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${util.inspect(commentBodyFromPost)}\n`)
+  console.log(`--> contexts:\n${util.inspect(contexts)}\n`)
 
   return ebu.createComment(latestRecord.Id, user.sf_id, commentBody).then((ret) => {
     console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
