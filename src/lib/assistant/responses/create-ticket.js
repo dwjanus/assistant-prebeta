@@ -71,9 +71,7 @@ exports.createTicket_details = (args, cb) => {
     text += `You can view the details of your new incident at ${newCase.link}`
     return query(updateUserQry).then(() => cb(null, text))
   })
-  .catch((err) => {
-    cb(err, null)
-  })
+  .catch(err => cb(err, null))
 }
 
 exports.createTicket_nocontext = (args, cb) => {
