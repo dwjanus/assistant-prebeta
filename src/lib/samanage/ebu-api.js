@@ -293,7 +293,7 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .sort('-LastModifiedDate')
+        .sort('-LastModifiedDate -SystemModstamp')
         // .limit(8) // hard limit for now, later we will add handler to 'View More' from multi record intent
         .execute((err, records) => {
           if (err) return reject(err)
