@@ -276,7 +276,7 @@ exports.single_postcomment_confirm = (args, cb) => {
 }
 
 exports.single_postcomment_body = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/confirm')
+  console.log('\n--> inside single -- postcomment/body')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -291,7 +291,7 @@ exports.single_postcomment_deny = (args, cb) => {
 }
 
 exports.single_postcomment_verify_newbody = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/verify-confirm')
+  console.log('\n--> inside single -- postcomment/verify-newbody')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -300,8 +300,8 @@ exports.single_postcomment_verify_newbody = (args, cb) => {
 }
 
 exports.single_postcomment_verify_deny = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/verify-confirm')
-  const text = 'No worries, cancelling your feed post'
+  console.log('\n--> inside single -- postcomment/verify-deny')
+  const text = 'No worries, cancelling your post'
   return cb(null, text)
 }
 
@@ -314,13 +314,19 @@ exports.single_postcomment_verify_confirm = (args, cb) => {
   const latestRecord = JSON.parse(user.lastRecord)
   const commentBody = app.getArgument('CommentBody')
   const commentBodyFromVerify = app.getContextArgument('comment-verify', 'CommentBody')
-  const commentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody')
+  const commentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody').value
+  const origCommentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody').original
   const contexts = app.getContexts()
 
-  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${util.inspect(commentBodyFromPost)}\n`)
+  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${commentBodyFromPost}\n`)
   console.log(`--> contexts:\n${util.inspect(contexts)}\n`)
 
-  return ebu.createComment(latestRecord.Id, user.sf_id, commentBody).then((ret) => {
+  let comment = commentBody
+  if (!commentBody) comment = commentBodyFromVerify
+  if (!commentBodyFromVerify) comment = commentBodyFromPost
+  if (!commentBodyFromPost) comment = origCommentBodyFromPost
+
+  return ebu.createComment(latestRecord.Id, user.sf_id, comment).then((ret) => {
     console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
     const text = 'Your comment has been posted!'
     return cb(null, text)
