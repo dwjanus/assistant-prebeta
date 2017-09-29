@@ -164,6 +164,7 @@ exports.single_details = (args, cb) => {
           }
 
           if (comments.length > limit) text += `+${comments.length - limit} more`
+          if (app.getArgument('yesno')) text = `Yes. ${text}`
 
           app.setContext('comments-list')
 
@@ -173,12 +174,10 @@ exports.single_details = (args, cb) => {
         }
 
         text = 'There are no public comments, would you like to post one?'
+        if (app.getArgument('yesno')) text = `No ${text}`
         return app.setContext('postcomment-prompt')
       })
-      .then(() => {
-        if (app.getArgument('yesno')) text = `Yes ${text}`
-        return cb(null, text)
-      })
+      .then(() => cb(null, text))
     }
 
     text = `The ${returnType} is currently ${latestRecord[returnType]}`

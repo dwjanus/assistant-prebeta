@@ -434,8 +434,8 @@ function retrieveSfObj (conn) {
           Body: comment,
           Visibility: 'AllUsers'
         }, (err, ret) => {
-          console.log(`--> finsihed creating comment: ${ret.success}`)
-          if (err || !ret.success) return reject(err)
+          console.log(`--> finished creating comment: ${util.inspect(ret)}`)
+          if (err) return reject(err)
           return resolve(ret)
         })
       })
