@@ -32,14 +32,13 @@ exports.createTicket_details = (args, cb) => {
   const ebu = args.ebu
   const app = args.app
   const returnType = app.getArgument('return-type')
-  let Subject = app.getContextArgument('newticket-knowledge', 'Subject')
+  const OriginalSubject = app.getArgument('OriginalSubject')
+  let Subject = app.getArgument('Subject')
 
-  console.log(`--> Subject: ${Subject}`)
+  console.log(`--> Original Subject: ${OriginalSubject}`)
+  console.log(`--> New Subject: ${Subject}`)
 
-  if (!Subject || !_.isNil(app.getArgument('Subject'))) {
-    Subject = app.getArgument('Subject')
-    console.log(`Original Subject Not found!\nNew Subject: ${Subject}`)
-  }
+  if (!Subject) Subject = OriginalSubject
 
   let options = {
     Subject,
