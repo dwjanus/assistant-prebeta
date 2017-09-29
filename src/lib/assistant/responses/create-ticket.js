@@ -27,6 +27,7 @@ exports.createTicket_knowledge = (args, cb) => {
 
 exports.createTicket_details = (args, cb) => {
   console.log('--> inside createTicket -- details')
+
   const user = args.user
   const ebu = args.ebu
   const app = args.app
@@ -34,9 +35,9 @@ exports.createTicket_details = (args, cb) => {
   let options = {
     Subject: app.getArgument('Subject'),
     SamanageESD__RequesterUser__c: user.sf_id,
+    CreatedById: user.sf_id,
     Description: app.getArgument('Description'),
-    Priority: app.getArgument('Priority'),
-    Origin: 'Samanage Assistant'
+    Priority: app.getArgument('Priority')
   }
   let text = 'Excellent, I am submitting your ticket now. '
 
