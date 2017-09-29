@@ -17,7 +17,7 @@ exports.createTicket_knowledge = (args, cb) => {
     'For instance, \"Subject Network drive problem and make the priority medium.\" Minimum required is Subject.'
 
   if (!_.isNil(subject)) {
-    text = `Sure thing! So far I have ${subject} as the subject for your incident. If you ` +
+    text = `Sure thing! So far I have "${subject}" as the subject for your incident. If you ` +
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
   }
@@ -32,8 +32,9 @@ exports.createTicket_details = (args, cb) => {
   const ebu = args.ebu
   const app = args.app
   const returnType = app.getArgument('return-type')
+  const Subject = _.isNil(app.getArgument('Subject')) ? app.getContextArgument('knowledge', 'Subject') : app.getArgument('Subject')
   let options = {
-    Subject: app.getArgument('Subject'),
+    Subject,
     SamanageESD__RequesterUser__c: user.sf_id,
     Description: app.getArgument('Description'),
     Priority: app.getArgument('Priority')
