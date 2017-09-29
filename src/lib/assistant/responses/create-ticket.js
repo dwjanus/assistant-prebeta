@@ -35,7 +35,6 @@ exports.createTicket_details = (args, cb) => {
   let options = {
     Subject: app.getArgument('Subject'),
     SamanageESD__RequesterUser__c: user.sf_id,
-    CreatedById: user.sf_id,
     Description: app.getArgument('Description'),
     Priority: app.getArgument('Priority')
   }
