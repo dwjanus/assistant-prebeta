@@ -79,6 +79,7 @@ exports.single_nocontext = (args, cb) => {
                 }
 
                 if (comments.length > limit) text += `+${comments.length - limit} more`
+                if (app.getArgument('yesno')) text = `Yes. ${text}`
 
                 // set context to comments list
                 app.setContext('comments-list')
@@ -90,12 +91,10 @@ exports.single_nocontext = (args, cb) => {
               }
 
               text = 'There are no public comments, would you like to post one?'
+              if (app.getArgument('yesno')) text = `No. ${text}`
               return app.setContext('postcomment-prompt')
             })
-            .then(() => {
-              if (app.getArgument('yesno') && record) text = `Yes ${text}`
-              return cb(null, text)
-            })
+            .then(() => cb(null, text))
           }
 
           text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
@@ -110,7 +109,7 @@ exports.single_nocontext = (args, cb) => {
     }
 
     text = 'I\'m sorry, I was unable to find any records matching your description.'
-    if (app.getArgument('yesno')) text = `No, ${text}`
+    if (app.getArgument('yesno')) text = `Nope. ${text}`
     return cb(null, text)
   })
   .catch((err) => {
@@ -314,6 +313,12 @@ exports.single_postcomment_verify_confirm = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
   const commentBody = app.getArgument('CommentBody')
+  const commentBodyFromVerify = app.getContextArgument('comment-verify', 'CommentBody')
+  const commentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody')
+  const contexts = app.getContexts()
+
+  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${commentBodyFromPost}\n`)
+  console.log(`--> contexts:\n${util.inspect(contexts)}`)
 
   return ebu.createComment(latestRecord.Id, user.sf_id, commentBody).then((ret) => {
     console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
