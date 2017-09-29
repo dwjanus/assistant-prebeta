@@ -430,7 +430,7 @@ function retrieveSfObj (conn) {
         conn.sobject('FeedItem').create({
           ParentId: objectId,
           Type: 'TextPost',
-          InsertedById: userId,
+          CreatedById: userId, // out of nowhere this stopped working?
           Body: comment,
           Visibility: 'AllUsers'
         }, (err, ret) => {
@@ -448,7 +448,7 @@ function retrieveSfObj (conn) {
         conn.sobject('FeedComment').create({
           FeedItemId: caseFeedId,
           CommentType: 'TextComment',
-          InsertedById: userId,
+          CreatedById: userId, // out of nowhere this stopped working?
           CommentBody: comment
         }, (err, ret) => {
           console.log(`--> finished creating feed comment: ${util.inspect(ret)}`)
