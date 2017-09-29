@@ -32,7 +32,15 @@ exports.createTicket_details = (args, cb) => {
   const ebu = args.ebu
   const app = args.app
   const returnType = app.getArgument('return-type')
-  const Subject = _.isNil(app.getArgument('Subject')) ? app.getContextArgument('knowledge', 'Subject') : app.getArgument('Subject')
+  let Subject = app.getContextArgument('newticket-knowledge', 'Subject')
+
+  console.log(`--> Subject: ${Subject}`)
+
+  if (!Subject || !_.isNil(app.getArgument('Subject'))) {
+    Subject = app.getArgument('Subject')
+    console.log(`Original Subject Not found!\nNew Subject: ${Subject}`)
+  }
+
   let options = {
     Subject,
     SamanageESD__RequesterUser__c: user.sf_id,
