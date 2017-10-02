@@ -3,12 +3,12 @@ import _ from 'lodash'
 import util from 'util'
 import dateFormat from 'dateformat'
 
-
 const query = db.querySql
 
 exports.metrics = (args, cb) => {
-  console.log(`\n--> inside metrics`)
+  console.log('\n--> inside metrics')
   console.log(`\n--> ${util.inspect(args)}`)
+
   const app = args.app
   const ebu = args.ebu
   const user = args.user
@@ -18,7 +18,9 @@ exports.metrics = (args, cb) => {
     DatePeriod: app.getArgument('date-period'),
     StatusChange: app.getArgument('StatusChange')
   }
-   console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
+
+  console.log(`\n--> [metrics] options: ${util.inspect(options)}`)
+
   // default options
   if (app.getArgument('Assignee') === 'Self') options.OwnerId = user.sf_id
   if (!app.getArgument('record-type')) options.RecordType = 'Incident'
@@ -26,9 +28,9 @@ exports.metrics = (args, cb) => {
   options = _.omitBy(options, _.isNil)
 
   return ebu.metrics(options).then((records) => {
-    console.log(`\n--> records returned from ebu api`)
-    let startClosedDate = dateFormat(options.DatePeriod.split('/')[0],'fullDate')
-    let endClosedDate = dateFormat(options.DatePeriod.split('/')[1],'fullDate')
+    console.log('\n--> records returned from ebu api')
+    const startClosedDate = dateFormat(options.DatePeriod.split('/')[0], 'fullDate')
+    const endClosedDate = dateFormat(options.DatePeriod.split('/')[1], 'fullDate')
     if (!_.isEmpty(records)) {
       if (records.length > 1) {
         text = `${records.length} ${options.RecordType}s were ${options.StatusChange} between ${startClosedDate} and ${endClosedDate} `

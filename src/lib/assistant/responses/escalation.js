@@ -14,7 +14,7 @@ const query = db.querySql
 
 exports.escalation = (args, cb) => {
 
-  console.log(`\n--> Inside escalate`)
+  console.log('\n--> Inside escalate')
   // console.log(`\n--> ${util.inspect(args)}`)
   const app = args.app
   const ebu = args.ebu
@@ -30,14 +30,13 @@ exports.escalation = (args, cb) => {
   searchParams = _.omitBy(searchParams, _.isNil)
   console.log(`\n--> app.getArgument searchParams: ${util.inspect(searchParams)}`)
 
-
   return ebu.singleRecord(searchParams).then((record) => {
-    console.log(`\n--> record returned from ebu api`)
+    console.log('\n--> record returned from ebu api')
     if (record) {
       console.log(`Escalation records: ${util.inspect(record)}`)
       // text += `I found ${record.RecordType} # ${record.CaseNumber}\n`
-      let now = new Date()
-      let escalationOptions = {
+      const now = new Date()
+      const escalationOptions = {
         Id: record.Id,
         SamanageESD__EscalationReason__c: app.getArgument('EscalationReason'),
         SamanageESD__EscalationDescription__c: app.getArgument('EscalationDescription'),
@@ -49,15 +48,14 @@ exports.escalation = (args, cb) => {
       }
       console.log(`Escalation Options: ${util.inspect(escalationOptions)}`)
       return ebu.update(escalationOptions).then((result) => {
-        let CaseNumber = app.getArgument('CaseNumber')
+        console.log(`\nResult: ${result}`)
+        const CaseNumber = app.getArgument('CaseNumber')
         text += `${record.SamanageESD__RecordType__c} #${CaseNumber} has been escalated`
         return cb(null, text)
       })
-      console.log(`Result: ${result}`)
     }
-    else {
-      text += `I could not find ${searchParams.RecordType} number ${searchParams.CaseNumber}`
-    }
+
+    text += `I could not find ${searchParams.RecordType} number ${searchParams.CaseNumber}`
     return cb(null, text)
   })
 }
