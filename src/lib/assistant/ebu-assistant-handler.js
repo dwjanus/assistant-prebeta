@@ -17,6 +17,7 @@ const MULTIPLE_RECORDS_SELECTION_FALLBACK = 'multi.select'
 const MULTIPLE_RECORDS_SUGGESTIONS = 'multi.suggestions'
 const SINGLE_FROM_MULTI = 'query.single-from-multi'
 const METRICS = 'general.metrics'
+const ESCALATION = 'general.escalation'
 const SINGLE_RECORD_DETAILS = 'query.single-record-details'
 const SINGLE_RECORD_NO_CONTEXT = 'query.single-record-nocontext'
 const SINGLE_RECORD_CHANGE = 'command.single-record-change'
@@ -66,6 +67,7 @@ actionMap.set(MULTIPLE_RECORDS_SELECTION_FALLBACK, responses.multi_selection)
 actionMap.set(MULTIPLE_RECORDS_SUGGESTIONS, responses.multi_selection_suggestion_buttons)
 actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)
 actionMap.set(METRICS, responses.metrics)
+actionMap.set(ESCALATION, responses.escalation)
 actionMap.set(SINGLE_RECORD_DETAILS, responses.single_details)
 actionMap.set(SINGLE_RECORD_NO_CONTEXT, responses.single_nocontext)
 actionMap.set(SINGLE_RECORD_CHANGE, responses.single_change)

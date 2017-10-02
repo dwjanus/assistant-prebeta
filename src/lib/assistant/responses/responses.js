@@ -2,6 +2,7 @@ import welcome from './welcome.js'
 import knowledge from './knowledge.js'
 import multiRecord from './multi-record.js'
 import { metrics } from './metrics.js'
+import { escalation } from './escalation.js'
 import singleRecord from './single-record.js'
 import comments from './comments.js'
 import resolveClose from './resolve-close.js'
@@ -16,6 +17,7 @@ module.exports = {
   knowledge_article_fallback: knowledge.knowledge_article_fallback,
   knowledge_suggestion_buttons: knowledge.knowledge_suggestion_buttons,
   metrics,
+  escalation,
   multi_nocontext: multiRecord.multi_nocontext,
   multi_welcome: multiRecord.multi_welcome,
   multi_selection: multiRecord.multi_selection,
