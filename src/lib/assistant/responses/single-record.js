@@ -79,6 +79,7 @@ exports.single_nocontext = (args, cb) => {
                 }
 
                 if (comments.length > limit) text += `+${comments.length - limit} more`
+                if (app.getArgument('yesno')) text = `Yes. ${text}`
 
                 // set context to comments list
                 app.setContext('comments-list')
@@ -90,27 +91,35 @@ exports.single_nocontext = (args, cb) => {
               }
 
               text = 'There are no public comments, would you like to post one?'
+              if (app.getArgument('yesno')) text = `No. ${text}`
               return app.setContext('postcomment-prompt')
             })
-            .then(() => {
-              if (app.getArgument('yesno') && record) text = `Yes ${text}`
-              return cb(null, text)
-            })
+            .then(() => cb(null, text))
           }
 
           text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
         } else {
-          text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} / ` +
-          `Description: ${record.Description}`
+          const cardText = `*${record.Subject}*<br><br>Status: ${record.Status}<br>Priority: ${record.Priority}<br>` +
+          `Assigned: ${record.SamanageESD__Assignee_Name__c}<br><br>` +
+          `${_.isNil(record.Description) ? 'No Description Provided' : record.Description}<br><br>${record.SamanageESD__hasComments__c} Comments`
+
+          const card = app.buildBasicCard(cardText)
+            .setTitle(`${record.SamanageESD__RecordType__c} ${record.CaseNumber}`)
+            .setSubtitle(`Requester: ${record.SamanageESD__RequesterName__c}`)
+            .addButton('View in Browser', record.link)
+
+          text = app.ask(app.buildRichResponse()
+            .addSimpleResponse(`${!_.isNil(app.getArgument('yesno')) ? 'Yes, h' : 'H'}ere are the details`)
+            .addSuggestions(['Back', `${record.SamanageESD__hasComments__c > 0 ? 'View Comments' : 'Post Comment'}`])
+            .addBasicCard(card))
         }
 
-        if (app.getArgument('yesno') && record) text = `Yes, ${text}`
         return cb(null, text)
       })
     }
 
     text = 'I\'m sorry, I was unable to find any records matching your description.'
-    if (app.getArgument('yesno')) text = `No, ${text}`
+    if (app.getArgument('yesno')) text = `Nope. ${text}`
     return cb(null, text)
   })
   .catch((err) => {
@@ -164,6 +173,7 @@ exports.single_details = (args, cb) => {
           }
 
           if (comments.length > limit) text += `+${comments.length - limit} more`
+          if (app.getArgument('yesno')) text = `Yes. ${text}`
 
           app.setContext('comments-list')
 
@@ -173,20 +183,31 @@ exports.single_details = (args, cb) => {
         }
 
         text = 'There are no public comments, would you like to post one?'
+        if (app.getArgument('yesno')) text = `No ${text}`
         return app.setContext('postcomment-prompt')
       })
-      .then(() => {
-        if (app.getArgument('yesno')) text = `Yes ${text}`
-        return cb(null, text)
-      })
+      .then(() => cb(null, text))
     }
 
     text = `The ${returnType} is currently ${latestRecord[returnType]}`
     return cb(null, text)
   }
 
-  text = `${latestRecord.SamanageESD__RecordType__c} ${latestRecord.CaseNumber} - ${latestRecord.Subject} / ` +
-  `Priority: ${latestRecord.Priority} / Status: ${latestRecord.Status} / Description: ${latestRecord.Description}`
+  const record = latestRecord
+  const cardText = `*${record.Subject}*<br><br>Status: ${record.Status}<br>Priority: ${record.Priority}<br>` +
+  `Assigned: ${record.SamanageESD__Assignee_Name__c}<br><br>` +
+  `${_.isNil(record.Description) ? 'No Description Provided' : record.Description}<br><br>${record.SamanageESD__hasComments__c} Comments`
+
+  const card = app.buildBasicCard(cardText)
+    .setTitle(`${record.SamanageESD__RecordType__c} ${record.CaseNumber}`)
+    .setSubtitle(`Requester: ${record.SamanageESD__RequesterName__c}`)
+    .addButton('View in Browser', record.link)
+
+  text = app.ask(app.buildRichResponse()
+    .addSimpleResponse(`${!_.isNil(app.getArgument('yesno')) ? 'Yes, h' : 'H'}ere are the details`)
+    .addSuggestions(['Back', `${record.SamanageESD__hasComments__c > 0 ? 'View Comments' : 'Post Comment'}`])
+    .addBasicCard(card))
+
   return cb(null, text)
 }
 
@@ -278,7 +299,7 @@ exports.single_postcomment_confirm = (args, cb) => {
 }
 
 exports.single_postcomment_body = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/confirm')
+  console.log('\n--> inside single -- postcomment/body')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -293,7 +314,7 @@ exports.single_postcomment_deny = (args, cb) => {
 }
 
 exports.single_postcomment_verify_newbody = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/verify-confirm')
+  console.log('\n--> inside single -- postcomment/verify-newbody')
 
   const app = args.app
   const commentBody = app.getArgument('CommentBody')
@@ -302,8 +323,8 @@ exports.single_postcomment_verify_newbody = (args, cb) => {
 }
 
 exports.single_postcomment_verify_deny = (args, cb) => {
-  console.log('\n--> inside single -- postcomment/verify-confirm')
-  const text = 'No worries, cancelling your feed post'
+  console.log('\n--> inside single -- postcomment/verify-deny')
+  const text = 'No worries, cancelling your post'
   return cb(null, text)
 }
 
@@ -315,8 +336,20 @@ exports.single_postcomment_verify_confirm = (args, cb) => {
   const user = args.user
   const latestRecord = JSON.parse(user.lastRecord)
   const commentBody = app.getArgument('CommentBody')
+  const commentBodyFromVerify = app.getContextArgument('comment-verify', 'CommentBody')
+  const commentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody').value
+  const origCommentBodyFromPost = app.getContextArgument('comment-post', 'CommentBody').original
+  const contexts = app.getContexts()
 
-  return ebu.createComment(latestRecord.Id, user.sf_id, commentBody).then((ret) => {
+  console.log(`--> all the possible comment bodies:\n1. ${commentBody}\n2. ${commentBodyFromVerify}\n3. ${commentBodyFromPost}\n`)
+  console.log(`--> contexts:\n${util.inspect(contexts)}\n`)
+
+  let comment = commentBody
+  if (!commentBody) comment = commentBodyFromVerify
+  if (!commentBodyFromVerify) comment = commentBodyFromPost
+  if (!commentBodyFromPost) comment = origCommentBodyFromPost
+
+  return ebu.createComment(latestRecord.Id, user.sf_id, comment).then((ret) => {
     console.log(`--> got ret back from create function:\n${util.inspect(ret)}`)
     const text = 'Your comment has been posted!'
     return cb(null, text)

@@ -169,7 +169,7 @@ function retrieveSfObj (conn) {
       })
     },
 
-    knowledge_article (id) {
+    knowledgeArticle (id) {
       return new Promise((resolve, reject) => {
         console.log(`--> [salesforce] knowledge article\n    id:\n${id}`)
 
@@ -194,7 +194,7 @@ function retrieveSfObj (conn) {
     createIncident (options) {
       return new Promise((resolve, reject) => {
         let request
-        options.RecordTypeId = record('id', 'Incident')
+        options.RecordTypeId = record('id', 'Incident') // --> suddenly stopped working?? INVALID_CROSS_REFERENCE_KEY
         console.log(`--> [salesforce] incident creation\n    options:\n${util.inspect(options)}`)
 
         conn.sobject('Case').create(options, (err, ret) => {
@@ -249,6 +249,28 @@ function retrieveSfObj (conn) {
       })
     },
 
+    caseRecordsById (ids) {
+      return new Promise((resolve, reject) => {
+        console.log(`--> [salesforce] caseRecordsById\n-->ids: ${ids}`)
+
+        let records = []
+        conn.sobject('Case')
+          .retrieve(ids, (err, result) => {
+            if (err) return reject(err)
+            if (result.length > 1) {
+              for (const r of result) {
+                r.link = `${conn.instanceUrl}/${r.Id}`
+                records.push(r)
+              }
+            } else {
+              records = result
+              records.link = `${conn.instanceUrl}/${result.Id}`
+            }
+            return resolve(records)
+          })
+      })
+    },
+
     multiRecord (options) {
       return new Promise((resolve, reject) => {
         console.log(`\n--> [salesforce] multiRecord\n    options:\n${util.inspect(options)}`)
@@ -271,7 +293,8 @@ function retrieveSfObj (conn) {
 
         conn.sobject('Case')
         .find(searchParams, returnParams) // need handler for if no number and going by latest or something
-        .sort('-LastModifiedDate -CaseNumber')
+        .sort('-LastModifiedDate -SystemModstamp')
+        // .limit(8) // hard limit for now, later we will add handler to 'View More' from multi record intent
         .execute((err, records) => {
           if (err) return reject(err)
           console.log(`Records:\n${util.inspect(records)}`)
@@ -407,12 +430,12 @@ function retrieveSfObj (conn) {
         conn.sobject('FeedItem').create({
           ParentId: objectId,
           Type: 'TextPost',
-          InsertedById: userId,
+          CreatedById: userId, // out of nowhere this stopped working?
           Body: comment,
           Visibility: 'AllUsers'
         }, (err, ret) => {
-          console.log(`--> finsihed creating comment: ${ret.success}`)
-          if (err || !ret.success) return reject(err)
+          console.log(`--> finished creating comment: ${util.inspect(ret)}`)
+          if (err) return reject(err)
           return resolve(ret)
         })
       })
@@ -425,7 +448,7 @@ function retrieveSfObj (conn) {
         conn.sobject('FeedComment').create({
           FeedItemId: caseFeedId,
           CommentType: 'TextComment',
-          InsertedById: userId,
+          CreatedById: userId, // out of nowhere this stopped working?
           CommentBody: comment
         }, (err, ret) => {
           console.log(`--> finished creating feed comment: ${util.inspect(ret)}`)

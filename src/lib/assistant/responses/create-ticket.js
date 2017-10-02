@@ -9,11 +9,15 @@ exports.createTicket_knowledge = (args, cb) => {
 
   const app = args.app
   const subject = app.getArgument('Subject')
+  const contexts = app.getContexts()
+
+  console.log(`--> contexts:\n${util.inspect(contexts)}`)
+
   let text = 'What information would like to include? Just say the field name followed by the value. ' +
     'For instance, \"Subject Network drive problem and make the priority medium.\" Minimum required is Subject.'
 
   if (!_.isNil(subject)) {
-    text = `Sure thing! So far I have ${subject} as the subject for your incident. If you ` +
+    text = `Sure thing! So far I have "${subject}" as the subject for your incident. If you ` +
     'would like to change the subject, add a description, set the priority, or anything else, ' +
     'simply tell me what field values you would like. Or I can submit with defaults.'
   }
@@ -23,16 +27,24 @@ exports.createTicket_knowledge = (args, cb) => {
 
 exports.createTicket_details = (args, cb) => {
   console.log('--> inside createTicket -- details')
+
   const user = args.user
   const ebu = args.ebu
   const app = args.app
   const returnType = app.getArgument('return-type')
+  const OriginalSubject = app.getArgument('OriginalSubject')
+  let Subject = app.getArgument('Subject')
+
+  console.log(`--> Original Subject: ${OriginalSubject}`)
+  console.log(`--> New Subject: ${Subject}`)
+
+  if (!Subject) Subject = OriginalSubject
+
   let options = {
-    Subject: app.getArgument('Subject'),
+    Subject,
     SamanageESD__RequesterUser__c: user.sf_id,
     Description: app.getArgument('Description'),
-    Priority: app.getArgument('Priority'),
-    Origin: 'Samanage Assistant'
+    Priority: app.getArgument('Priority')
   }
   let text = 'Excellent, I am submitting your ticket now. '
 
@@ -59,9 +71,7 @@ exports.createTicket_details = (args, cb) => {
     text += `You can view the details of your new incident at ${newCase.link}`
     return query(updateUserQry).then(() => cb(null, text))
   })
-  .catch((err) => {
-    cb(err, null)
-  })
+  .catch(err => cb(err, null))
 }
 
 exports.createTicket_nocontext = (args, cb) => {

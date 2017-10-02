@@ -20,7 +20,7 @@ exports.configSMS_start = (args, cb) => {
 exports.configSMS_reject = (args, cb) => {
   console.log('--> inside configSMS -- reject')
 
-  const text = 'No worries, feel free let me know if you would like to change this setting in the future.'
+  const text = 'No worries, let me know if you would like to change this setting.'
   cb(null, text)
 }
 

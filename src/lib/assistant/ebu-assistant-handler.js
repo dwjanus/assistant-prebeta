@@ -13,6 +13,8 @@ const VIEW_ARTICLE_FALLBACK = 'knowledge.article-fallback'
 const KNOWLEDGE_ARTICLE_SUGGESTIONS = 'knowledge.article-suggestions'
 const MULTIPLE_RECORDS_NO_CONTEXT = 'general.multirecords-nocontext'
 const MULTIPLE_RECORDS_FROM_WELCOME = 'welcome.multi-record'
+const MULTIPLE_RECORDS_SELECTION_FALLBACK = 'multi.select'
+const MULTIPLE_RECORDS_SUGGESTIONS = 'multi.suggestions'
 const SINGLE_FROM_MULTI = 'query.single-from-multi'
 const METRICS = 'general.metrics'
 const ESCALATION = 'general.escalation'
@@ -61,6 +63,8 @@ actionMap.set(VIEW_ARTICLE_FALLBACK, responses.knowledge_article_fallback)
 actionMap.set(KNOWLEDGE_ARTICLE_SUGGESTIONS, responses.knowledge_suggestion_buttons)
 actionMap.set(MULTIPLE_RECORDS_NO_CONTEXT, responses.multi_nocontext)
 actionMap.set(MULTIPLE_RECORDS_FROM_WELCOME, responses.multi_welcome)
+actionMap.set(MULTIPLE_RECORDS_SELECTION_FALLBACK, responses.multi_selection)
+actionMap.set(MULTIPLE_RECORDS_SUGGESTIONS, responses.multi_selection_suggestion_buttons)
 actionMap.set(SINGLE_FROM_MULTI, responses.single_fromMulti)
 actionMap.set(METRICS, responses.metrics)
 actionMap.set(ESCALATION, responses.escalation)
