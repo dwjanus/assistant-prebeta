@@ -99,11 +99,21 @@ exports.single_nocontext = (args, cb) => {
 
           text = `The ${app.getArgument('return-type')} is currently ${record[app.getArgument('return-type')]}`
         } else {
-          text = `${record.SamanageESD__RecordType__c} ${record.CaseNumber} - ${record.Subject} / Priority: ${record.Priority} / Status: ${record.Status} / ` +
-          `Description: ${record.Description}`
+          const cardText = `*${record.Subject}*<br><br>Status: ${record.Status}<br>Priority: ${record.Priority}<br>` +
+          `Assigned: ${record.SamanageESD__Assignee_Name__c}<br><br>` +
+          `${_.isNil(record.Description) ? 'No Description Provided' : record.Description}<br><br>${record.SamanageESD__hasComments__c} Comments`
+
+          const card = app.buildBasicCard(cardText)
+            .setTitle(`${record.SamanageESD__RecordType__c} ${record.CaseNumber}`)
+            .setSubtitle(`Requester: ${record.SamanageESD__RequesterName__c}`)
+            .addButton('View in Browser', record.link)
+
+          text = app.ask(app.buildRichResponse()
+            .addSimpleResponse(`${!_.isNil(app.getArgument('yesno')) ? 'Yes, h' : 'H'}ere are the details`)
+            .addSuggestions(['Back', `${record.SamanageESD__hasComments__c > 0 ? 'View Comments' : 'Post Comment'}`])
+            .addBasicCard(card))
         }
 
-        if (app.getArgument('yesno') && record) text = `Yes, ${text}`
         return cb(null, text)
       })
     }
@@ -183,8 +193,21 @@ exports.single_details = (args, cb) => {
     return cb(null, text)
   }
 
-  text = `${latestRecord.SamanageESD__RecordType__c} ${latestRecord.CaseNumber} - ${latestRecord.Subject} / ` +
-  `Priority: ${latestRecord.Priority} / Status: ${latestRecord.Status} / Description: ${latestRecord.Description}`
+  const record = latestRecord
+  const cardText = `*${record.Subject}*<br><br>Status: ${record.Status}<br>Priority: ${record.Priority}<br>` +
+  `Assigned: ${record.SamanageESD__Assignee_Name__c}<br><br>` +
+  `${_.isNil(record.Description) ? 'No Description Provided' : record.Description}<br><br>${record.SamanageESD__hasComments__c} Comments`
+
+  const card = app.buildBasicCard(cardText)
+    .setTitle(`${record.SamanageESD__RecordType__c} ${record.CaseNumber}`)
+    .setSubtitle(`Requester: ${record.SamanageESD__RequesterName__c}`)
+    .addButton('View in Browser', record.link)
+
+  text = app.ask(app.buildRichResponse()
+    .addSimpleResponse(`${!_.isNil(app.getArgument('yesno')) ? 'Yes, h' : 'H'}ere are the details`)
+    .addSuggestions(['Back', `${record.SamanageESD__hasComments__c > 0 ? 'View Comments' : 'Post Comment'}`])
+    .addBasicCard(card))
+
   return cb(null, text)
 }
 
